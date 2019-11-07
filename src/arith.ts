@@ -1,19 +1,23 @@
 // Arithmetic parser example
 
 /* 
- * SUM  ::= head=FAC tail={op={'+' | '-'} sm=FAC}*;
- * FAC  ::= head=ATOM tail={ op={'*' | '/'} at=ATOM }*;
- * ATOM ::= val=INT | '(' val=SUM ')';
- * INT  ::= val=[0-9]+;
+ * SUM  ::= head=FAC tail={op={'\+' | '-'} sm=FAC}*;
+ * FAC  ::= head=ATOM tail={ op={'\*' | '/'} at=ATOM }*;
+ * ATOM ::= val=INT | '\(' val=SUM '\)';
+ * INT  ::= val='[0-9]+';
  */
 
 type Nullable<T> = T | null;
+
+interface Visitable {
+    accept<T>(visitor : Visitor<T>) : T;
+}
 
 interface ASTNodeIntf {
     kind: ASTKinds;
 }
 
-enum ASTKinds {
+export enum ASTKinds {
     StrMatch,
     Int,
     Atom_1, Atom_2,
@@ -21,9 +25,9 @@ enum ASTKinds {
     Sum, Sum$1, Sum$1$1,
 }
 
-type ASTNode = Int | Atom | Fac | Sum;
+export type ASTNode = Int | Atom | Fac | Sum;
 
-class StrMatch implements ASTNodeIntf {
+export class StrMatch implements ASTNodeIntf {
     kind: ASTKinds.StrMatch = ASTKinds.StrMatch;
     match : string;
     constructor(val : string){
@@ -31,7 +35,7 @@ class StrMatch implements ASTNodeIntf {
     }
 }
 
-class Int implements ASTNodeIntf, Visitable {
+export class Int implements ASTNodeIntf, Visitable {
     kind : ASTKinds.Int = ASTKinds.Int;
     val : StrMatch;
     constructor(val : StrMatch) {
@@ -42,7 +46,7 @@ class Int implements ASTNodeIntf, Visitable {
     }
 }
 
-class Atom_1 implements ASTNodeIntf, Visitable {
+export class Atom_1 implements ASTNodeIntf, Visitable {
     kind : ASTKinds.Atom_1 = ASTKinds.Atom_1;
     val : Int;
     constructor(val : Int) {
@@ -53,7 +57,7 @@ class Atom_1 implements ASTNodeIntf, Visitable {
     }
 }
 
-class Atom_2 implements ASTNodeIntf, Visitable {
+export class Atom_2 implements ASTNodeIntf, Visitable {
     kind : ASTKinds.Atom_2 = ASTKinds.Atom_2;
     val : Sum;
     constructor(val : Sum) {
@@ -64,9 +68,9 @@ class Atom_2 implements ASTNodeIntf, Visitable {
     }
 }
 
-type Atom = Atom_1 | Atom_2
+export type Atom = Atom_1 | Atom_2
 
-class Fac implements ASTNodeIntf, Visitable {
+export class Fac implements ASTNodeIntf, Visitable {
     kind : ASTKinds.Fac = ASTKinds.Fac;
     head : Atom;
     tail : Fac$1[];
@@ -79,7 +83,7 @@ class Fac implements ASTNodeIntf, Visitable {
     }
 }
 
-class Fac$1 implements ASTNodeIntf {
+export class Fac$1 implements ASTNodeIntf {
     kind : ASTKinds.Fac$1 = ASTKinds.Fac$1;
     op: Fac$1$1;
     at: Atom;
@@ -89,9 +93,9 @@ class Fac$1 implements ASTNodeIntf {
     }
 }
 
-type Fac$1$1 = StrMatch | StrMatch;
+export type Fac$1$1 = StrMatch | StrMatch;
 
-class Sum implements ASTNodeIntf, Visitable {
+export class Sum implements ASTNodeIntf, Visitable {
     kind : ASTKinds.Sum = ASTKinds.Sum;
     head : Fac;
     tail : Sum$1[];
@@ -104,7 +108,7 @@ class Sum implements ASTNodeIntf, Visitable {
     }
 }
 
-class Sum$1 implements ASTNodeIntf {
+export class Sum$1 implements ASTNodeIntf {
     kind : ASTKinds.Sum$1 = ASTKinds.Sum$1;
     op: Sum$1$1;
     sm: Fac;
@@ -114,16 +118,16 @@ class Sum$1 implements ASTNodeIntf {
     }
 }
 
-type Sum$1$1 = StrMatch | StrMatch;
+export type Sum$1$1 = StrMatch | StrMatch;
 
-class Parser {
+export class Parser {
     private pos : number = 0;
     readonly input : string;
     constructor(input : string) {
         this.input = input;
     }
 
-    mark() : number {
+    private mark() : number {
         return this.pos;
     }
 
@@ -135,7 +139,7 @@ class Parser {
         return this.pos == this.input.length;
     }
 
-    loop<T>(func : () => T | null, star : boolean = false) : Nullable<T[]> {
+    private loop<T>(func : () => T | null, star : boolean = false) : Nullable<T[]> {
         const mrk = this.mark();
         let res : T[] = [];
         for(;;) {
@@ -150,7 +154,7 @@ class Parser {
         return null;
     }
 
-    regexAccept(match : string) : Nullable<StrMatch> {
+    private regexAccept(match : string) : Nullable<StrMatch> {
         var reg = new RegExp(match, 'y');
         const mrk = this.mark();
         reg.lastIndex = mrk;
@@ -162,6 +166,8 @@ class Parser {
         this.reset(mrk);
         return null;
     }
+
+    parse = this.matchSum;
 
     matchInt() : Nullable<Int> {
         const val = this.regexAccept(String.raw`[0-9]+`);
@@ -181,9 +187,9 @@ class Parser {
             let $1 : Nullable<StrMatch>;
             let val : Nullable<Sum>;
             let $2 : Nullable<StrMatch>;
-            if(($1 = this.regexAccept(String.raw`(`))
+            if(($1 = this.regexAccept(String.raw`\(`))
                 && (val = this.matchSum())
-                && ($2 = this.regexAccept(String.raw`)`)))
+                && ($2 = this.regexAccept(String.raw`\)`)))
                 return new Atom_2(val);
         }
         return null;
@@ -191,7 +197,7 @@ class Parser {
 
     matchFac$1$1() : Nullable<Fac$1$1> {
         {
-            const res = this.regexAccept(String.raw`*`);
+            const res = this.regexAccept(String.raw`\*`);
             if(res)
                 return res;
         }
@@ -231,7 +237,7 @@ class Parser {
 
     matchSum$1$1() : Nullable<Sum$1$1> {
         {
-            const res = this.regexAccept(String.raw`+`);
+            const res = this.regexAccept(String.raw`\+`);
             if(res)
                 return res;
         }
@@ -284,48 +290,10 @@ class Parser {
      */
 }
 
-interface Visitor<T> {
+export interface Visitor<T> {
     visitInt(i : Int) : T;
     visitSum(sum : Sum) : T;
     visitAtom_1(at : Atom_1) : T;
     visitAtom_2(at : Atom_2) : T;
     visitFac(fac : Fac) : T;
-}
-
-interface Visitable {
-    accept<T>(visitor : Visitor<T>) : T;
-}
-
-class EvVis implements Visitor<number> {
-    visitInt(i : Int) : number {
-        return parseInt(i.val.match);
-    }
-
-    visitAtom_1(at : Atom_1) : number {
-        return at.val.accept(this);
-    }
-
-    visitAtom_2(at : Atom_2) : number {
-        return at.val.accept(this);
-    }
-
-    visitSum(sum : Sum) : number {
-        const x = sum.head.accept(this);
-        return sum.tail.reduce((res, cur) : number => {
-            const val = cur.sm.accept(this);
-            if(cur.op.match === '+')
-                return res + val;
-            return res - val;
-        }, x);
-    }
-
-    visitFac(fac : Fac) : number {
-        const x = fac.head.accept(this);
-        return fac.tail.reduce((res, cur) : number => {
-            const val = cur.at.accept(this);
-            if(cur.op.match === '*')
-                return res * val;
-            return res / val;
-        }, x);
-    }
 }
