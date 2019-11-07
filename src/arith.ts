@@ -62,6 +62,18 @@ class Lexer {
 
 type Nullable<T> = T | null;
 
+interface Visitor<T> {
+    visitInt(i : Int) : T;
+    visitSum(sum : Sum) : T;
+    visitAtom_1(at : Atom_1) : T;
+    visitAtom_2(at : Atom_2) : T;
+    visitFac(fac : Fac) : T;
+}
+
+interface Visitable {
+    accept<T>(visitor : Visitor<T>) : T;
+}
+
 interface ASTNode {
     kind: ASTKinds;
 }
@@ -73,39 +85,51 @@ enum ASTKinds {
     Sum, Sum$1, Sum$1$1,
 }
 
-class Int implements ASTNode {
+class Int implements ASTNode, Visitable {
     kind: ASTKinds.Int = ASTKinds.Int;
     val : string[];
     constructor(val : string[]) {
         this.val = val;
     }
+    accept<T>(visitor : Visitor<T>) : T {
+        return visitor.visitInt(this);
+    }
 }
 
-class Atom_1 implements ASTNode {
+class Atom_1 implements ASTNode, Visitable {
     kind: ASTKinds.Atom_1 = ASTKinds.Atom_1;
     val : Int;
     constructor(val : Int) {
         this.val = val;
     }
+    accept<T>(visitor : Visitor<T>) : T {
+        return visitor.visitAtom_1(this);
+    }
 }
 
-class Atom_2 implements ASTNode {
+class Atom_2 implements ASTNode, Visitable {
     kind: ASTKinds.Atom_2 = ASTKinds.Atom_2;
     val : Sum;
     constructor(val : Sum) {
         this.val = val;
     }
+    accept<T>(visitor : Visitor<T>) : T {
+        return visitor.visitAtom_2(this);
+    }
 }
 
 type Atom = Atom_1 | Atom_2
 
-class Fac implements ASTNode {
+class Fac implements ASTNode, Visitable {
     kind: ASTKinds.Fac = ASTKinds.Fac;
     head : Atom;
     tail : Fac$1[];
     constructor(head : Atom, tail : Fac$1[]){
         this.head = head;
         this.tail = tail;
+    }
+    accept<T>(visitor : Visitor<T>) : T {
+        return visitor.visitFac(this);
     }
 }
 
@@ -121,13 +145,16 @@ class Fac$1 implements ASTNode {
 
 type Fac$1$1 = '*' | '/';
 
-class Sum implements ASTNode {
+class Sum implements ASTNode, Visitable {
     kind: ASTKinds.Sum = ASTKinds.Sum;
     head : Fac;
     tail : Sum$1[];
     constructor(head : Fac, tail :Sum$1[]){
         this.head = head;
         this.tail = tail;
+    }
+    accept<T>(visitor : Visitor<T>) : T {
+        return visitor.visitSum(this);
     }
 }
 
@@ -334,4 +361,41 @@ class Parser {
      *            | nm=NAME
      *            | '{' ALTS '}'
      */
+}
+
+class EvVis implements Visitor<number> {
+    visitInt(i : Int) : number {
+        let x = 0;
+        for(let v of i.val)
+            x = 10 * x + parseInt(v);
+        return x;
+    }
+
+    visitAtom_1(at : Atom_1) : number {
+        return at.val.accept(this);
+    }
+
+    visitAtom_2(at : Atom_2) : number {
+        return at.val.accept(this);
+    }
+
+    visitSum(sum : Sum) : number {
+        const x = sum.head.accept(this);
+        return sum.tail.reduce((res, cur) : number => {
+            const val = cur.sm.accept(this);
+            if(cur.op === '+')
+                return res + val;
+            return res - val;
+        }, x);
+    }
+
+    visitFac(fac : Fac) : number {
+        const x = fac.head.accept(this);
+        return fac.tail.reduce((res, cur) : number => {
+            const val = cur.at.accept(this);
+            if(cur.op === '*')
+                return res * val;
+            return res / val;
+        }, x);
+    }
 }
