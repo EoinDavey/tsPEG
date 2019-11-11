@@ -9,8 +9,14 @@
 
 type Nullable<T> = T | null;
 
+type Rule<T> = (log? : (msg : string) => void) => Nullable<T>;
+
 interface Visitable {
     accept<T>(visitor : Visitor<T>) : T;
+}
+
+export interface ContextRecorder {
+    record(kind: ASTKinds, pos: number, result: Nullable<ASTNode>, extraInfo : string[]) : void;
 }
 
 interface ASTNodeIntf {
@@ -116,10 +122,6 @@ export class Sum$1 implements ASTNodeIntf {
     }
 }
 
-interface ContextRecorder {
-    record(pos: number, result: Nullable<ASTNode>) : void;
-}
-
 export class Parser {
     private pos : number = 0;
     readonly input : string;
@@ -154,58 +156,76 @@ export class Parser {
         return null;
     }
 
-    private regexAccept(match : string, cr? : ContextRecorder) : Nullable<StrMatch> {
-        return this.run(() => {
-            var reg = new RegExp(match, 'y');
-            reg.lastIndex = this.mark();
-            const res = reg.exec(this.input);
-            if(res){
-                this.pos = reg.lastIndex;
-                return new StrMatch(res[0]);
-            }
-            return null;
-        }, cr);
-    }
-
-    private run<T extends ASTNode>(fn : ()=> Nullable<T>,
+    private run<T extends ASTNode>(kind: ASTKinds, fn : Rule<T>,
         cr : ContextRecorder | undefined) : Nullable<T> {
         const mrk = this.mark();
-        const res = fn();
-        if(cr)
-            cr.record(mrk, res);
+        const res = cr ? (()=>{
+            let extraInfo : string[] = [];
+            const res = fn((msg : string) => extraInfo.push(msg));
+            cr.record(kind, mrk, res, extraInfo);
+            return res;
+        })() : fn();
         if(res)
             return res;
         this.reset(mrk);
         return null
     }
 
-    private choice<T extends ASTNode>(cr : ContextRecorder | undefined,
-        fns : (() => Nullable<T>)[]) : Nullable<T> {
-        for(let f of fns){
-            const res = this.run(f, cr);
+    private choice<T extends ASTNode>(kinds : ASTKinds[], cr : ContextRecorder | undefined,
+        fns : Rule<T>[]) : Nullable<T> {
+        for(let i = 0; i < fns.length; i++){
+            const res = this.run<T>(kinds[i], fns[i], cr);
             if(res)
                 return res;
         }
         return null;
     }
 
-    parse = this.matchSum;
+    private regexAccept(match : string, cr? : ContextRecorder) : Nullable<StrMatch> {
+        return this.run<StrMatch>(ASTKinds.StrMatch,
+            (log) => {
+                if(log)
+                    log(match);
+                var reg = new RegExp(match, 'y');
+                reg.lastIndex = this.mark();
+                const res = reg.exec(this.input);
+                if(res){
+                    this.pos = reg.lastIndex;
+                    return new StrMatch(res[0]);
+                }
+                return null;
+            }, cr);
+    }
+
+    parse() : ParseResult {
+        const mrk = this.mark();
+        const res = this.matchSum();
+        if(res && this.finished())
+            return new ParseResult(res, null);
+        this.reset(mrk);
+        const rec = new ErrorTracker();
+        this.matchSum(rec);
+        return new ParseResult(res, rec.getErr());
+    }
 
     matchInt(cr? : ContextRecorder) : Nullable<Int> {
-        return this.choice<Int>(cr, [
+        return this.run<Int>(
+            ASTKinds.Int,
             ()=> {
                 let val : Nullable<StrMatch> = null;
                 let res : Nullable<Int> = null;
                 if((val = this.regexAccept(String.raw`[0-9]+`, cr)))
                     res = new Int(val);
                 return res;
-            }
-        ]);
+            },
+            cr);
     }
 
     matchAtom(cr? : ContextRecorder) : Nullable<Atom> {
-        return this.choice<Atom>(cr, [
-            () => {
+        return this.choice<Atom>(
+            [ASTKinds.Atom_1, ASTKinds.Atom_2],
+            cr,
+            [() => {
                 let x : Nullable<Int>;
                 let res : Nullable<Atom> = null;
                 if((x = this.matchInt(cr)))
@@ -222,40 +242,39 @@ export class Parser {
                     && ($2 = this.regexAccept(String.raw`\)`, cr)))
                     res = new Atom_2(val);
                 return res;
-            }
-        ]);
+            }]);
     }
 
     matchFac$1(cr? : ContextRecorder) : Nullable<Fac$1> {
-        return this.choice<Fac$1>(cr, [
+        return this.run<Fac$1>(ASTKinds.Fac$1,
             () => {
                 let op : Nullable<StrMatch>;
                 let at : Nullable<Atom>;
                 let res : Nullable<Fac$1> = null;
                 if((op = this.regexAccept(String.raw`\*|/`, cr))
-                    && (at = this.matchAtom()))
+                    && (at = this.matchAtom(cr)))
                     res = new Fac$1(op, at);
                 return res;
             },
-        ]);
+            cr);
     }
 
     matchFac(cr? : ContextRecorder) : Nullable<Fac> {
-        return this.choice<Fac>(cr, [
+        return this.run<Fac>(ASTKinds.Fac,
             () => {
                 let head : Nullable<Atom>;
                 let tail : Nullable<Fac$1[]>;
                 let res : Nullable<Fac> = null;
-                if((head = this.matchAtom())
+                if((head = this.matchAtom(cr))
                     && (tail = this.loop<Fac$1>(() => this.matchFac$1(cr), true)))
                     res = new Fac(head, tail);
                 return res;
-            }
-        ]);
+            } ,
+            cr);
     }
 
     matchSum$1(cr? : ContextRecorder) : Nullable<Sum$1> {
-        return this.choice<Sum$1>(cr, [
+        return this.run<Sum$1>(ASTKinds.Sum$1,
             () => {
                 let op : Nullable<StrMatch>;
                 let sm : Nullable<Fac>;
@@ -265,11 +284,11 @@ export class Parser {
                     res = new Sum$1(op, sm);
                 return res;
             },
-        ]);
+            cr);
     }
 
     matchSum(cr? : ContextRecorder) : Nullable<Sum> {
-        return this.choice<Sum>(cr, [
+        return this.run<Sum>(ASTKinds.Sum,
             () => {
                 let head : Nullable<Fac>;
                 let tail : Nullable<Sum$1[]>;
@@ -279,7 +298,7 @@ export class Parser {
                     res = new Sum(head, tail);
                 return res;
             }, 
-        ]);
+            cr);
     }
 
     /* 
@@ -303,4 +322,49 @@ export interface Visitor<T> {
     visitAtom_1(at : Atom_1) : T;
     visitAtom_2(at : Atom_2) : T;
     visitFac(fac : Fac) : T;
+}
+
+export class ParseResult {
+    ast : Nullable<Visitable>;
+    err : Nullable<SyntaxErr>;
+    constructor(ast : Nullable<Visitable>, err : Nullable<SyntaxErr>){
+        this.ast = ast;
+        this.err = err;
+    }
+}
+
+export class SyntaxErr {
+    pos : number;
+    exp : string[];
+    constructor(pos : number, exp : string[]){
+        this.pos = pos;
+        this.exp = exp;
+    }
+
+    toString() : string {
+        return `Syntax Error at position ${this.pos}, expected one of ${this.exp.map(x => ` '${x}'`)}`;
+    }
+}
+
+class ErrorTracker implements ContextRecorder {
+    mxd : number | undefined;
+    pmatches: string[] = [];
+
+    record(kind: ASTKinds, pos : number, result : Nullable<ASTNode>, extraInfo : string[]){
+        if(kind === ASTKinds.StrMatch && result === null) {
+            if(this.mxd && this.mxd > pos)
+                return;
+            if(!this.mxd || this.mxd < pos){
+                this.mxd = pos;
+                this.pmatches = [];
+            }
+            this.pmatches.push(...extraInfo);
+        }
+    }
+
+    getErr() : SyntaxErr | null {
+        if(this.mxd)
+            return new SyntaxErr(this.mxd, this.pmatches);
+        return null;
+    }
 }

@@ -3,8 +3,9 @@ import * as Parser from './arith';
 export function evaluate(input : string) : number | null {
     const p = new Parser.Parser(input);
     const tree = p.parse();
-    if(tree)
-        return tree.accept(EvVis);
+    if(tree.err === null && tree.ast)
+        return tree.ast.accept(EvVis);
+    console.log('' + tree.err);
     return null;
 }
 
