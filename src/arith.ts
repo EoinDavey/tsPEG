@@ -16,7 +16,7 @@ interface Visitable {
 }
 
 export interface ContextRecorder {
-    record(kind: ASTKinds, pos: number, result: Nullable<ASTNode>, extraInfo : string[]) : void;
+    record(pos: number, result: Nullable<ASTNode>, info : string[]) : void;
 }
 
 interface ASTNodeIntf {
@@ -25,13 +25,32 @@ interface ASTNodeIntf {
 
 export enum ASTKinds {
     StrMatch,
-    Int,
+    Sum, Sum$1, Sum$1$rep, 
+    Fac, Fac$1, Fac$1$rep,
     Atom_1, Atom_2,
-    Fac, Fac$1,
-    Sum, Sum$1, 
+    Int,
 }
 
-export type ASTNode = StrMatch | Int | Atom | Fac | Fac$1 | Sum | Sum$1;
+function tst(at : ASTNode){
+    if(at.kind === ASTKinds.StrMatch)
+        console.log(at.match);
+}
+
+export type ASTNode = StrMatch | Int | Atom | Fac | Fac$1 | Sum | Sum$1 | Sum$1$rep | Fac$1$rep;
+
+export class Sum$1$rep extends Array implements ASTNodeIntf {
+    kind : ASTKinds.Sum$1$rep = ASTKinds.Sum$1$rep;
+    static from(ar : ArrayLike<Sum$1>) : Sum$1$rep {
+        return super.from(ar) as Sum$1$rep;
+    }
+}
+
+export class Fac$1$rep extends Array implements ASTNodeIntf {
+    kind : ASTKinds.Fac$1$rep = ASTKinds.Fac$1$rep;
+    static from(ar : ArrayLike<Fac$1>) : Fac$1$rep {
+        return super.from(ar) as Fac$1$rep;
+    }
+}
 
 export class StrMatch implements ASTNodeIntf {
     kind: ASTKinds.StrMatch = ASTKinds.StrMatch;
@@ -102,8 +121,8 @@ export class Fac$1 implements ASTNodeIntf {
 export class Sum implements ASTNodeIntf, Visitable {
     kind : ASTKinds.Sum = ASTKinds.Sum;
     head : Fac;
-    tail : Sum$1[];
-    constructor(head : Fac, tail :Sum$1[]){
+    tail : Sum$1$rep;
+    constructor(head : Fac, tail :Sum$1$rep){
         this.head = head;
         this.tail = tail;
     }
@@ -156,14 +175,13 @@ export class Parser {
         return null;
     }
 
-    private runner<T extends ASTNode>(kind: ASTKinds, fn : Rule<T>,
-        cr? : ContextRecorder) : Rule<T> {
+    private runner<T extends ASTNode>(fn : Rule<T>, cr? : ContextRecorder) : Rule<T> {
         return () => {
             const mrk = this.mark();
             const res = cr ? (()=>{
                 let extraInfo : string[] = [];
                 const res = fn((msg : string) => extraInfo.push(msg));
-                cr.record(kind, mrk, res, extraInfo);
+                cr.record(mrk, res, extraInfo);
                 return res;
             })() : fn();
             if(res)
@@ -183,7 +201,7 @@ export class Parser {
     }
 
     private regexAccept(match : string, cr? : ContextRecorder) : Nullable<StrMatch> {
-        return this.runner<StrMatch>(ASTKinds.StrMatch,
+        return this.runner<StrMatch>(
             (log) => {
                 if(log)
                     log(match);
@@ -211,7 +229,6 @@ export class Parser {
 
     matchInt(cr? : ContextRecorder) : Nullable<Int> {
         return this.runner<Int>(
-            ASTKinds.Int,
             ()=> {
                 let val : Nullable<StrMatch> = null;
                 let res : Nullable<Int> = null;
@@ -224,14 +241,14 @@ export class Parser {
 
     matchAtom(cr? : ContextRecorder) : Nullable<Atom> {
         return this.choice<Atom>(
-            [this.runner(ASTKinds.Atom_1, () => {
+            [this.runner(() => {
                 let x : Nullable<Int>;
                 let res : Nullable<Atom> = null;
                 if((x = this.matchInt(cr)))
                     res = new Atom_1(x);
                 return res;
             }, cr),
-            this.runner(ASTKinds.Atom_2, () => {
+            this.runner(() => {
                 let $1 : Nullable<StrMatch>;
                 let val : Nullable<Sum>;
                 let $2 : Nullable<StrMatch>;
@@ -245,7 +262,7 @@ export class Parser {
     }
 
     matchFac$1(cr? : ContextRecorder) : Nullable<Fac$1> {
-        return this.runner<Fac$1>(ASTKinds.Fac$1,
+        return this.runner<Fac$1>(
             () => {
                 let op : Nullable<StrMatch>;
                 let at : Nullable<Atom>;
@@ -259,7 +276,7 @@ export class Parser {
     }
 
     matchFac(cr? : ContextRecorder) : Nullable<Fac> {
-        return this.runner<Fac>(ASTKinds.Fac,
+        return this.runner<Fac>(
             () => {
                 let head : Nullable<Atom>;
                 let tail : Nullable<Fac$1[]>;
@@ -273,7 +290,7 @@ export class Parser {
     }
 
     matchSum$1(cr? : ContextRecorder) : Nullable<Sum$1> {
-        return this.runner<Sum$1>(ASTKinds.Sum$1,
+        return this.runner<Sum$1>(
             () => {
                 let op : Nullable<StrMatch>;
                 let sm : Nullable<Fac>;
@@ -287,17 +304,45 @@ export class Parser {
     }
 
     matchSum(cr? : ContextRecorder) : Nullable<Sum> {
-        return this.runner<Sum>(ASTKinds.Sum,
+        return this.runner<Sum>(
             () => {
                 let head : Nullable<Fac>;
-                let tail : Nullable<Sum$1[]>;
+                let tail : Nullable<Sum$1$rep>;
                 let res : Nullable<Sum> = null;
                 if((head = this.matchFac(cr))
-                    && (tail = this.loop<Sum$1>(() => this.matchSum$1(cr), true)))
+                    && (tail = this.matchSum$1$rep(true, cr)))
                     res = new Sum(head, tail);
                 return res;
             }, 
             cr)();
+    }
+
+    matchFac$1$rep(star : boolean, cr? : ContextRecorder) : Nullable<Fac$1$rep> {
+        return this.choice<Fac$1$rep>([
+            this.runner<Fac$1$rep>(
+                () => {
+                    let body : Nullable<Fac$1[]>;
+                    let res : Nullable<Fac$1$rep> = null;
+                    if((body = this.loop<Fac$1>(() => this.matchFac$1(cr), star)))
+                        res = Fac$1$rep.from(body);
+                    return res;
+                },
+            cr),
+        ]);
+    }
+
+    matchSum$1$rep(star : boolean, cr? : ContextRecorder) : Nullable<Sum$1$rep> {
+        return this.choice<Sum$1$rep>([
+            this.runner<Sum$1$rep>(
+                () => {
+                    let body : Nullable<Sum$1[]>;
+                    let res : Nullable<Sum$1$rep> = null;
+                    if((body = this.loop<Sum$1>(() => this.matchSum$1(cr), star)))
+                        res = Sum$1$rep.from(body);
+                    return res;
+                },
+            cr),
+        ]);
     }
 }
 
@@ -335,15 +380,15 @@ class ErrorTracker implements ContextRecorder {
     mxd : number | undefined;
     pmatches: string[] = [];
 
-    record(kind: ASTKinds, pos : number, result : Nullable<ASTNode>, extraInfo : string[]){
-        if(kind === ASTKinds.StrMatch && result === null) {
+    record(pos : number, result : Nullable<ASTNode>, info : string[]){
+        if(result === null) {
             if(this.mxd && this.mxd > pos)
                 return;
             if(!this.mxd || this.mxd < pos){
                 this.mxd = pos;
                 this.pmatches = [];
             }
-            this.pmatches.push(...extraInfo);
+            this.pmatches.push(...info);
         }
     }
 
