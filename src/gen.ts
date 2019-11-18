@@ -222,6 +222,6 @@ export function buildParser(s : string) : string {
     if(!res.ast)
         throw 'No AST found';
     const gram = AST2Gram(res.ast);
-    return expandTemplate(writeKinds(gram), writeRuleClasses(gram),
+    return expandTemplate(s, writeKinds(gram), writeRuleClasses(gram),
         writeRuleParseFns(gram), writeParseResultClass(gram));
 }

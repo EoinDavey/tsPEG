@@ -1,8 +1,8 @@
-export function expandTemplate(kinds : string, ruleClasses : string, ruleParseFns : string,
+export function expandTemplate(input: string, kinds : string, ruleClasses : string, ruleParseFns : string,
     parseResult : string){ 
-    return `
-/* 
- */
+    return `/* INPUT GRAMMAR:
+${input.split(/\r?\n/).filter(x => x!='').map(x => '* ' + x).join('\n')}
+*/
 
 type Nullable<T> = T | null;
 
@@ -145,5 +145,4 @@ class ErrorTracker implements ContextRecorder {
             return new SyntaxErr(this.mxd, this.pmatches);
         return null;
     }
-}
-`;}
+}`;}

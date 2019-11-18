@@ -1,6 +1,19 @@
-
-/* 
- */
+/* INPUT GRAMMAR:
+* GRAM      := head=RULEDEF tail=GRAM
+*            | def=RULEDEF;
+* RULEDEF   := _ name=NAME '\s*:=\s*' rule=RULE '\s*;\s*';
+* RULE      := head=ALT '\s*\|\s*' tail=RULE
+*            | alt=ALT;
+* ALT       := head=MATCHSPEC _ tail=ALT
+*            | mtch=MATCHSPEC;
+* MATCHSPEC := name=NAME '=' rule=ATOM
+*            | rule=ATOM;
+* ATOM      := name=NAME
+*            | match=STRLIT;
+* NAME      := val='[a-zA-Z_]+';
+* STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\'';
+* _         := '\s*';
+*/
 
 type Nullable<T> = T | null;
 
