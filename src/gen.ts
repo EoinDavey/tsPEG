@@ -2,20 +2,7 @@ import { Parser, ASTKinds, ASTNode, GRAM, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, N
 
 import { expandTemplate } from './template';
 
-export const STR = String.raw`GRAM      := head=RULEDEF tail=GRAM
-           | def=RULEDEF;
-RULEDEF   := _ name=NAME '\s*:=\s*' rule=RULE '\s*;\s*';
-RULE      := head=ALT '\s*\|\s*' tail=RULE
-           | alt=ALT;
-ALT       := head=MATCHSPEC _ tail=ALT
-           | mtch=MATCHSPEC;
-MATCHSPEC := name=NAME '=' rule=ATOM
-           | rule=ATOM;
-ATOM      := name=NAME
-           | match=STRLIT;
-NAME      := val='[a-zA-Z_]+';
-STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\'';
-_         := '\s*';`;
+import { Block, indentBlock, writeBlock } from './util';
 
 function compressAST<T, K>(st : T, gt : (x : T) => K, next : (x : T) => T) : K[] {
     let v : T  = st;
@@ -64,7 +51,7 @@ function AST2Gram(g : GRAM) : Grammar {
     return compressGRAM(g).map(def => new Ruledef(def));
 }
 
-function writeKinds(gram : Grammar) : string {
+function writeKinds(gram : Grammar) : Block {
     let astKinds = ["$$StrMatch"];
     for(let ruledef of gram) {
         const nm = ruledef.name;
@@ -74,13 +61,14 @@ function writeKinds(gram : Grammar) : string {
             astKinds.push(nm + md);
         }
     }
-    const kinds = `export enum ASTKinds {
-${astKinds.map(x=>'  '+x).join(',\n')}
-}`;
-    return kinds;
+    return [
+        'export enum ASTKinds {',
+        astKinds.map(x => x + ','),
+        '}',
+    ];
 }
 
-function writeChoice(name : string, alt : Alt) : string {
+function writeChoice(name : string, alt : Alt) : Block {
     let namedTypes : [string, string][] = [];
     for(let match of alt) {
         if(match.kind === ASTKinds.MATCHSPEC_1){
@@ -88,55 +76,62 @@ function writeChoice(name : string, alt : Alt) : string {
             namedTypes.push([match.name.val.match, at.kind === ASTKinds.ATOM_1 ? at.name.val.match : '$$StrMatch']);
         }
     }
-    return `export class ${name} implements ASTNodeIntf {
-    kind : ASTKinds.${name} = ASTKinds.${name};
-${namedTypes.map(x => `    ${x[0]} : ${x[1]};`).join('\n')}
-    constructor(${namedTypes.map(x => `${x[0]} : ${x[1]}`).join(',')}){
-${namedTypes.map(x => `        this.${x[0]} = ${x[0]};`).join('\n')}
-    }
-}`;
+    const blk : Block = [
+        `export class ${name} implements ASTNodeIntf {`,
+        [
+            `kind : ASTKinds.${name} = ASTKinds.${name};`,
+            ...namedTypes.map(x => `${x[0]} : ${x[1]};`),
+            `constructor(${namedTypes.map(x => `${x[0]} : ${x[1]}`).join(',')}){`,
+            namedTypes.map(x => `this.${x[0]} = ${x[0]};`),
+            '}'
+        ],
+        '}',
+    ]
+    return blk;
+
 }
 
-function writeRuleClass(ruledef : Ruledef) : string {
+function writeRuleClass(ruledef : Ruledef) : Block {
     const nm = ruledef.name;
     let union : string[] = [];
-    let choices : string[] = [];
+    let choices : Block = [];
     for(let i = 0; i < ruledef.rule.length; i++) {
         const md = nm + (ruledef.rule.length == 1 ? "" : `_${i+1}`);
-        choices.push(writeChoice(md, ruledef.rule[i]));
+        choices.push(...writeChoice(md, ruledef.rule[i]));
         union.push(md);
     }
-    let typedef = ruledef.rule.length > 1 ? `export type ${nm} = ${union.join(' | ')};` : '';
-    return [typedef, ...choices].join('\n');
+    const typedef = ruledef.rule.length > 1 ? `export type ${nm} = ${union.join(' | ')};` : '';
+    return [typedef, ...choices];
 }
 
-function writeRuleClasses(gram : Grammar) : string {
+function writeRuleClasses(gram : Grammar) : Block {
     let types : string[] = [];
-    let rules : string[] = [];
+    let rules : Block = [];
     for(let ruledef of gram) {
         types.push(ruledef.name);
-        rules.push(writeRuleClass(ruledef));
+        rules.push(...writeRuleClass(ruledef));
     }
-    return `export type ASTNode = $$StrMatch | ${types.join(' | ')};
-${rules.join('\n')}
-`;
+    return [
+        `export type ASTNode = $$StrMatch | ${types.join(' | ')};`,
+        ...rules
+    ];
 }
 
-function writeParseIfStmt(alt : Alt) : string {
+function writeParseIfStmt(alt : Alt) : Block {
     let checks : string[] = [];
     for(let match of alt) {
         const at = match.rule;
         const rn = at.kind === ASTKinds.ATOM_1 ?
             `this.match${at.name.val.match}(cr)` : `this.regexAccept(String.raw\`${at.match.val.match}\`, cr)`;
         if(match.kind === ASTKinds.MATCHSPEC_1)
-            checks.push(`\t\t&& (${match.name.val.match} = ${rn})`);
+            checks.push(`&& (${match.name.val.match} = ${rn})`);
         else
-            checks.push(`\t\t&& ${rn}`);
+            checks.push(`&& ${rn}`);
     }
-    return checks.join('\n');
+    return checks;
 }
 
-function writeChoiceParseFn(name : string, alt : Alt) : string {
+function writeChoiceParseFn(name : string, alt : Alt) : Block {
     let namedTypes : [string, string][] = [];
     let unnamedTypes : string[] = [];
     for(let match of alt) {
@@ -148,70 +143,88 @@ function writeChoiceParseFn(name : string, alt : Alt) : string {
             unnamedTypes.push(rn);
         }
     }
-    return `    match${name}(cr? : ContextRecorder) : Nullable<${name}> {
-        return this.runner<${name}>(
-            () => {
-${namedTypes.map(x => `            let ${x[0]} : Nullable<${x[1]}>;`).join('\n')}
-                let res : Nullable<${name}> = null;
-                if(true
-${writeParseIfStmt(alt)}
-                )
-                    res = new ${name}(${namedTypes.map(x => x[0]).join(', ')});
-                return res;
-        },
-        cr)();
-    }`;
+    return [
+        `match${name}(cr? : ContextRecorder) : Nullable<${name}> {`,
+        [
+            `return this.runner<${name}>(`,
+            [
+                `() => {`,
+                [
+                    ...namedTypes.map(x => `let ${x[0]} : Nullable<${x[1]}>;`),
+                    `let res : Nullable<${name}> = null;`,
+                    'if(true',
+                    writeParseIfStmt(alt),
+                    ')',
+                    [
+                        `res = new ${name}(${namedTypes.map(x => x[0]).join(', ')});`,
+                    ],
+                    'return res;'
+                ],
+                '}, cr)();'
+            ],
+        ],
+        '}'
+    ];
 }
 
-function writeRuleParseFn(ruledef : Ruledef) : string {
+function writeRuleParseFn(ruledef : Ruledef) : Block {
     const nm = ruledef.name;
-    let choices : string[] = [];
+    let choices : Block = [];
     let nms : string[] = [];
     for(let i = 0; i < ruledef.rule.length; i++) {
         const md = nm + (ruledef.rule.length == 1 ? "" : `_${i+1}`);
         nms.push(md);
-        choices.push(writeChoiceParseFn(md, ruledef.rule[i]));
+        choices.push(...writeChoiceParseFn(md, ruledef.rule[i]));
     }
-    const union = choices.length <= 1 ? ''
-        : `    match${nm}(cr? : ContextRecorder) : Nullable<${nm}> {
-        return this.choice<${nm}>([
-${nms.map(x => `        () => { return this.match${x}(cr) }`).join(',\n')}
-        ]);
-    }
-`;
-    return union + choices.join('\n');
+    const union = ruledef.rule.length <= 1 ? []
+        : [`match${nm}(cr? : ContextRecorder) : Nullable<${nm}> {`,
+            [
+                `return this.choice<${nm}>([`,
+                nms.map(x => `() => { return this.match${x}(cr) },`),
+                `]);`
+            ],
+            `}`];
+    return [...union, ...choices];
 }
 
-function writeRuleParseFns(gram : Grammar) : string {
-    let fns : string[] = [];
+function writeRuleParseFns(gram : Grammar) : Block {
+    let fns : Block = [];
     for(let ruledef of gram) {
-        fns.push(writeRuleParseFn(ruledef));
+        fns.push(...writeRuleParseFn(ruledef));
     }
     const S : string = gram[0].name;
-    return fns.join('\n') + `
-    parse() : ParseResult {
-        const mrk = this.mark();
-        const res = this.match${S}();
-        if(res && this.finished())
-            return new ParseResult(res, null);
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.match${S}(rec);
-        return new ParseResult(res, rec.getErr());
-    }`;
+    return [...fns,
+        'parse() : ParseResult {',
+        [
+            'const mrk = this.mark();',
+            `const res = this.match${S}();`,
+            'if(res && this.finished())',
+            '    return new ParseResult(res, null);',
+            'this.reset(mrk);',
+            'const rec = new ErrorTracker();',
+            `this.match${S}(rec);`,
+            'return new ParseResult(res, rec.getErr());'
+        ],
+        '}'
+    ];
 }
 
-function writeParseResultClass(gram : Grammar) : string {
+function writeParseResultClass(gram : Grammar) : Block {
     const head = gram[0];
     const startname = head.name;
-    return `export class ParseResult {
-    ast : Nullable<${startname}>;
-    err : Nullable<SyntaxErr>;
-    constructor(ast : Nullable<${startname}>, err : Nullable<SyntaxErr>){
-        this.ast = ast;
-        this.err = err;
-    }
-}`;
+    return ['export class ParseResult {',
+        [
+            `ast : Nullable<${startname}>;`,
+            'err : Nullable<SyntaxErr>;',
+            `constructor(ast : Nullable<${startname}>, err : Nullable<SyntaxErr>){`,
+            [
+                'this.ast = ast;',
+                'this.err = err;'
+            ],
+            '}'
+        ],
+        '}'
+    ];
 }
 
 export function buildParser(s : string) : string {
@@ -222,6 +235,7 @@ export function buildParser(s : string) : string {
     if(!res.ast)
         throw 'No AST found';
     const gram = AST2Gram(res.ast);
-    return expandTemplate(s, writeKinds(gram), writeRuleClasses(gram),
+    const parseBlock = expandTemplate(s, writeKinds(gram), writeRuleClasses(gram),
         writeRuleParseFns(gram), writeParseResultClass(gram));
+    return writeBlock(parseBlock).join('\n');
 }
