@@ -1,29 +1,10 @@
-// Meta-Grammar parser
 
 /* 
- * GRAM      := head=RULEDEF tail=GRAM
- *            | def=RULEDEF;
- * RULEDEF   := _ name=NAME '\s*:=\s*' rule=RULE '\s*;';
- * RULE      := head=ALT '\s*\|\s*' tail=RULE
- *            | alt=ALT;
- * ALT       := head=MATCSPEC _ tail=ALT
- *            | mtch=MATCHSPEC;
- * MATCHSPEC := name=NAME '=' rule=ATOM
- *            | rule=ATOM;
- * ATOM      := name=NAME
- *            | match=STRLIT;
- * NAME      := val='[a-zA-Z_]+';
- * STRLIT    := val='\'([^\'\\]|(\\.))*\'';
- * _         := '\s*';
  */
 
 type Nullable<T> = T | null;
 
 type $$RuleType<T> = (log? : (msg : string) => void) => Nullable<T>;
-
-interface Visitable {
-    accept<T>(visitor : Visitor<T>) : T;
-}
 
 export interface ContextRecorder {
     record(pos: number, result: Nullable<ASTNode>, extraInfo : string[]) : void;
@@ -58,6 +39,7 @@ export enum ASTKinds {
   STRLIT,
   _
 }
+
 export type ASTNode = $$StrMatch | GRAM | RULEDEF | RULE | ALT | MATCHSPEC | ATOM | NAME | STRLIT | _;
 export type GRAM = GRAM_1 | GRAM_2;
 export class GRAM_1 implements ASTNodeIntf {
@@ -177,10 +159,6 @@ export class _ implements ASTNodeIntf {
     }
 }
 
-function tst(at : ASTNode){
-    if(at.kind === ASTKinds.$$StrMatch)
-        console.log(at.match);
-}
 
 export class Parser {
     private pos : number = 0;
@@ -260,238 +238,236 @@ export class Parser {
             }, cr)();
     }
 
-matchGRAM(cr? : ContextRecorder) : Nullable<GRAM> {
+    matchGRAM(cr? : ContextRecorder) : Nullable<GRAM> {
         return this.choice<GRAM>([
-                () => { return this.matchGRAM_1(cr) },
-                () => { return this.matchGRAM_2(cr) }
+        () => { return this.matchGRAM_1(cr) },
+        () => { return this.matchGRAM_2(cr) }
         ]);
-}
-matchGRAM_1(cr? : ContextRecorder) : Nullable<GRAM_1> {
-    return this.runner<GRAM_1>(
-        () => {
+    }
+    matchGRAM_1(cr? : ContextRecorder) : Nullable<GRAM_1> {
+        return this.runner<GRAM_1>(
+            () => {
             let head : Nullable<RULEDEF>;
             let tail : Nullable<GRAM>;
-            let res : Nullable<GRAM_1> = null;
-            if(true
-                && (head = this.matchRULEDEF(cr))
-                && (tail = this.matchGRAM(cr))
-            )
-                res = new GRAM_1(head, tail);
-            return res;
+                let res : Nullable<GRAM_1> = null;
+                if(true
+		&& (head = this.matchRULEDEF(cr))
+		&& (tail = this.matchGRAM(cr))
+                )
+                    res = new GRAM_1(head, tail);
+                return res;
         },
         cr)();
-}
-matchGRAM_2(cr? : ContextRecorder) : Nullable<GRAM_2> {
-    return this.runner<GRAM_2>(
-        () => {
+    }
+    matchGRAM_2(cr? : ContextRecorder) : Nullable<GRAM_2> {
+        return this.runner<GRAM_2>(
+            () => {
             let def : Nullable<RULEDEF>;
-            let res : Nullable<GRAM_2> = null;
-            if(true
-                && (def = this.matchRULEDEF(cr))
-            )
-                res = new GRAM_2(def);
-            return res;
+                let res : Nullable<GRAM_2> = null;
+                if(true
+		&& (def = this.matchRULEDEF(cr))
+                )
+                    res = new GRAM_2(def);
+                return res;
         },
         cr)();
-}
-matchRULEDEF(cr? : ContextRecorder) : Nullable<RULEDEF> {
-    return this.runner<RULEDEF>(
-        () => {
+    }
+    matchRULEDEF(cr? : ContextRecorder) : Nullable<RULEDEF> {
+        return this.runner<RULEDEF>(
+            () => {
             let name : Nullable<NAME>;
             let rule : Nullable<RULE>;
-            let res : Nullable<RULEDEF> = null;
-            if(true
-                && this.match_(cr)
-                && (name = this.matchNAME(cr))
-                && this.regexAccept(String.raw`\s*:=\s*`, cr)
-                && (rule = this.matchRULE(cr))
-                && this.regexAccept(String.raw`\s*;\s*`, cr)
-            )
-                res = new RULEDEF(name, rule);
-            return res;
+                let res : Nullable<RULEDEF> = null;
+                if(true
+		&& this.match_(cr)
+		&& (name = this.matchNAME(cr))
+		&& this.regexAccept(String.raw`\s*:=\s*`, cr)
+		&& (rule = this.matchRULE(cr))
+		&& this.regexAccept(String.raw`\s*;\s*`, cr)
+                )
+                    res = new RULEDEF(name, rule);
+                return res;
         },
         cr)();
-}
-matchRULE(cr? : ContextRecorder) : Nullable<RULE> {
+    }
+    matchRULE(cr? : ContextRecorder) : Nullable<RULE> {
         return this.choice<RULE>([
-                () => { return this.matchRULE_1(cr) },
-                () => { return this.matchRULE_2(cr) }
+        () => { return this.matchRULE_1(cr) },
+        () => { return this.matchRULE_2(cr) }
         ]);
-}
-matchRULE_1(cr? : ContextRecorder) : Nullable<RULE_1> {
-    return this.runner<RULE_1>(
-        () => {
+    }
+    matchRULE_1(cr? : ContextRecorder) : Nullable<RULE_1> {
+        return this.runner<RULE_1>(
+            () => {
             let head : Nullable<ALT>;
             let tail : Nullable<RULE>;
-            let res : Nullable<RULE_1> = null;
-            if(true
-                && (head = this.matchALT(cr))
-                && this.regexAccept(String.raw`\s*\|\s*`, cr)
-                && (tail = this.matchRULE(cr))
-            )
-                res = new RULE_1(head, tail);
-            return res;
+                let res : Nullable<RULE_1> = null;
+                if(true
+		&& (head = this.matchALT(cr))
+		&& this.regexAccept(String.raw`\s*\|\s*`, cr)
+		&& (tail = this.matchRULE(cr))
+                )
+                    res = new RULE_1(head, tail);
+                return res;
         },
         cr)();
-}
-matchRULE_2(cr? : ContextRecorder) : Nullable<RULE_2> {
-    return this.runner<RULE_2>(
-        () => {
+    }
+    matchRULE_2(cr? : ContextRecorder) : Nullable<RULE_2> {
+        return this.runner<RULE_2>(
+            () => {
             let alt : Nullable<ALT>;
-            let res : Nullable<RULE_2> = null;
-            if(true
-                && (alt = this.matchALT(cr))
-            )
-                res = new RULE_2(alt);
-            return res;
+                let res : Nullable<RULE_2> = null;
+                if(true
+		&& (alt = this.matchALT(cr))
+                )
+                    res = new RULE_2(alt);
+                return res;
         },
         cr)();
-}
-matchALT(cr? : ContextRecorder) : Nullable<ALT> {
+    }
+    matchALT(cr? : ContextRecorder) : Nullable<ALT> {
         return this.choice<ALT>([
-                () => { return this.matchALT_1(cr) },
-                () => { return this.matchALT_2(cr) }
+        () => { return this.matchALT_1(cr) },
+        () => { return this.matchALT_2(cr) }
         ]);
-}
-matchALT_1(cr? : ContextRecorder) : Nullable<ALT_1> {
-    return this.runner<ALT_1>(
-        () => {
+    }
+    matchALT_1(cr? : ContextRecorder) : Nullable<ALT_1> {
+        return this.runner<ALT_1>(
+            () => {
             let head : Nullable<MATCHSPEC>;
             let tail : Nullable<ALT>;
-            let res : Nullable<ALT_1> = null;
-            if(true
-                && (head = this.matchMATCHSPEC(cr))
-                && this.match_(cr)
-                && (tail = this.matchALT(cr))
-            )
-                res = new ALT_1(head, tail);
-            return res;
+                let res : Nullable<ALT_1> = null;
+                if(true
+		&& (head = this.matchMATCHSPEC(cr))
+		&& this.match_(cr)
+		&& (tail = this.matchALT(cr))
+                )
+                    res = new ALT_1(head, tail);
+                return res;
         },
         cr)();
-}
-matchALT_2(cr? : ContextRecorder) : Nullable<ALT_2> {
-    return this.runner<ALT_2>(
-        () => {
+    }
+    matchALT_2(cr? : ContextRecorder) : Nullable<ALT_2> {
+        return this.runner<ALT_2>(
+            () => {
             let mtch : Nullable<MATCHSPEC>;
-            let res : Nullable<ALT_2> = null;
-            if(true
-                && (mtch = this.matchMATCHSPEC(cr))
-            )
-                res = new ALT_2(mtch);
-            return res;
+                let res : Nullable<ALT_2> = null;
+                if(true
+		&& (mtch = this.matchMATCHSPEC(cr))
+                )
+                    res = new ALT_2(mtch);
+                return res;
         },
         cr)();
-}
-matchMATCHSPEC(cr? : ContextRecorder) : Nullable<MATCHSPEC> {
+    }
+    matchMATCHSPEC(cr? : ContextRecorder) : Nullable<MATCHSPEC> {
         return this.choice<MATCHSPEC>([
-                () => { return this.matchMATCHSPEC_1(cr) },
-                () => { return this.matchMATCHSPEC_2(cr) }
+        () => { return this.matchMATCHSPEC_1(cr) },
+        () => { return this.matchMATCHSPEC_2(cr) }
         ]);
-}
-matchMATCHSPEC_1(cr? : ContextRecorder) : Nullable<MATCHSPEC_1> {
-    return this.runner<MATCHSPEC_1>(
-        () => {
+    }
+    matchMATCHSPEC_1(cr? : ContextRecorder) : Nullable<MATCHSPEC_1> {
+        return this.runner<MATCHSPEC_1>(
+            () => {
             let name : Nullable<NAME>;
             let rule : Nullable<ATOM>;
-            let res : Nullable<MATCHSPEC_1> = null;
-            if(true
-                && (name = this.matchNAME(cr))
-                && this.regexAccept(String.raw`=`, cr)
-                && (rule = this.matchATOM(cr))
-            )
-                res = new MATCHSPEC_1(name, rule);
-            return res;
+                let res : Nullable<MATCHSPEC_1> = null;
+                if(true
+		&& (name = this.matchNAME(cr))
+		&& this.regexAccept(String.raw`=`, cr)
+		&& (rule = this.matchATOM(cr))
+                )
+                    res = new MATCHSPEC_1(name, rule);
+                return res;
         },
         cr)();
-}
-matchMATCHSPEC_2(cr? : ContextRecorder) : Nullable<MATCHSPEC_2> {
-    return this.runner<MATCHSPEC_2>(
-        () => {
+    }
+    matchMATCHSPEC_2(cr? : ContextRecorder) : Nullable<MATCHSPEC_2> {
+        return this.runner<MATCHSPEC_2>(
+            () => {
             let rule : Nullable<ATOM>;
-            let res : Nullable<MATCHSPEC_2> = null;
-            if(true
-                && (rule = this.matchATOM(cr))
-            )
-                res = new MATCHSPEC_2(rule);
-            return res;
+                let res : Nullable<MATCHSPEC_2> = null;
+                if(true
+		&& (rule = this.matchATOM(cr))
+                )
+                    res = new MATCHSPEC_2(rule);
+                return res;
         },
         cr)();
-}
-matchATOM(cr? : ContextRecorder) : Nullable<ATOM> {
+    }
+    matchATOM(cr? : ContextRecorder) : Nullable<ATOM> {
         return this.choice<ATOM>([
-                () => { return this.matchATOM_1(cr) },
-                () => { return this.matchATOM_2(cr) }
+        () => { return this.matchATOM_1(cr) },
+        () => { return this.matchATOM_2(cr) }
         ]);
-}
-matchATOM_1(cr? : ContextRecorder) : Nullable<ATOM_1> {
-    return this.runner<ATOM_1>(
-        () => {
+    }
+    matchATOM_1(cr? : ContextRecorder) : Nullable<ATOM_1> {
+        return this.runner<ATOM_1>(
+            () => {
             let name : Nullable<NAME>;
-            let res : Nullable<ATOM_1> = null;
-            if(true
-                && (name = this.matchNAME(cr))
-            )
-                res = new ATOM_1(name);
-            return res;
+                let res : Nullable<ATOM_1> = null;
+                if(true
+		&& (name = this.matchNAME(cr))
+                )
+                    res = new ATOM_1(name);
+                return res;
         },
         cr)();
-}
-matchATOM_2(cr? : ContextRecorder) : Nullable<ATOM_2> {
-    return this.runner<ATOM_2>(
-        () => {
+    }
+    matchATOM_2(cr? : ContextRecorder) : Nullable<ATOM_2> {
+        return this.runner<ATOM_2>(
+            () => {
             let match : Nullable<STRLIT>;
-            let res : Nullable<ATOM_2> = null;
-            if(true
-                && (match = this.matchSTRLIT(cr))
-            )
-                res = new ATOM_2(match);
-            return res;
+                let res : Nullable<ATOM_2> = null;
+                if(true
+		&& (match = this.matchSTRLIT(cr))
+                )
+                    res = new ATOM_2(match);
+                return res;
         },
         cr)();
-}
-matchNAME(cr? : ContextRecorder) : Nullable<NAME> {
-    return this.runner<NAME>(
-        () => {
+    }
+    matchNAME(cr? : ContextRecorder) : Nullable<NAME> {
+        return this.runner<NAME>(
+            () => {
             let val : Nullable<$$StrMatch>;
-            let res : Nullable<NAME> = null;
-            if(true
-                && (val = this.regexAccept(String.raw`[a-zA-Z_]+`, cr))
-            )
-                res = new NAME(val);
-            return res;
+                let res : Nullable<NAME> = null;
+                if(true
+		&& (val = this.regexAccept(String.raw`[a-zA-Z_]+`, cr))
+                )
+                    res = new NAME(val);
+                return res;
         },
         cr)();
-}
-matchSTRLIT(cr? : ContextRecorder) : Nullable<STRLIT> {
-    return this.runner<STRLIT>(
-        () => {
+    }
+    matchSTRLIT(cr? : ContextRecorder) : Nullable<STRLIT> {
+        return this.runner<STRLIT>(
+            () => {
             let val : Nullable<$$StrMatch>;
-            let res : Nullable<STRLIT> = null;
-            if(true
-                && this.regexAccept(String.raw`\'`, cr)
-                && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, cr))
-                && this.regexAccept(String.raw`\'`, cr)
-            )
-                res = new STRLIT(val);
-            return res;
+                let res : Nullable<STRLIT> = null;
+                if(true
+		&& this.regexAccept(String.raw`\'`, cr)
+		&& (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, cr))
+		&& this.regexAccept(String.raw`\'`, cr)
+                )
+                    res = new STRLIT(val);
+                return res;
         },
         cr)();
-}
-match_(cr? : ContextRecorder) : Nullable<_> {
-    return this.runner<_>(
-        () => {
+    }
+    match_(cr? : ContextRecorder) : Nullable<_> {
+        return this.runner<_>(
+            () => {
 
-            let res : Nullable<_> = null;
-            if(true
-                && this.regexAccept(String.raw`\s*`, cr)
-            )
-                res = new _();
-            return res;
+                let res : Nullable<_> = null;
+                if(true
+		&& this.regexAccept(String.raw`\s*`, cr)
+                )
+                    res = new _();
+                return res;
         },
         cr)();
-
-}
-
+    }
     parse() : ParseResult {
         const mrk = this.mark();
         const res = this.matchGRAM();
@@ -502,18 +478,6 @@ match_(cr? : ContextRecorder) : Nullable<_> {
         this.matchGRAM(rec);
         return new ParseResult(res, rec.getErr());
     }
-}
-
-export interface Visitor<T> {
-    visitGRAM(gram : GRAM) : T;
-    visitRULEDEF(ruledef : RULEDEF) : T;
-    visitRULE(rule : RULE) : T;
-    visitALT(rule : ALT) : T;
-    visitMATCHSPEC(matchspec : MATCHSPEC) : T;
-    visitATOM(atom : ATOM) : T;
-    visitNAME(strlit : NAME) : T;
-    visitSTRLIT(strlit : STRLIT) : T;
-    visit_(_ : _) : T;
 }
 
 export class ParseResult {

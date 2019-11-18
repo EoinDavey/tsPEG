@@ -93,7 +93,7 @@ export class Atom_2 implements ASTNodeIntf, Visitable {
     }
 }
 
-export type Atom = Atom_1 | Atom_2
+export type Atom = Atom_1 | Atom_2;
 
 export class Fac implements ASTNodeIntf, Visitable {
     kind : ASTKinds.Fac = ASTKinds.Fac;

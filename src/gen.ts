@@ -1,4 +1,6 @@
-import { Parser, Visitor, ASTKinds, ASTNode, GRAM, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, NAME, STRLIT } from './meta';
+import { Parser, ASTKinds, ASTNode, GRAM, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, NAME, STRLIT } from './meta';
+
+import { expandTemplate } from './template';
 
 export const STR = String.raw`GRAM      := head=RULEDEF tail=GRAM
            | def=RULEDEF;
@@ -15,7 +17,7 @@ NAME      := val='[a-zA-Z_]+';
 STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\'';
 _         := '\s*';`;
 
-export function compressAST<T, K>(st : T, gt : (x : T) => K, next : (x : T) => T) : K[] {
+function compressAST<T, K>(st : T, gt : (x : T) => K, next : (x : T) => T) : K[] {
     let v : T  = st;
     let ls : K[] = [];
     while(true) {
@@ -27,29 +29,29 @@ export function compressAST<T, K>(st : T, gt : (x : T) => K, next : (x : T) => T
     return ls;
 }
 
-export function compressGRAM(st : GRAM) : RULEDEF[] {
+function compressGRAM(st : GRAM) : RULEDEF[] {
     return compressAST(st,
         x => x.kind === ASTKinds.GRAM_1 ? x.head : x.def,
         x => x.kind === ASTKinds.GRAM_1 ? x.tail : x);
 }
 
-export function compressRULE(st : RULE) : ALT[] {
+function compressRULE(st : RULE) : ALT[] {
     return compressAST(st,
         x => x.kind === ASTKinds.RULE_1 ? x.head : x.alt,
         x => x.kind === ASTKinds.RULE_1 ? x.tail : x);
 }
 
-export function compressALT(st : ALT) : MATCHSPEC[] {
+function compressALT(st : ALT) : MATCHSPEC[] {
     return compressAST(st,
         x => x.kind === ASTKinds.ALT_1 ? x.head : x.mtch,
         x => x.kind === ASTKinds.ALT_1 ? x.tail : x);
 }
 
-export type Alt = MATCHSPEC[];
-export type Rule = Alt[];
-export type Grammar = Ruledef[];
+type Alt = MATCHSPEC[];
+type Rule = Alt[];
+type Grammar = Ruledef[];
 
-export class Ruledef {
+class Ruledef {
     name : string;
     rule : Rule;
     constructor(rd : RULEDEF) {
@@ -58,18 +60,18 @@ export class Ruledef {
     }
 }
 
-export function AST2Gram(g : GRAM) : Grammar {
+function AST2Gram(g : GRAM) : Grammar {
     return compressGRAM(g).map(def => new Ruledef(def));
 }
 
-export function writeKinds(gram : Grammar) : string {
+function writeKinds(gram : Grammar) : string {
     let astKinds = ["$$StrMatch"];
     for(let ruledef of gram) {
         const nm = ruledef.name;
         for(let i = 0; i < ruledef.rule.length; i++) {
             const alt = ruledef.rule[i];
-            const md = ruledef.rule.length == 1 ? "" : `_${i+1}`;
-            astKinds.push(nm+md);
+            const md = ruledef.rule.length == 1 ? '' : `_${i+1}`;
+            astKinds.push(nm + md);
         }
     }
     const kinds = `export enum ASTKinds {
@@ -78,7 +80,7 @@ ${astKinds.map(x=>'  '+x).join(',\n')}
     return kinds;
 }
 
-export function writeChoice(name : string, alt : Alt) : string {
+function writeChoice(name : string, alt : Alt) : string {
     let namedTypes : [string, string][] = [];
     for(let match of alt) {
         if(match.kind === ASTKinds.MATCHSPEC_1){
@@ -95,7 +97,7 @@ ${namedTypes.map(x => `        this.${x[0]} = ${x[0]};`).join('\n')}
 }`;
 }
 
-export function writeRuleClass(ruledef : Ruledef) : string {
+function writeRuleClass(ruledef : Ruledef) : string {
     const nm = ruledef.name;
     let union : string[] = [];
     let choices : string[] = [];
@@ -108,7 +110,7 @@ export function writeRuleClass(ruledef : Ruledef) : string {
     return [typedef, ...choices].join('\n');
 }
 
-export function writeRuleClasses(gram : Grammar) : string {
+function writeRuleClasses(gram : Grammar) : string {
     let types : string[] = [];
     let rules : string[] = [];
     for(let ruledef of gram) {
@@ -120,7 +122,7 @@ ${rules.join('\n')}
 `;
 }
 
-export function writeParseIfStmt(alt : Alt) : string {
+function writeParseIfStmt(alt : Alt) : string {
     let checks : string[] = [];
     for(let match of alt) {
         const at = match.rule;
@@ -134,7 +136,7 @@ export function writeParseIfStmt(alt : Alt) : string {
     return checks.join('\n');
 }
 
-export function writeChoiceParseFn(name : string, alt : Alt) : string {
+function writeChoiceParseFn(name : string, alt : Alt) : string {
     let namedTypes : [string, string][] = [];
     let unnamedTypes : string[] = [];
     for(let match of alt) {
@@ -146,22 +148,22 @@ export function writeChoiceParseFn(name : string, alt : Alt) : string {
             unnamedTypes.push(rn);
         }
     }
-    return `match${name}(cr? : ContextRecorder) : Nullable<${name}> {
-    return this.runner<${name}>(
-        () => {
+    return `    match${name}(cr? : ContextRecorder) : Nullable<${name}> {
+        return this.runner<${name}>(
+            () => {
 ${namedTypes.map(x => `            let ${x[0]} : Nullable<${x[1]}>;`).join('\n')}
-            let res : Nullable<${name}> = null;
-            if(true
+                let res : Nullable<${name}> = null;
+                if(true
 ${writeParseIfStmt(alt)}
-            )
-                res = new ${name}(${namedTypes.map(x => x[0]).join(', ')});
-            return res;
+                )
+                    res = new ${name}(${namedTypes.map(x => x[0]).join(', ')});
+                return res;
         },
         cr)();
-}`;
+    }`;
 }
 
-export function writeRuleParseFn(ruledef : Ruledef) : string {
+function writeRuleParseFn(ruledef : Ruledef) : string {
     const nm = ruledef.name;
     let choices : string[] = [];
     let nms : string[] = [];
@@ -171,16 +173,16 @@ export function writeRuleParseFn(ruledef : Ruledef) : string {
         choices.push(writeChoiceParseFn(md, ruledef.rule[i]));
     }
     const union = choices.length <= 1 ? ''
-        : `match${nm}(cr? : ContextRecorder) : Nullable<${nm}> {
+        : `    match${nm}(cr? : ContextRecorder) : Nullable<${nm}> {
         return this.choice<${nm}>([
-${nms.map(x => `\t\t() => { return this.match${x}(cr) }`).join(',\n')}
+${nms.map(x => `        () => { return this.match${x}(cr) }`).join(',\n')}
         ]);
-}
+    }
 `;
     return union + choices.join('\n');
 }
 
-export function writeRuleParseFns(gram : Grammar) : string {
+function writeRuleParseFns(gram : Grammar) : string {
     let fns : string[] = [];
     for(let ruledef of gram) {
         fns.push(writeRuleParseFn(ruledef));
@@ -199,14 +201,27 @@ export function writeRuleParseFns(gram : Grammar) : string {
     }`;
 }
 
-export function test(s : string) {
+function writeParseResultClass(gram : Grammar) : string {
+    const head = gram[0];
+    const startname = head.name;
+    return `export class ParseResult {
+    ast : Nullable<${startname}>;
+    err : Nullable<SyntaxErr>;
+    constructor(ast : Nullable<${startname}>, err : Nullable<SyntaxErr>){
+        this.ast = ast;
+        this.err = err;
+    }
+}`;
+}
+
+export function buildParser(s : string) : string {
     const p = new Parser(s);
     const res = p.parse();
     if(res.err)
         throw res.err;
-    if(res.ast){
-        const gram = AST2Gram(res.ast);
-        //console.log([writeKinds(gram), writeRuleClasses(gram)].join('\n'));
-        console.log(writeRuleParseFns(gram));
-    }
+    if(!res.ast)
+        throw 'No AST found';
+    const gram = AST2Gram(res.ast);
+    return expandTemplate(writeKinds(gram), writeRuleClasses(gram),
+        writeRuleParseFns(gram), writeParseResultClass(gram));
 }
