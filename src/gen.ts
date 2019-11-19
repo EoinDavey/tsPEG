@@ -1,4 +1,4 @@
-import { Parser, ASTKinds, ASTNode, GRAM, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, STRLIT } from './meta';
+import { Parser, ASTKinds, GRAM, RULEXPR, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, STRLIT } from './meta';
 
 import { expandTemplate } from './template';
 
@@ -16,39 +16,50 @@ function compressAST<T, K>(st : T, gt : (x : T) => K, next : (x : T) => T) : K[]
     return ls;
 }
 
-function compressGRAM(st : GRAM) : RULEDEF[] {
-    return compressAST(st,
-        x => x.kind === ASTKinds.GRAM_1 ? x.head : x.def,
-        x => x.kind === ASTKinds.GRAM_1 ? x.tail : x);
-}
-
 function compressRULE(st : RULE) : ALT[] {
     return compressAST(st,
         x => x.kind === ASTKinds.RULE_1 ? x.head : x.alt,
         x => x.kind === ASTKinds.RULE_1 ? x.tail : x);
 }
 
-function compressALT(st : ALT) : MATCHSPEC[] {
-    return compressAST(st,
-        x => x.kind === ASTKinds.ALT_1 ? x.head : x.mtch,
-        x => x.kind === ASTKinds.ALT_1 ? x.tail : x);
-}
-
 type Alt = MATCHSPEC[];
 type Rule = Alt[];
 type Grammar = Ruledef[];
-
 class Ruledef {
     name : string;
     rule : Rule;
     constructor(rd : RULEDEF) {
         this.name = rd.name.match;
-        this.rule = compressRULE(rd.rule).map(compressALT);
+        this.rule = compressRULE(rd.rule);
     }
 }
 
 function AST2Gram(g : GRAM) : Grammar {
-    return compressGRAM(g).map(def => new Ruledef(def));
+    return g.map(def => new Ruledef(def));
+}
+
+function exprType(expr : RULEXPR) : string {
+    if(expr.kind === ASTKinds.RULEXPR_1)
+        return `${atomType(expr.at)}[]`;
+    return atomType(expr);
+}
+
+function exprRule(expr : RULEXPR) : string {
+    if(expr.kind === ASTKinds.RULEXPR_1)
+        return `this.loop<${atomType(expr.at)}>(()=> ${atomRule(expr.at)}, ${expr.op.match === '+' ? 'false' : 'true'})`;
+    return atomRule(expr);
+}
+
+function atomRule(at : ATOM) : string {
+    if(at.kind === ASTKinds.ATOM_1)
+        return `this.match${at.name.match}(cr)`;
+    return `this.regexAccept(String.raw\`${at.match.val.match}\`, cr)`;
+}
+
+function atomType(at : ATOM) : string {
+    if(at.kind === ASTKinds.ATOM_1)
+        return `${at.name.match}`;
+    return '$$StrMatch';
 }
 
 function writeKinds(gram : Grammar) : Block {
@@ -56,7 +67,6 @@ function writeKinds(gram : Grammar) : Block {
     for(let ruledef of gram) {
         const nm = ruledef.name;
         for(let i = 0; i < ruledef.rule.length; i++) {
-            const alt = ruledef.rule[i];
             const md = ruledef.rule.length == 1 ? '' : `_${i+1}`;
             astKinds.push(nm + md);
         }
@@ -73,13 +83,13 @@ function writeChoice(name : string, alt : Alt) : Block {
     for(let match of alt) {
         if(match.kind === ASTKinds.MATCHSPEC_1){
             const at = match.rule;
-            namedTypes.push([match.name.match, at.kind === ASTKinds.ATOM_1 ? at.name.match : '$$StrMatch']);
+            namedTypes.push([match.name.match, exprType(at)]);
         }
     }
     // Rules with no named matches and only one match are rule aliases
     if(namedTypes.length == 0 && alt.length == 1){
         const at = alt[0].rule;
-        return [`type ${name} = ${at.kind === ASTKinds.ATOM_1 ? at.name.match : '$$StrMatch'};`];
+        return [`export type ${name} = ${exprType(at)};`];
     }
     const blk : Block = [
         `export class ${name} implements ASTNodeIntf {`,
@@ -116,18 +126,14 @@ function writeRuleClasses(gram : Grammar) : Block {
         types.push(ruledef.name);
         rules.push(...writeRuleClass(ruledef));
     }
-    return [
-        `export type ASTNode = $$StrMatch | ${types.join(' | ')};`,
-        ...rules
-    ];
+    return rules;
 }
 
 function writeParseIfStmt(alt : Alt) : Block {
     let checks : string[] = [];
     for(let match of alt) {
-        const at = match.rule;
-        const rn = at.kind === ASTKinds.ATOM_1 ?
-            `this.match${at.name.match}(cr)` : `this.regexAccept(String.raw\`${at.match.val.match}\`, cr)`;
+        const expr = match.rule;
+        const rn = exprRule(expr);
         if(match.kind === ASTKinds.MATCHSPEC_1)
             checks.push(`&& (${match.name.match} = ${rn})`);
         else
@@ -136,10 +142,10 @@ function writeParseIfStmt(alt : Alt) : Block {
     return checks;
 }
 
-function writeRuleAliasFn(name : string, at : ATOM) : Block {
+function writeRuleAliasFn(name : string, expr : RULEXPR) : Block {
     return [`match${name}(cr? : ContextRecorder) : Nullable<${name}> {`,
         [
-            `return this.${at.kind === ASTKinds.ATOM_1 ? `match${at.name.match}(cr)` : `regexAccept(String.raw\`${at.match.val.match}\`, cr)`};`,
+            `return ${exprRule(expr)};`
         ],
         '}'
     ];
@@ -149,8 +155,8 @@ function writeChoiceParseFn(name : string, alt : Alt) : Block {
     let namedTypes : [string, string][] = [];
     let unnamedTypes : string[] = [];
     for(let match of alt) {
-        const at = match.rule;
-        const rn = at.kind === ASTKinds.ATOM_1 ? at.name.match : '$$StrMatch';
+        const expr = match.rule;
+        const rn = exprType(expr);
         if(match.kind === ASTKinds.MATCHSPEC_1){
             namedTypes.push([match.name.match, rn]);
         } else {

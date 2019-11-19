@@ -1,12 +1,12 @@
-GRAM      := head=RULEDEF tail=GRAM
-           | def=RULEDEF;
+GRAM      := RULEDEF+;
 RULEDEF   := _ name=NAME '\s*:=\s*' rule=RULE '\s*;\s*';
 RULE      := head=ALT '\s*\|\s*' tail=RULE
            | alt=ALT;
-ALT       := head=MATCHSPEC _ tail=ALT
-           | mtch=MATCHSPEC;
-MATCHSPEC := name=NAME '=' rule=ATOM
-           | rule=ATOM;
+ALT       := MATCHSPEC+;
+MATCHSPEC := _ name=NAME '=' rule=RULEXPR _
+           | _ rule=RULEXPR _;
+RULEXPR   := at=ATOM op='\+|\*'
+           | ATOM;
 ATOM      := name=NAME
            | match=STRLIT;
 NAME      := '[a-zA-Z_]+';

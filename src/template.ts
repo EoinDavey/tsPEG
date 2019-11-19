@@ -10,7 +10,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
     'type $$RuleType<T> = (log? : (msg : string) => void) => Nullable<T>;',
     'export interface ContextRecorder {',
     [
-        'record(pos: number, result: Nullable<ASTNode>, extraInfo : string[]) : void;'
+        'record(pos: number, result: any, extraInfo : string[]) : void;'
     ],
     '}',
     'interface ASTNodeIntf {',
@@ -55,33 +55,29 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
             'return this.pos == this.input.length;'
         ],
         '}',
-        'private loop<T>(func : $$RuleType<T>, star : boolean = false) : $$RuleType<T[]> {',
+        'private loop<T>(func : $$RuleType<T>, star : boolean = false) : Nullable<T[]> {',
         [
-            'return ()=> {',
+            'const mrk = this.mark();',
+            'let res : T[] = [];',
+            'for(;;) {',
             [
-                'const mrk = this.mark();',
-                'let res : T[] = [];',
-                'for(;;) {',
+                'const t = func();',
+                'if(!t)',
                 [
-                    'const t = func();',
-                    'if(!t)',
-                    [
-                        'break;'
-                    ],
-                    'res.push(t);',
+                    'break;'
                 ],
-                '}',
-                'if(star || res.length > 0)',
-                [
-                    'return res;'
-                ],
-                'this.reset(mrk);',
-                'return null;',
+                'res.push(t);',
             ],
-            '};',
+            '}',
+            'if(star || res.length > 0)',
+            [
+                'return res;'
+            ],
+            'this.reset(mrk);',
+            'return null;'
         ],
         '}',
-        'private runner<T extends ASTNode>(fn : $$RuleType<T>,',
+        'private runner<T>(fn : $$RuleType<T>,',
         [
             'cr? : ContextRecorder) : $$RuleType<T> {',
             'return () => {',
@@ -175,7 +171,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
         'mxd : number | undefined;',
         'pmatches: Set<string> = new Set();',
 
-        'record(pos : number, result : Nullable<ASTNode>, extraInfo : string[]){',
+        'record(pos : number, result : any, extraInfo : string[]){',
         [
             'if(result === null) {',
             [
