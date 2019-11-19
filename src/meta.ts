@@ -11,7 +11,7 @@
 *            | rule=ATOM;
 * ATOM      := name=NAME
 *            | match=STRLIT;
-* NAME      := val='[a-zA-Z_]+';
+* NAME      := '[a-zA-Z_]+';
 * STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\'';
 * _         := '\s*';
 */
@@ -65,7 +65,6 @@ export class GRAM_2 implements ASTNodeIntf {
         this.def = def;
     }
 }
-
 export class RULEDEF implements ASTNodeIntf {
     kind : ASTKinds.RULEDEF = ASTKinds.RULEDEF;
     name : NAME;
@@ -141,15 +140,7 @@ export class ATOM_2 implements ASTNodeIntf {
         this.match = match;
     }
 }
-
-export class NAME implements ASTNodeIntf {
-    kind : ASTKinds.NAME = ASTKinds.NAME;
-    val : $$StrMatch;
-    constructor(val : $$StrMatch){
-        this.val = val;
-    }
-}
-
+type NAME = $$StrMatch;
 export class STRLIT implements ASTNodeIntf {
     kind : ASTKinds.STRLIT = ASTKinds.STRLIT;
     val : $$StrMatch;
@@ -157,12 +148,7 @@ export class STRLIT implements ASTNodeIntf {
         this.val = val;
     }
 }
-
-export class _ implements ASTNodeIntf {
-    kind : ASTKinds._ = ASTKinds._;
-    constructor(){
-    }
-}
+type _ = $$StrMatch;
 export class Parser {
     private pos : number = 0;
     readonly input : string;
@@ -412,16 +398,7 @@ export class Parser {
             }, cr)();
     }
     matchNAME(cr? : ContextRecorder) : Nullable<NAME> {
-        return this.runner<NAME>(
-            () => {
-                let val : Nullable<$$StrMatch>;
-                let res : Nullable<NAME> = null;
-                if(true
-                    && (val = this.regexAccept(String.raw`[a-zA-Z_]+`, cr))
-                )
-                    res = new NAME(val);
-                return res;
-            }, cr)();
+        return this.regexAccept(String.raw`[a-zA-Z_]+`, cr);
     }
     matchSTRLIT(cr? : ContextRecorder) : Nullable<STRLIT> {
         return this.runner<STRLIT>(
@@ -438,15 +415,7 @@ export class Parser {
             }, cr)();
     }
     match_(cr? : ContextRecorder) : Nullable<_> {
-        return this.runner<_>(
-            () => {
-                let res : Nullable<_> = null;
-                if(true
-                    && this.regexAccept(String.raw`\s*`, cr)
-                )
-                    res = new _();
-                return res;
-            }, cr)();
+        return this.regexAccept(String.raw`\s*`, cr);
     }
     parse() : ParseResult {
         const mrk = this.mark();

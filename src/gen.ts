@@ -1,4 +1,4 @@
-import { Parser, ASTKinds, ASTNode, GRAM, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, NAME, STRLIT } from './meta';
+import { Parser, ASTKinds, ASTNode, GRAM, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, STRLIT } from './meta';
 
 import { expandTemplate } from './template';
 
@@ -42,7 +42,7 @@ class Ruledef {
     name : string;
     rule : Rule;
     constructor(rd : RULEDEF) {
-        this.name = rd.name.val.match;
+        this.name = rd.name.match;
         this.rule = compressRULE(rd.rule).map(compressALT);
     }
 }
@@ -73,8 +73,13 @@ function writeChoice(name : string, alt : Alt) : Block {
     for(let match of alt) {
         if(match.kind === ASTKinds.MATCHSPEC_1){
             const at = match.rule;
-            namedTypes.push([match.name.val.match, at.kind === ASTKinds.ATOM_1 ? at.name.val.match : '$$StrMatch']);
+            namedTypes.push([match.name.match, at.kind === ASTKinds.ATOM_1 ? at.name.match : '$$StrMatch']);
         }
+    }
+    // Rules with no named matches and only one match are rule aliases
+    if(namedTypes.length == 0 && alt.length == 1){
+        const at = alt[0].rule;
+        return [`type ${name} = ${at.kind === ASTKinds.ATOM_1 ? at.name.match : '$$StrMatch'};`];
     }
     const blk : Block = [
         `export class ${name} implements ASTNodeIntf {`,
@@ -100,8 +105,8 @@ function writeRuleClass(ruledef : Ruledef) : Block {
         choices.push(...writeChoice(md, ruledef.rule[i]));
         union.push(md);
     }
-    const typedef = ruledef.rule.length > 1 ? `export type ${nm} = ${union.join(' | ')};` : '';
-    return [typedef, ...choices];
+    const typedef = ruledef.rule.length > 1 ? [`export type ${nm} = ${union.join(' | ')};`] : [];
+    return [...typedef, ...choices];
 }
 
 function writeRuleClasses(gram : Grammar) : Block {
@@ -122,13 +127,22 @@ function writeParseIfStmt(alt : Alt) : Block {
     for(let match of alt) {
         const at = match.rule;
         const rn = at.kind === ASTKinds.ATOM_1 ?
-            `this.match${at.name.val.match}(cr)` : `this.regexAccept(String.raw\`${at.match.val.match}\`, cr)`;
+            `this.match${at.name.match}(cr)` : `this.regexAccept(String.raw\`${at.match.val.match}\`, cr)`;
         if(match.kind === ASTKinds.MATCHSPEC_1)
-            checks.push(`&& (${match.name.val.match} = ${rn})`);
+            checks.push(`&& (${match.name.match} = ${rn})`);
         else
             checks.push(`&& ${rn}`);
     }
     return checks;
+}
+
+function writeRuleAliasFn(name : string, at : ATOM) : Block {
+    return [`match${name}(cr? : ContextRecorder) : Nullable<${name}> {`,
+        [
+            `return this.${at.kind === ASTKinds.ATOM_1 ? `match${at.name.match}(cr)` : `regexAccept(String.raw\`${at.match.val.match}\`, cr)`};`,
+        ],
+        '}'
+    ];
 }
 
 function writeChoiceParseFn(name : string, alt : Alt) : Block {
@@ -136,13 +150,15 @@ function writeChoiceParseFn(name : string, alt : Alt) : Block {
     let unnamedTypes : string[] = [];
     for(let match of alt) {
         const at = match.rule;
-        const rn = at.kind === ASTKinds.ATOM_1 ? at.name.val.match : '$$StrMatch';
+        const rn = at.kind === ASTKinds.ATOM_1 ? at.name.match : '$$StrMatch';
         if(match.kind === ASTKinds.MATCHSPEC_1){
-            namedTypes.push([match.name.val.match, rn]);
+            namedTypes.push([match.name.match, rn]);
         } else {
             unnamedTypes.push(rn);
         }
     }
+    if(namedTypes.length == 0 && alt.length == 1)
+        return writeRuleAliasFn(name, alt[0].rule);
     return [
         `match${name}(cr? : ContextRecorder) : Nullable<${name}> {`,
         [

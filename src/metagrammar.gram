@@ -9,6 +9,6 @@ MATCHSPEC := name=NAME '=' rule=ATOM
            | rule=ATOM;
 ATOM      := name=NAME
            | match=STRLIT;
-NAME      := val='[a-zA-Z_]+';
+NAME      := '[a-zA-Z_]+';
 STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\'';
 _         := '\s*';
