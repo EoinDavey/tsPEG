@@ -52,8 +52,8 @@ function exprRule(expr : RULEXPR) : string {
 
 function atomRule(at : ATOM) : string {
     if(at.kind === ASTKinds.ATOM_1)
-        return `this.match${at.name.match}(cr)`;
-    return `this.regexAccept(String.raw\`${at.match.val.match}\`, cr)`;
+        return `this.match${at.name.match}($$dpth + 1, cr)`;
+    return `this.regexAccept(String.raw\`${at.match.val.match}\`, $$dpth+1, cr)`;
 }
 
 function atomType(at : ATOM) : string {
@@ -143,7 +143,7 @@ function writeParseIfStmt(alt : Alt) : Block {
 }
 
 function writeRuleAliasFn(name : string, expr : RULEXPR) : Block {
-    return [`match${name}(cr? : ContextRecorder) : Nullable<${name}> {`,
+    return [`match${name}($$dpth : number, cr? : ContextRecorder) : Nullable<${name}> {`,
         [
             `return ${exprRule(expr)};`
         ],
@@ -166,12 +166,16 @@ function writeChoiceParseFn(name : string, alt : Alt) : Block {
     if(namedTypes.length == 0 && alt.length == 1)
         return writeRuleAliasFn(name, alt[0].rule);
     return [
-        `match${name}(cr? : ContextRecorder) : Nullable<${name}> {`,
+        `match${name}($$dpth : number, cr? : ContextRecorder) : Nullable<${name}> {`,
         [
-            `return this.runner<${name}>(`,
+            `return this.runner<${name}>($$dpth,`,
             [
-                `() => {`,
+                `(log) => {`,
                 [
+                    'if(log)',
+                    [
+                        `log('${name}');`
+                    ],
                     ...namedTypes.map(x => `let ${x[0]} : Nullable<${x[1]}>;`),
                     `let res : Nullable<${name}> = null;`,
                     'if(true',
@@ -199,10 +203,10 @@ function writeRuleParseFn(ruledef : Ruledef) : Block {
         choices.push(...writeChoiceParseFn(md, ruledef.rule[i]));
     }
     const union = ruledef.rule.length <= 1 ? []
-        : [`match${nm}(cr? : ContextRecorder) : Nullable<${nm}> {`,
+        : [`match${nm}($$dpth : number, cr? : ContextRecorder) : Nullable<${nm}> {`,
             [
                 `return this.choice<${nm}>([`,
-                nms.map(x => `() => { return this.match${x}(cr) },`),
+                nms.map(x => `() => { return this.match${x}($$dpth + 1, cr) },`),
                 `]);`
             ],
             `}`];
@@ -219,12 +223,12 @@ function writeRuleParseFns(gram : Grammar) : Block {
         'parse() : ParseResult {',
         [
             'const mrk = this.mark();',
-            `const res = this.match${S}();`,
+            `const res = this.match${S}(0);`,
             'if(res && this.finished())',
             '    return new ParseResult(res, null);',
             'this.reset(mrk);',
             'const rec = new ErrorTracker();',
-            `this.match${S}(rec);`,
+            `this.match${S}(0, rec);`,
             'return new ParseResult(res, rec.getErr());'
         ],
         '}'

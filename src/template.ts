@@ -10,7 +10,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
     'type $$RuleType<T> = (log? : (msg : string) => void) => Nullable<T>;',
     'export interface ContextRecorder {',
     [
-        'record(pos: number, result: any, extraInfo : string[]) : void;'
+        'record(pos: number, depth : number, result: any, extraInfo : string[]) : void;'
     ],
     '}',
     'interface ASTNodeIntf {',
@@ -77,7 +77,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
             'return null;'
         ],
         '}',
-        'private runner<T>(fn : $$RuleType<T>,',
+        'private runner<T>($$dpth : number, fn : $$RuleType<T>,',
         [
             'cr? : ContextRecorder) : $$RuleType<T> {',
             'return () => {',
@@ -87,7 +87,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
                 [
                     'let extraInfo : string[] = [];',
                     'const res = fn((msg : string) => extraInfo.push(msg));',
-                    'cr.record(mrk, res, extraInfo);',
+                    'cr.record(mrk, $$dpth, res, extraInfo);',
                     'return res;'
                 ],
                 '})() : fn();',
@@ -116,16 +116,18 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
             'return null;'
         ],
         '}',
-        'private regexAccept(match : string, cr? : ContextRecorder) : Nullable<$$StrMatch> {',
+        'private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<$$StrMatch> {',
         [
-            'return this.runner<$$StrMatch>(',
+            'return this.runner<$$StrMatch>(dpth,',
             [
                 '(log) => {',
                 [
-                    'if(log)',
+                    'if(log){',
                     [
+                        'log(\'$$StrMatch\');',
                         'log(match);'
                     ],
+                    '}',
                     'var reg = new RegExp(match, \'y\');',
                     'reg.lastIndex = this.mark();',
                     'const res = reg.exec(this.input);',
@@ -150,57 +152,67 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
     'export class SyntaxErr {',
     [
         'pos : number;',
-        'exp : string[];',
-        'constructor(pos : number, exp : Set<string>){',
+        'exprules : string[];',
+        'expmatches : string[]',
+        'constructor(pos : number, exprules : Set<string>, expmatches : Set<string>){',
         [
             'this.pos = pos;',
-            'this.exp = [...exp];'
+            'this.exprules = [...exprules];',
+            'this.expmatches = [...expmatches];',
         ],
         '}',
-
         'toString() : string {',
         [
-            'return \`Syntax Error at position \${this.pos}, expected one of \${this.exp.map(x => \` \'\${x}\'\`)}\`;',
-        ],
-        '}'
-    ],
-    '}',
-
-    'class ErrorTracker implements ContextRecorder {',
-    [
-        'mxd : number | undefined;',
-        'pmatches: Set<string> = new Set();',
-
-        'record(pos : number, result : any, extraInfo : string[]){',
-        [
-            'if(result === null) {',
-            [
-                'if(this.mxd && this.mxd > pos)',
-                [
-                    'return;'
-                ],
-                'if(!this.mxd || this.mxd < pos){',
-                [
-                    'this.mxd = pos;',
-                    'this.pmatches = new Set();'
-                ],
-                '}',
-                'extraInfo.forEach(x => this.pmatches.add(x));'
-            ],
-            '}'
+            'return `Syntax Error at position ${this.pos}. Tried to match rules ${this.exprules.join(\', \')}. Expected one of ${this.expmatches.map(x => ` \'${x}\'`)}`;',
         ],
         '}',
-
+    ],
+    '}',
+    'class ErrorTracker implements ContextRecorder {',
+    [
+        'mxpos : number = -1;',
+        'mnd : number = -1;',
+        'prules : Set<string> = new Set();',
+        'pmatches: Set<string> = new Set();',
+        'record(pos : number, depth : number, result : any, extraInfo : string[]){',
+        [
+            'if(result !== null)',
+            [
+                'return;',
+            ],
+            'if(pos > this.mxpos){',
+            [
+                'this.mxpos = pos;',
+                'this.mnd = depth;',
+                'this.pmatches.clear();',
+                'this.prules.clear();',
+            ],
+            '} else if(pos === this.mxpos && depth < this.mnd){',
+            [
+                'this.mnd = depth;',
+                'this.prules.clear();',
+            ],
+            '}',
+            'if(this.mxpos === pos && extraInfo.length >= 2 && extraInfo[0] === \'$$StrMatch\')',
+            [
+                'this.pmatches.add(extraInfo[1]);',
+            ],
+            'if(this.mxpos === pos && this.mnd === depth)',
+            [
+                'extraInfo.forEach(x => this.prules.add(x));',
+            ],
+        ],
+        '}',
         'getErr() : SyntaxErr | null {',
         [
-            'if(this.mxd)',
+            'if(this.mxpos !== -1)',
             [
-                'return new SyntaxErr(this.mxd, this.pmatches);'
+                'return new SyntaxErr(this.mxpos, this.prules, this.pmatches);',
             ],
-            'return null;'
+            'return null;',
         ],
-        '}'
+        '}',
     ],
-    '}'
+    '}',
 ];
 }

@@ -18,7 +18,7 @@
 type Nullable<T> = T | null;
 type $$RuleType<T> = (log? : (msg : string) => void) => Nullable<T>;
 export interface ContextRecorder {
-    record(pos: number, result: any, extraInfo : string[]) : void;
+    record(pos: number, depth : number, result: any, extraInfo : string[]) : void;
 }
 interface ASTNodeIntf {
     kind: ASTKinds;
@@ -156,14 +156,14 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>(fn : $$RuleType<T>,
+    private runner<T>($$dpth : number, fn : $$RuleType<T>,
         cr? : ContextRecorder) : $$RuleType<T> {
         return () => {
             const mrk = this.mark();
             const res = cr ? (()=>{
                 let extraInfo : string[] = [];
                 const res = fn((msg : string) => extraInfo.push(msg));
-                cr.record(mrk, res, extraInfo);
+                cr.record(mrk, $$dpth, res, extraInfo);
                 return res;
             })() : fn();
             if(res)
@@ -180,11 +180,13 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match : string, cr? : ContextRecorder) : Nullable<$$StrMatch> {
-        return this.runner<$$StrMatch>(
+    private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<$$StrMatch> {
+        return this.runner<$$StrMatch>(dpth,
             (log) => {
-                if(log)
+                if(log){
+                    log('$$StrMatch');
                     log(match);
+                }
                 var reg = new RegExp(match, 'y');
                 reg.lastIndex = this.mark();
                 const res = reg.exec(this.input);
@@ -195,180 +197,198 @@ export class Parser {
                 return null;
             }, cr)();
     }
-    matchGRAM(cr? : ContextRecorder) : Nullable<GRAM> {
-        return this.loop<RULEDEF>(()=> this.matchRULEDEF(cr), false);
+    matchGRAM($$dpth : number, cr? : ContextRecorder) : Nullable<GRAM> {
+        return this.loop<RULEDEF>(()=> this.matchRULEDEF($$dpth + 1, cr), false);
     }
-    matchRULEDEF(cr? : ContextRecorder) : Nullable<RULEDEF> {
-        return this.runner<RULEDEF>(
-            () => {
+    matchRULEDEF($$dpth : number, cr? : ContextRecorder) : Nullable<RULEDEF> {
+        return this.runner<RULEDEF>($$dpth,
+            (log) => {
+                if(log)
+                    log('RULEDEF');
                 let name : Nullable<NAME>;
                 let rule : Nullable<RULE>;
                 let res : Nullable<RULEDEF> = null;
                 if(true
-                    && this.match_(cr)
-                    && (name = this.matchNAME(cr))
-                    && this.regexAccept(String.raw`\s*:=\s*`, cr)
-                    && (rule = this.matchRULE(cr))
-                    && this.regexAccept(String.raw`\s*;\s*`, cr)
+                    && this.match_($$dpth + 1, cr)
+                    && (name = this.matchNAME($$dpth + 1, cr))
+                    && this.regexAccept(String.raw`\s*:=\s*`, $$dpth+1, cr)
+                    && (rule = this.matchRULE($$dpth + 1, cr))
+                    && this.regexAccept(String.raw`\s*;\s*`, $$dpth+1, cr)
                 )
                     res = new RULEDEF(name, rule);
                 return res;
             }, cr)();
     }
-    matchRULE(cr? : ContextRecorder) : Nullable<RULE> {
+    matchRULE($$dpth : number, cr? : ContextRecorder) : Nullable<RULE> {
         return this.choice<RULE>([
-            () => { return this.matchRULE_1(cr) },
-            () => { return this.matchRULE_2(cr) },
+            () => { return this.matchRULE_1($$dpth + 1, cr) },
+            () => { return this.matchRULE_2($$dpth + 1, cr) },
         ]);
     }
-    matchRULE_1(cr? : ContextRecorder) : Nullable<RULE_1> {
-        return this.runner<RULE_1>(
-            () => {
+    matchRULE_1($$dpth : number, cr? : ContextRecorder) : Nullable<RULE_1> {
+        return this.runner<RULE_1>($$dpth,
+            (log) => {
+                if(log)
+                    log('RULE_1');
                 let head : Nullable<ALT>;
                 let tail : Nullable<RULE>;
                 let res : Nullable<RULE_1> = null;
                 if(true
-                    && (head = this.matchALT(cr))
-                    && this.regexAccept(String.raw`\s*\|\s*`, cr)
-                    && (tail = this.matchRULE(cr))
+                    && (head = this.matchALT($$dpth + 1, cr))
+                    && this.regexAccept(String.raw`\s*\|\s*`, $$dpth+1, cr)
+                    && (tail = this.matchRULE($$dpth + 1, cr))
                 )
                     res = new RULE_1(head, tail);
                 return res;
             }, cr)();
     }
-    matchRULE_2(cr? : ContextRecorder) : Nullable<RULE_2> {
-        return this.runner<RULE_2>(
-            () => {
+    matchRULE_2($$dpth : number, cr? : ContextRecorder) : Nullable<RULE_2> {
+        return this.runner<RULE_2>($$dpth,
+            (log) => {
+                if(log)
+                    log('RULE_2');
                 let alt : Nullable<ALT>;
                 let res : Nullable<RULE_2> = null;
                 if(true
-                    && (alt = this.matchALT(cr))
+                    && (alt = this.matchALT($$dpth + 1, cr))
                 )
                     res = new RULE_2(alt);
                 return res;
             }, cr)();
     }
-    matchALT(cr? : ContextRecorder) : Nullable<ALT> {
-        return this.loop<MATCHSPEC>(()=> this.matchMATCHSPEC(cr), false);
+    matchALT($$dpth : number, cr? : ContextRecorder) : Nullable<ALT> {
+        return this.loop<MATCHSPEC>(()=> this.matchMATCHSPEC($$dpth + 1, cr), false);
     }
-    matchMATCHSPEC(cr? : ContextRecorder) : Nullable<MATCHSPEC> {
+    matchMATCHSPEC($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC> {
         return this.choice<MATCHSPEC>([
-            () => { return this.matchMATCHSPEC_1(cr) },
-            () => { return this.matchMATCHSPEC_2(cr) },
+            () => { return this.matchMATCHSPEC_1($$dpth + 1, cr) },
+            () => { return this.matchMATCHSPEC_2($$dpth + 1, cr) },
         ]);
     }
-    matchMATCHSPEC_1(cr? : ContextRecorder) : Nullable<MATCHSPEC_1> {
-        return this.runner<MATCHSPEC_1>(
-            () => {
+    matchMATCHSPEC_1($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC_1> {
+        return this.runner<MATCHSPEC_1>($$dpth,
+            (log) => {
+                if(log)
+                    log('MATCHSPEC_1');
                 let name : Nullable<NAME>;
                 let rule : Nullable<RULEXPR>;
                 let res : Nullable<MATCHSPEC_1> = null;
                 if(true
-                    && this.match_(cr)
-                    && (name = this.matchNAME(cr))
-                    && this.regexAccept(String.raw`=`, cr)
-                    && (rule = this.matchRULEXPR(cr))
-                    && this.match_(cr)
+                    && this.match_($$dpth + 1, cr)
+                    && (name = this.matchNAME($$dpth + 1, cr))
+                    && this.regexAccept(String.raw`=`, $$dpth+1, cr)
+                    && (rule = this.matchRULEXPR($$dpth + 1, cr))
+                    && this.match_($$dpth + 1, cr)
                 )
                     res = new MATCHSPEC_1(name, rule);
                 return res;
             }, cr)();
     }
-    matchMATCHSPEC_2(cr? : ContextRecorder) : Nullable<MATCHSPEC_2> {
-        return this.runner<MATCHSPEC_2>(
-            () => {
+    matchMATCHSPEC_2($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC_2> {
+        return this.runner<MATCHSPEC_2>($$dpth,
+            (log) => {
+                if(log)
+                    log('MATCHSPEC_2');
                 let rule : Nullable<RULEXPR>;
                 let res : Nullable<MATCHSPEC_2> = null;
                 if(true
-                    && this.match_(cr)
-                    && (rule = this.matchRULEXPR(cr))
-                    && this.match_(cr)
+                    && this.match_($$dpth + 1, cr)
+                    && (rule = this.matchRULEXPR($$dpth + 1, cr))
+                    && this.match_($$dpth + 1, cr)
                 )
                     res = new MATCHSPEC_2(rule);
                 return res;
             }, cr)();
     }
-    matchRULEXPR(cr? : ContextRecorder) : Nullable<RULEXPR> {
+    matchRULEXPR($$dpth : number, cr? : ContextRecorder) : Nullable<RULEXPR> {
         return this.choice<RULEXPR>([
-            () => { return this.matchRULEXPR_1(cr) },
-            () => { return this.matchRULEXPR_2(cr) },
+            () => { return this.matchRULEXPR_1($$dpth + 1, cr) },
+            () => { return this.matchRULEXPR_2($$dpth + 1, cr) },
         ]);
     }
-    matchRULEXPR_1(cr? : ContextRecorder) : Nullable<RULEXPR_1> {
-        return this.runner<RULEXPR_1>(
-            () => {
+    matchRULEXPR_1($$dpth : number, cr? : ContextRecorder) : Nullable<RULEXPR_1> {
+        return this.runner<RULEXPR_1>($$dpth,
+            (log) => {
+                if(log)
+                    log('RULEXPR_1');
                 let at : Nullable<ATOM>;
                 let op : Nullable<$$StrMatch>;
                 let res : Nullable<RULEXPR_1> = null;
                 if(true
-                    && (at = this.matchATOM(cr))
-                    && (op = this.regexAccept(String.raw`\+|\*`, cr))
+                    && (at = this.matchATOM($$dpth + 1, cr))
+                    && (op = this.regexAccept(String.raw`\+|\*`, $$dpth+1, cr))
                 )
                     res = new RULEXPR_1(at, op);
                 return res;
             }, cr)();
     }
-    matchRULEXPR_2(cr? : ContextRecorder) : Nullable<RULEXPR_2> {
-        return this.matchATOM(cr);
+    matchRULEXPR_2($$dpth : number, cr? : ContextRecorder) : Nullable<RULEXPR_2> {
+        return this.matchATOM($$dpth + 1, cr);
     }
-    matchATOM(cr? : ContextRecorder) : Nullable<ATOM> {
+    matchATOM($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM> {
         return this.choice<ATOM>([
-            () => { return this.matchATOM_1(cr) },
-            () => { return this.matchATOM_2(cr) },
+            () => { return this.matchATOM_1($$dpth + 1, cr) },
+            () => { return this.matchATOM_2($$dpth + 1, cr) },
         ]);
     }
-    matchATOM_1(cr? : ContextRecorder) : Nullable<ATOM_1> {
-        return this.runner<ATOM_1>(
-            () => {
+    matchATOM_1($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM_1> {
+        return this.runner<ATOM_1>($$dpth,
+            (log) => {
+                if(log)
+                    log('ATOM_1');
                 let name : Nullable<NAME>;
                 let res : Nullable<ATOM_1> = null;
                 if(true
-                    && (name = this.matchNAME(cr))
+                    && (name = this.matchNAME($$dpth + 1, cr))
                 )
                     res = new ATOM_1(name);
                 return res;
             }, cr)();
     }
-    matchATOM_2(cr? : ContextRecorder) : Nullable<ATOM_2> {
-        return this.runner<ATOM_2>(
-            () => {
+    matchATOM_2($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM_2> {
+        return this.runner<ATOM_2>($$dpth,
+            (log) => {
+                if(log)
+                    log('ATOM_2');
                 let match : Nullable<STRLIT>;
                 let res : Nullable<ATOM_2> = null;
                 if(true
-                    && (match = this.matchSTRLIT(cr))
+                    && (match = this.matchSTRLIT($$dpth + 1, cr))
                 )
                     res = new ATOM_2(match);
                 return res;
             }, cr)();
     }
-    matchNAME(cr? : ContextRecorder) : Nullable<NAME> {
-        return this.regexAccept(String.raw`[a-zA-Z_]+`, cr);
+    matchNAME($$dpth : number, cr? : ContextRecorder) : Nullable<NAME> {
+        return this.regexAccept(String.raw`[a-zA-Z_]+`, $$dpth+1, cr);
     }
-    matchSTRLIT(cr? : ContextRecorder) : Nullable<STRLIT> {
-        return this.runner<STRLIT>(
-            () => {
+    matchSTRLIT($$dpth : number, cr? : ContextRecorder) : Nullable<STRLIT> {
+        return this.runner<STRLIT>($$dpth,
+            (log) => {
+                if(log)
+                    log('STRLIT');
                 let val : Nullable<$$StrMatch>;
                 let res : Nullable<STRLIT> = null;
                 if(true
-                    && this.regexAccept(String.raw`\'`, cr)
-                    && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, cr))
-                    && this.regexAccept(String.raw`\'`, cr)
+                    && this.regexAccept(String.raw`\'`, $$dpth+1, cr)
+                    && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, $$dpth+1, cr))
+                    && this.regexAccept(String.raw`\'`, $$dpth+1, cr)
                 )
                     res = new STRLIT(val);
                 return res;
             }, cr)();
     }
-    match_(cr? : ContextRecorder) : Nullable<_> {
-        return this.regexAccept(String.raw`\s*`, cr);
+    match_($$dpth : number, cr? : ContextRecorder) : Nullable<_> {
+        return this.regexAccept(String.raw`\s*`, $$dpth+1, cr);
     }
     parse() : ParseResult {
         const mrk = this.mark();
-        const res = this.matchGRAM();
+        const res = this.matchGRAM(0);
         if(res && this.finished())
             return new ParseResult(res, null);
         this.reset(mrk);
         const rec = new ErrorTracker();
-        this.matchGRAM(rec);
+        this.matchGRAM(0, rec);
         return new ParseResult(res, rec.getErr());
     }
 }
@@ -382,32 +402,42 @@ export class ParseResult {
 }
 export class SyntaxErr {
     pos : number;
-    exp : string[];
-    constructor(pos : number, exp : Set<string>){
+    exprules : string[];
+    expmatches : string[]
+    constructor(pos : number, exprules : Set<string>, expmatches : Set<string>){
         this.pos = pos;
-        this.exp = [...exp];
+        this.exprules = [...exprules];
+        this.expmatches = [...expmatches];
     }
     toString() : string {
-        return `Syntax Error at position ${this.pos}, expected one of ${this.exp.map(x => ` '${x}'`)}`;
+        return `Syntax Error at position ${this.pos}. Tried to match rules ${this.exprules.join(', ')}. Expected one of ${this.expmatches.map(x => ` '${x}'`)}`;
     }
 }
 class ErrorTracker implements ContextRecorder {
-    mxd : number | undefined;
+    mxpos : number = -1;
+    mnd : number = -1;
+    prules : Set<string> = new Set();
     pmatches: Set<string> = new Set();
-    record(pos : number, result : any, extraInfo : string[]){
-        if(result === null) {
-            if(this.mxd && this.mxd > pos)
-                return;
-            if(!this.mxd || this.mxd < pos){
-                this.mxd = pos;
-                this.pmatches = new Set();
-            }
-            extraInfo.forEach(x => this.pmatches.add(x));
+    record(pos : number, depth : number, result : any, extraInfo : string[]){
+        if(result !== null)
+            return;
+        if(pos > this.mxpos){
+            this.mxpos = pos;
+            this.mnd = depth;
+            this.pmatches.clear();
+            this.prules.clear();
+        } else if(pos === this.mxpos && depth < this.mnd){
+            this.mnd = depth;
+            this.prules.clear();
         }
+        if(this.mxpos === pos && extraInfo.length >= 2 && extraInfo[0] === '$$StrMatch')
+            this.pmatches.add(extraInfo[1]);
+        if(this.mxpos === pos && this.mnd === depth)
+            extraInfo.forEach(x => this.prules.add(x));
     }
     getErr() : SyntaxErr | null {
-        if(this.mxd)
-            return new SyntaxErr(this.mxd, this.pmatches);
+        if(this.mxpos !== -1)
+            return new SyntaxErr(this.mxpos, this.prules, this.pmatches);
         return null;
     }
 }
