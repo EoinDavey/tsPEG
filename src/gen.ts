@@ -165,12 +165,11 @@ function writeChoiceParseFn(name : string, alt : Alt) : Block {
     }
     if(namedTypes.length == 0 && alt.length == 1)
         return writeRuleAliasFn(name, alt[0].rule);
-    return [
-        `match${name}($$dpth : number, cr? : ContextRecorder) : Nullable<${name}> {`,
+    return [`match${name}($$dpth : number, cr? : ContextRecorder) : Nullable<${name}> {`,
         [
             `return this.runner<${name}>($$dpth,`,
             [
-                `(log) => {`,
+                '(log) => {',
                 [
                     'if(log)',
                     [
@@ -225,7 +224,9 @@ function writeRuleParseFns(gram : Grammar) : Block {
             'const mrk = this.mark();',
             `const res = this.match${S}(0);`,
             'if(res && this.finished())',
-            '    return new ParseResult(res, null);',
+            [
+                'return new ParseResult(res, null);'
+            ],
             'this.reset(mrk);',
             'const rec = new ErrorTracker();',
             `this.match${S}(0, rec);`,

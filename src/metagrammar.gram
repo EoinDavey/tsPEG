@@ -1,4 +1,4 @@
-GRAM      := 1RULEDEF+;
+GRAM      := RULEDEF+;
 RULEDEF   := _ name=NAME '\s*:=\s*' rule=RULE '\s*;\s*';
 RULE      := head=ALT '\s*\|\s*' tail=RULE
            | alt=ALT;
