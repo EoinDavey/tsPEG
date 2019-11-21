@@ -16,10 +16,8 @@ function compressAST<T, K>(st : T, gt : (x : T) => K, next : (x : T) => T) : K[]
     return ls;
 }
 
-function compressRULE(st : RULE) : ALT[] {
-    return compressAST(st,
-        x => x.kind === ASTKinds.RULE_1 ? x.head : x.alt,
-        x => x.kind === ASTKinds.RULE_1 ? x.tail : x);
+function compressRULE(st : RULE) : Rule {
+    return [st.head, ...st.tail.map(x => x.alt)];
 }
 
 type Alt = MATCHSPEC[];
@@ -28,14 +26,36 @@ type Grammar = Ruledef[];
 class Ruledef {
     name : string;
     rule : Rule;
-    constructor(rd : RULEDEF) {
-        this.name = rd.name.match;
-        this.rule = compressRULE(rd.rule);
+    constructor(name : string, rule : Rule) {
+        this.name = name;
+        this.rule = rule;
     }
 }
 
+const subRules : Map<ATOM, string> = new Map();
+
 function AST2Gram(g : GRAM) : Grammar {
-    return g.map(def => new Ruledef(def));
+    const gram = g.map(def => extractRules(compressRULE(def.rule), def.name.match));
+    return gram.reduce((x, y) => x.concat(y));
+}
+
+function extractRules(rule : Rule, name : string) : Ruledef[] {
+    let cnt = 0;
+    const rules = [new Ruledef(name, rule)];
+    for(let alt of rule){
+        for(let match of alt){
+            const at : ATOM = match.rule.kind === ASTKinds.RULEXPR_1 ? match.rule.at : match.rule;
+            if(at.kind === ASTKinds.ATOM_3){
+                const subrule = at.sub;
+                const nm = `${name}_$${cnt}`;
+                subRules.set(at, nm);
+                const rdfs = extractRules(compressRULE(subrule), nm);
+                rules.push(...rdfs)
+                ++cnt;
+            }
+        }
+    }
+    return rules;
 }
 
 function exprType(expr : RULEXPR) : string {
@@ -53,13 +73,23 @@ function exprRule(expr : RULEXPR) : string {
 function atomRule(at : ATOM) : string {
     if(at.kind === ASTKinds.ATOM_1)
         return `this.match${at.name.match}($$dpth + 1, cr)`;
-    return `this.regexAccept(String.raw\`${at.match.val.match}\`, $$dpth+1, cr)`;
+    if(at.kind === ASTKinds.ATOM_2)
+        return `this.regexAccept(String.raw\`${at.match.val.match}\`, $$dpth+1, cr)`;
+    const subname = subRules.get(at);
+    if(subname)
+        return `this.match${subname}($$dpth + 1, cr)`;
+    return 'ERR';
 }
 
 function atomType(at : ATOM) : string {
     if(at.kind === ASTKinds.ATOM_1)
-        return `${at.name.match}`;
-    return '$$StrMatch';
+        return at.name.match;
+    if(at.kind === ASTKinds.ATOM_2)
+        return '$$StrMatch';
+    const subname = subRules.get(at);
+    if(subname)
+        return subname;
+    return 'ERR';
 }
 
 function writeKinds(gram : Grammar) : Block {
