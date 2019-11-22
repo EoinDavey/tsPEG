@@ -1,0 +1,4 @@
+SUM := head=FAC tail={ op='\+|-' sm=FAC }*;
+FAC := head=ATOM tail={ op='\*|/' sm=ATOM }*;
+ATOM := val=INT | '\(' val=SUM '\)';
+INT  := val='[0-9]+';
