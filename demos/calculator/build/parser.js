@@ -17,6 +17,7 @@ var ASTKinds;
     ASTKinds[ASTKinds["ATOM_1"] = 5] = "ATOM_1";
     ASTKinds[ASTKinds["ATOM_2"] = 6] = "ATOM_2";
     ASTKinds[ASTKinds["INT"] = 7] = "INT";
+    ASTKinds[ASTKinds["_"] = 8] = "_";
 })(ASTKinds = exports.ASTKinds || (exports.ASTKinds = {}));
 class SUM {
     constructor(head, tail) {
@@ -207,7 +208,9 @@ class Parser {
             let val;
             let res = null;
             if (true
-                && (val = this.matchINT($$dpth + 1, cr)))
+                && this.match_($$dpth + 1, cr)
+                && (val = this.matchINT($$dpth + 1, cr))
+                && this.match_($$dpth + 1, cr))
                 res = new ATOM_1(val);
             return res;
         }, cr)();
@@ -219,9 +222,11 @@ class Parser {
             let val;
             let res = null;
             if (true
+                && this.match_($$dpth + 1, cr)
                 && this.regexAccept(String.raw `\(`, $$dpth + 1, cr)
                 && (val = this.matchSUM($$dpth + 1, cr))
-                && this.regexAccept(String.raw `\)`, $$dpth + 1, cr))
+                && this.regexAccept(String.raw `\)`, $$dpth + 1, cr)
+                && this.match_($$dpth + 1, cr))
                 res = new ATOM_2(val);
             return res;
         }, cr)();
@@ -237,6 +242,9 @@ class Parser {
                 res = new INT(val);
             return res;
         }, cr)();
+    }
+    match_($$dpth, cr) {
+        return this.regexAccept(String.raw `\s*`, $$dpth + 1, cr);
     }
     parse() {
         const mrk = this.mark();
@@ -291,7 +299,8 @@ class ErrorTracker {
         if (this.mxpos === pos && extraInfo.length >= 2 && extraInfo[0] === '$$StrMatch')
             this.pmatches.add(extraInfo[1]);
         if (this.mxpos === pos && this.mnd === depth)
-            extraInfo.forEach(x => this.prules.add(x));
+            extraInfo.forEach(x => { if (x !== '$$StrMatch')
+                this.prules.add(x); });
     }
     getErr() {
         if (this.mxpos !== -1)

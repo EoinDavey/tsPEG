@@ -4,18 +4,6 @@ import { expandTemplate } from './template';
 
 import { Block, indentBlock, writeBlock } from './util';
 
-function compressAST<T, K>(st : T, gt : (x : T) => K, next : (x : T) => T) : K[] {
-    let v : T  = st;
-    let ls : K[] = [];
-    while(true) {
-        ls.push(gt(v));
-        if(v === next(v))
-            break;
-        v = next(v);
-    }
-    return ls;
-}
-
 function compressRULE(st : RULE) : Rule {
     return [st.head, ...st.tail.map(x => x.alt)];
 }

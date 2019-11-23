@@ -199,7 +199,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
             ],
             'if(this.mxpos === pos && this.mnd === depth)',
             [
-                'extraInfo.forEach(x => this.prules.add(x));',
+                'extraInfo.forEach(x => { if(x !== \'$$StrMatch\') this.prules.add(x)});',
             ],
         ],
         '}',
