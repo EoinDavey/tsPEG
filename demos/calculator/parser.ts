@@ -14,15 +14,7 @@ export interface ContextRecorder {
 interface ASTNodeIntf {
     kind: ASTKinds;
 }
-export class $$StrMatch implements ASTNodeIntf {
-    kind: ASTKinds.$$StrMatch = ASTKinds.$$StrMatch;
-    match : string;
-    constructor(val : string){
-        this.match = val;
-    }
-}
 export enum ASTKinds {
-    $$StrMatch,
     SUM,
     SUM_$0,
     FAC,
@@ -36,16 +28,16 @@ export class SUM implements ASTNodeIntf {
     kind : ASTKinds.SUM = ASTKinds.SUM;
     head : FAC;
     tail : SUM_$0[];
-    constructor(head : FAC,tail : SUM_$0[]){
+    constructor(head : FAC, tail : SUM_$0[]){
         this.head = head;
         this.tail = tail;
     }
 }
 export class SUM_$0 implements ASTNodeIntf {
     kind : ASTKinds.SUM_$0 = ASTKinds.SUM_$0;
-    op : $$StrMatch;
+    op : string;
     sm : FAC;
-    constructor(op : $$StrMatch,sm : FAC){
+    constructor(op : string, sm : FAC){
         this.op = op;
         this.sm = sm;
     }
@@ -54,16 +46,16 @@ export class FAC implements ASTNodeIntf {
     kind : ASTKinds.FAC = ASTKinds.FAC;
     head : ATOM;
     tail : FAC_$0[];
-    constructor(head : ATOM,tail : FAC_$0[]){
+    constructor(head : ATOM, tail : FAC_$0[]){
         this.head = head;
         this.tail = tail;
     }
 }
 export class FAC_$0 implements ASTNodeIntf {
     kind : ASTKinds.FAC_$0 = ASTKinds.FAC_$0;
-    op : $$StrMatch;
+    op : string;
     sm : ATOM;
-    constructor(op : $$StrMatch,sm : ATOM){
+    constructor(op : string, sm : ATOM){
         this.op = op;
         this.sm = sm;
     }
@@ -85,12 +77,12 @@ export class ATOM_2 implements ASTNodeIntf {
 }
 export class INT implements ASTNodeIntf {
     kind : ASTKinds.INT = ASTKinds.INT;
-    val : $$StrMatch;
-    constructor(val : $$StrMatch){
+    val : string;
+    constructor(val : string){
         this.val = val;
     }
 }
-export type _ = $$StrMatch;
+export type _ = string;
 export class Parser {
     private pos : number = 0;
     readonly input : string;
@@ -130,7 +122,7 @@ export class Parser {
                 cr.record(mrk, $$dpth, res, extraInfo);
                 return res;
             })() : fn();
-            if(res)
+            if(res !== null)
                 return res;
             this.reset(mrk);
             return null
@@ -144,8 +136,8 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<$$StrMatch> {
-        return this.runner<$$StrMatch>(dpth,
+    private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<string> {
+        return this.runner<string>(dpth,
             (log) => {
                 if(log){
                     log('$$StrMatch');
@@ -156,10 +148,16 @@ export class Parser {
                 const res = reg.exec(this.input);
                 if(res){
                     this.pos = reg.lastIndex;
-                    return new $$StrMatch(res[0]);
+                    return res[0];
                 }
                 return null;
             }, cr)();
+    }
+    private noConsume<T>($$dpth : number, fn : $$RuleType<T>, cr? : ContextRecorder) : Nullable<T> {
+        const mrk = this.mark();
+        const res = fn();
+        this.reset(mrk);
+        return res;
     }
     matchSUM($$dpth : number, cr? : ContextRecorder) : Nullable<SUM> {
         return this.runner<SUM>($$dpth,
@@ -170,8 +168,8 @@ export class Parser {
                 let tail : Nullable<SUM_$0[]>;
                 let res : Nullable<SUM> = null;
                 if(true
-                    && (head = this.matchFAC($$dpth + 1, cr))
-                    && (tail = this.loop<SUM_$0>(()=> this.matchSUM_$0($$dpth + 1, cr), true))
+                    && (head = this.matchFAC($$dpth + 1, cr)) != null
+                    && (tail = this.loop<SUM_$0>(()=> this.matchSUM_$0($$dpth + 1, cr), true)) != null
                 )
                     res = new SUM(head, tail);
                 return res;
@@ -182,12 +180,12 @@ export class Parser {
             (log) => {
                 if(log)
                     log('SUM_$0');
-                let op : Nullable<$$StrMatch>;
+                let op : Nullable<string>;
                 let sm : Nullable<FAC>;
                 let res : Nullable<SUM_$0> = null;
                 if(true
-                    && (op = this.regexAccept(String.raw`\+|-`, $$dpth+1, cr))
-                    && (sm = this.matchFAC($$dpth + 1, cr))
+                    && (op = this.regexAccept(String.raw`\+|-`, $$dpth+1, cr)) != null
+                    && (sm = this.matchFAC($$dpth + 1, cr)) != null
                 )
                     res = new SUM_$0(op, sm);
                 return res;
@@ -202,8 +200,8 @@ export class Parser {
                 let tail : Nullable<FAC_$0[]>;
                 let res : Nullable<FAC> = null;
                 if(true
-                    && (head = this.matchATOM($$dpth + 1, cr))
-                    && (tail = this.loop<FAC_$0>(()=> this.matchFAC_$0($$dpth + 1, cr), true))
+                    && (head = this.matchATOM($$dpth + 1, cr)) != null
+                    && (tail = this.loop<FAC_$0>(()=> this.matchFAC_$0($$dpth + 1, cr), true)) != null
                 )
                     res = new FAC(head, tail);
                 return res;
@@ -214,12 +212,12 @@ export class Parser {
             (log) => {
                 if(log)
                     log('FAC_$0');
-                let op : Nullable<$$StrMatch>;
+                let op : Nullable<string>;
                 let sm : Nullable<ATOM>;
                 let res : Nullable<FAC_$0> = null;
                 if(true
-                    && (op = this.regexAccept(String.raw`\*|/`, $$dpth+1, cr))
-                    && (sm = this.matchATOM($$dpth + 1, cr))
+                    && (op = this.regexAccept(String.raw`\*|/`, $$dpth+1, cr)) != null
+                    && (sm = this.matchATOM($$dpth + 1, cr)) != null
                 )
                     res = new FAC_$0(op, sm);
                 return res;
@@ -239,9 +237,9 @@ export class Parser {
                 let val : Nullable<INT>;
                 let res : Nullable<ATOM_1> = null;
                 if(true
-                    && this.match_($$dpth + 1, cr)
-                    && (val = this.matchINT($$dpth + 1, cr))
-                    && this.match_($$dpth + 1, cr)
+                    && this.match_($$dpth + 1, cr) != null
+                    && (val = this.matchINT($$dpth + 1, cr)) != null
+                    && this.match_($$dpth + 1, cr) != null
                 )
                     res = new ATOM_1(val);
                 return res;
@@ -255,11 +253,11 @@ export class Parser {
                 let val : Nullable<SUM>;
                 let res : Nullable<ATOM_2> = null;
                 if(true
-                    && this.match_($$dpth + 1, cr)
-                    && this.regexAccept(String.raw`\(`, $$dpth+1, cr)
-                    && (val = this.matchSUM($$dpth + 1, cr))
-                    && this.regexAccept(String.raw`\)`, $$dpth+1, cr)
-                    && this.match_($$dpth + 1, cr)
+                    && this.match_($$dpth + 1, cr) != null
+                    && this.regexAccept(String.raw`\(`, $$dpth+1, cr) != null
+                    && (val = this.matchSUM($$dpth + 1, cr)) != null
+                    && this.regexAccept(String.raw`\)`, $$dpth+1, cr) != null
+                    && this.match_($$dpth + 1, cr) != null
                 )
                     res = new ATOM_2(val);
                 return res;
@@ -270,10 +268,10 @@ export class Parser {
             (log) => {
                 if(log)
                     log('INT');
-                let val : Nullable<$$StrMatch>;
+                let val : Nullable<string>;
                 let res : Nullable<INT> = null;
                 if(true
-                    && (val = this.regexAccept(String.raw`[0-9]+`, $$dpth+1, cr))
+                    && (val = this.regexAccept(String.raw`[0-9]+`, $$dpth+1, cr)) != null
                 )
                     res = new INT(val);
                 return res;

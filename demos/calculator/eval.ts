@@ -10,7 +10,7 @@ export function evaluate(input : string) : number | null {
 }
 
 function calcInt(at : Parser.INT) : number {
-    return parseInt(at.val.match);
+    return parseInt(at.val);
 }
 
 function calcAtom(at : Parser.ATOM) : number {
@@ -21,7 +21,7 @@ function calcAtom(at : Parser.ATOM) : number {
 
 function calcFac(at : Parser.FAC) : number {
     return at.tail.reduce((x, y) => {
-        if(y.op.match === '*')
+        if(y.op === '*')
             return x * calcAtom(y.sm);
         return x / calcAtom(y.sm);
     }, calcAtom(at.head));
@@ -29,7 +29,7 @@ function calcFac(at : Parser.FAC) : number {
 
 function calcSum(at : Parser.SUM) : number {
     return at.tail.reduce((x, y) => {
-        if(y.op.match === '+')
+        if(y.op === '+')
             return x + calcFac(y.sm);
         return x - calcFac(y.sm);
     }, calcFac(at.head));

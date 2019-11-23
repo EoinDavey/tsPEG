@@ -23,15 +23,7 @@ export interface ContextRecorder {
 interface ASTNodeIntf {
     kind: ASTKinds;
 }
-export class $$StrMatch implements ASTNodeIntf {
-    kind: ASTKinds.$$StrMatch = ASTKinds.$$StrMatch;
-    match : string;
-    constructor(val : string){
-        this.match = val;
-    }
-}
 export enum ASTKinds {
-    $$StrMatch,
     GRAM,
     RULEDEF,
     RULE,
@@ -95,17 +87,17 @@ export class MATCHSPEC_2 implements ASTNodeIntf {
 export class POSTOP implements ASTNodeIntf {
     kind : ASTKinds.POSTOP = ASTKinds.POSTOP;
     pre : PREOP;
-    op : Nullable<$$StrMatch>;
-    constructor(pre : PREOP, op : Nullable<$$StrMatch>){
+    op : Nullable<string>;
+    constructor(pre : PREOP, op : Nullable<string>){
         this.pre = pre;
         this.op = op;
     }
 }
 export class PREOP implements ASTNodeIntf {
     kind : ASTKinds.PREOP = ASTKinds.PREOP;
-    op : Nullable<$$StrMatch>;
+    op : Nullable<string>;
     at : ATOM;
-    constructor(op : Nullable<$$StrMatch>, at : ATOM){
+    constructor(op : Nullable<string>, at : ATOM){
         this.op = op;
         this.at = at;
     }
@@ -132,15 +124,15 @@ export class ATOM_3 implements ASTNodeIntf {
         this.sub = sub;
     }
 }
-export type NAME = $$StrMatch;
+export type NAME = string;
 export class STRLIT implements ASTNodeIntf {
     kind : ASTKinds.STRLIT = ASTKinds.STRLIT;
-    val : $$StrMatch;
-    constructor(val : $$StrMatch){
+    val : string;
+    constructor(val : string){
         this.val = val;
     }
 }
-export type _ = $$StrMatch;
+export type _ = string;
 export class Parser {
     private pos : number = 0;
     readonly input : string;
@@ -180,7 +172,7 @@ export class Parser {
                 cr.record(mrk, $$dpth, res, extraInfo);
                 return res;
             })() : fn();
-            if(res)
+            if(res !== null)
                 return res;
             this.reset(mrk);
             return null
@@ -194,8 +186,8 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<$$StrMatch> {
-        return this.runner<$$StrMatch>(dpth,
+    private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<string> {
+        return this.runner<string>(dpth,
             (log) => {
                 if(log){
                     log('$$StrMatch');
@@ -206,7 +198,7 @@ export class Parser {
                 const res = reg.exec(this.input);
                 if(res){
                     this.pos = reg.lastIndex;
-                    return new $$StrMatch(res[0]);
+                    return res[0];
                 }
                 return null;
             }, cr)();
@@ -229,15 +221,15 @@ export class Parser {
                 let rule : Nullable<RULE>;
                 let res : Nullable<RULEDEF> = null;
                 if(true
-                    && this.match_($$dpth + 1, cr)
-                    && (name = this.matchNAME($$dpth + 1, cr))
-                    && this.match_($$dpth + 1, cr)
-                    && this.regexAccept(String.raw`:=`, $$dpth+1, cr)
-                    && this.match_($$dpth + 1, cr)
-                    && (rule = this.matchRULE($$dpth + 1, cr))
-                    && this.match_($$dpth + 1, cr)
-                    && this.regexAccept(String.raw`;`, $$dpth+1, cr)
-                    && this.match_($$dpth + 1, cr)
+                    && this.match_($$dpth + 1, cr) != null
+                    && (name = this.matchNAME($$dpth + 1, cr)) != null
+                    && this.match_($$dpth + 1, cr) != null
+                    && this.regexAccept(String.raw`:=`, $$dpth+1, cr) != null
+                    && this.match_($$dpth + 1, cr) != null
+                    && (rule = this.matchRULE($$dpth + 1, cr)) != null
+                    && this.match_($$dpth + 1, cr) != null
+                    && this.regexAccept(String.raw`;`, $$dpth+1, cr) != null
+                    && this.match_($$dpth + 1, cr) != null
                 )
                     res = new RULEDEF(name, rule);
                 return res;
@@ -252,8 +244,8 @@ export class Parser {
                 let tail : Nullable<RULE_$0[]>;
                 let res : Nullable<RULE> = null;
                 if(true
-                    && (head = this.matchALT($$dpth + 1, cr))
-                    && (tail = this.loop<RULE_$0>(()=> this.matchRULE_$0($$dpth + 1, cr), true))
+                    && (head = this.matchALT($$dpth + 1, cr)) != null
+                    && (tail = this.loop<RULE_$0>(()=> this.matchRULE_$0($$dpth + 1, cr), true)) != null
                 )
                     res = new RULE(head, tail);
                 return res;
@@ -267,10 +259,10 @@ export class Parser {
                 let alt : Nullable<ALT>;
                 let res : Nullable<RULE_$0> = null;
                 if(true
-                    && this.match_($$dpth + 1, cr)
-                    && this.regexAccept(String.raw`\|`, $$dpth+1, cr)
-                    && this.match_($$dpth + 1, cr)
-                    && (alt = this.matchALT($$dpth + 1, cr))
+                    && this.match_($$dpth + 1, cr) != null
+                    && this.regexAccept(String.raw`\|`, $$dpth+1, cr) != null
+                    && this.match_($$dpth + 1, cr) != null
+                    && (alt = this.matchALT($$dpth + 1, cr)) != null
                 )
                     res = new RULE_$0(alt);
                 return res;
@@ -294,11 +286,11 @@ export class Parser {
                 let rule : Nullable<POSTOP>;
                 let res : Nullable<MATCHSPEC_1> = null;
                 if(true
-                    && this.match_($$dpth + 1, cr)
-                    && (name = this.matchNAME($$dpth + 1, cr))
-                    && this.regexAccept(String.raw`=`, $$dpth+1, cr)
-                    && (rule = this.matchPOSTOP($$dpth + 1, cr))
-                    && this.match_($$dpth + 1, cr)
+                    && this.match_($$dpth + 1, cr) != null
+                    && (name = this.matchNAME($$dpth + 1, cr)) != null
+                    && this.regexAccept(String.raw`=`, $$dpth+1, cr) != null
+                    && (rule = this.matchPOSTOP($$dpth + 1, cr)) != null
+                    && this.match_($$dpth + 1, cr) != null
                 )
                     res = new MATCHSPEC_1(name, rule);
                 return res;
@@ -312,9 +304,9 @@ export class Parser {
                 let rule : Nullable<POSTOP>;
                 let res : Nullable<MATCHSPEC_2> = null;
                 if(true
-                    && this.match_($$dpth + 1, cr)
-                    && (rule = this.matchPOSTOP($$dpth + 1, cr))
-                    && this.match_($$dpth + 1, cr)
+                    && this.match_($$dpth + 1, cr) != null
+                    && (rule = this.matchPOSTOP($$dpth + 1, cr)) != null
+                    && this.match_($$dpth + 1, cr) != null
                 )
                     res = new MATCHSPEC_2(rule);
                 return res;
@@ -326,10 +318,10 @@ export class Parser {
                 if(log)
                     log('POSTOP');
                 let pre : Nullable<PREOP>;
-                let op : Nullable<Nullable<$$StrMatch>>;
+                let op : Nullable<Nullable<string>>;
                 let res : Nullable<POSTOP> = null;
                 if(true
-                    && (pre = this.matchPREOP($$dpth + 1, cr))
+                    && (pre = this.matchPREOP($$dpth + 1, cr)) != null
                     && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth+1, cr)) || true)
                 )
                     res = new POSTOP(pre, op);
@@ -341,12 +333,12 @@ export class Parser {
             (log) => {
                 if(log)
                     log('PREOP');
-                let op : Nullable<Nullable<$$StrMatch>>;
+                let op : Nullable<Nullable<string>>;
                 let at : Nullable<ATOM>;
                 let res : Nullable<PREOP> = null;
                 if(true
                     && ((op = this.regexAccept(String.raw`\&`, $$dpth+1, cr)) || true)
-                    && (at = this.matchATOM($$dpth + 1, cr))
+                    && (at = this.matchATOM($$dpth + 1, cr)) != null
                 )
                     res = new PREOP(op, at);
                 return res;
@@ -367,7 +359,7 @@ export class Parser {
                 let name : Nullable<NAME>;
                 let res : Nullable<ATOM_1> = null;
                 if(true
-                    && (name = this.matchNAME($$dpth + 1, cr))
+                    && (name = this.matchNAME($$dpth + 1, cr)) != null
                 )
                     res = new ATOM_1(name);
                 return res;
@@ -381,7 +373,7 @@ export class Parser {
                 let match : Nullable<STRLIT>;
                 let res : Nullable<ATOM_2> = null;
                 if(true
-                    && (match = this.matchSTRLIT($$dpth + 1, cr))
+                    && (match = this.matchSTRLIT($$dpth + 1, cr)) != null
                 )
                     res = new ATOM_2(match);
                 return res;
@@ -395,11 +387,11 @@ export class Parser {
                 let sub : Nullable<RULE>;
                 let res : Nullable<ATOM_3> = null;
                 if(true
-                    && this.regexAccept(String.raw`{`, $$dpth+1, cr)
-                    && this.match_($$dpth + 1, cr)
-                    && (sub = this.matchRULE($$dpth + 1, cr))
-                    && this.match_($$dpth + 1, cr)
-                    && this.regexAccept(String.raw`}`, $$dpth+1, cr)
+                    && this.regexAccept(String.raw`{`, $$dpth+1, cr) != null
+                    && this.match_($$dpth + 1, cr) != null
+                    && (sub = this.matchRULE($$dpth + 1, cr)) != null
+                    && this.match_($$dpth + 1, cr) != null
+                    && this.regexAccept(String.raw`}`, $$dpth+1, cr) != null
                 )
                     res = new ATOM_3(sub);
                 return res;
@@ -413,12 +405,12 @@ export class Parser {
             (log) => {
                 if(log)
                     log('STRLIT');
-                let val : Nullable<$$StrMatch>;
+                let val : Nullable<string>;
                 let res : Nullable<STRLIT> = null;
                 if(true
-                    && this.regexAccept(String.raw`\'`, $$dpth+1, cr)
-                    && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, $$dpth+1, cr))
-                    && this.regexAccept(String.raw`\'`, $$dpth+1, cr)
+                    && this.regexAccept(String.raw`\'`, $$dpth+1, cr) != null
+                    && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, $$dpth+1, cr)) != null
+                    && this.regexAccept(String.raw`\'`, $$dpth+1, cr) != null
                 )
                     res = new STRLIT(val);
                 return res;

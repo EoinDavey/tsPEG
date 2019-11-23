@@ -18,17 +18,6 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
         'kind: ASTKinds;',
     ],
     '}',
-    'export class $$StrMatch implements ASTNodeIntf {',
-    [
-        'kind: ASTKinds.$$StrMatch = ASTKinds.$$StrMatch;',
-        'match : string;',
-        'constructor(val : string){',
-        [
-            'this.match = val;',
-        ],
-        '}',
-    ],
-    '}',
     ...kinds,
     ...ruleClasses,
     'export class Parser {',
@@ -91,7 +80,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
                     'return res;'
                 ],
                 '})() : fn();',
-                'if(res)',
+                'if(res !== null)',
                 [
                     'return res;'
                 ],
@@ -116,9 +105,9 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
             'return null;'
         ],
         '}',
-        'private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<$$StrMatch> {',
+        'private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<string> {',
         [
-            'return this.runner<$$StrMatch>(dpth,',
+            'return this.runner<string>(dpth,',
             [
                 '(log) => {',
                 [
@@ -134,7 +123,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
                     'if(res){',
                     [
                         'this.pos = reg.lastIndex;',
-                        'return new $$StrMatch(res[0]);'
+                        'return res[0];'
                     ],
                     '}',
                     'return null;'

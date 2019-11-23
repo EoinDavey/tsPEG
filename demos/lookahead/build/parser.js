@@ -1,21 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class $$StrMatch {
-    constructor(val) {
-        this.kind = ASTKinds.$$StrMatch;
-        this.match = val;
-    }
-}
-exports.$$StrMatch = $$StrMatch;
 var ASTKinds;
 (function (ASTKinds) {
-    ASTKinds[ASTKinds["$$StrMatch"] = 0] = "$$StrMatch";
-    ASTKinds[ASTKinds["S"] = 1] = "S";
-    ASTKinds[ASTKinds["S_$0"] = 2] = "S_$0";
-    ASTKinds[ASTKinds["A_1"] = 3] = "A_1";
-    ASTKinds[ASTKinds["A_2"] = 4] = "A_2";
-    ASTKinds[ASTKinds["B_1"] = 5] = "B_1";
-    ASTKinds[ASTKinds["B_2"] = 6] = "B_2";
+    ASTKinds[ASTKinds["S"] = 0] = "S";
+    ASTKinds[ASTKinds["S_$0"] = 1] = "S_$0";
+    ASTKinds[ASTKinds["A"] = 2] = "A";
+    ASTKinds[ASTKinds["B"] = 3] = "B";
 })(ASTKinds = exports.ASTKinds || (exports.ASTKinds = {}));
 class S {
     constructor() {
@@ -29,18 +19,18 @@ class S_$0 {
     }
 }
 exports.S_$0 = S_$0;
-class A_1 {
+class A {
     constructor() {
-        this.kind = ASTKinds.A_1;
+        this.kind = ASTKinds.A;
     }
 }
-exports.A_1 = A_1;
-class B_1 {
+exports.A = A;
+class B {
     constructor() {
-        this.kind = ASTKinds.B_1;
+        this.kind = ASTKinds.B;
     }
 }
-exports.B_1 = B_1;
+exports.B = B;
 class Parser {
     constructor(input) {
         this.pos = 0;
@@ -78,7 +68,7 @@ class Parser {
                 cr.record(mrk, $$dpth, res, extraInfo);
                 return res;
             })() : fn();
-            if (res)
+            if (res !== null)
                 return res;
             this.reset(mrk);
             return null;
@@ -103,7 +93,7 @@ class Parser {
             const res = reg.exec(this.input);
             if (res) {
                 this.pos = reg.lastIndex;
-                return new $$StrMatch(res[0]);
+                return res[0];
             }
             return null;
         }, cr)();
@@ -120,9 +110,9 @@ class Parser {
                 log('S');
             let res = null;
             if (true
-                && this.noConsume($$dpth + 1, () => this.matchS_$0($$dpth + 1, cr))
-                && this.loop(() => this.regexAccept(String.raw `a`, $$dpth + 1, cr), false)
-                && this.matchB($$dpth + 1, cr))
+                && this.noConsume($$dpth + 1, () => this.matchS_$0($$dpth + 1, cr)) != null
+                && this.loop(() => this.regexAccept(String.raw `a`, $$dpth + 1, cr), false) != null
+                && this.matchB($$dpth + 1, cr) != null)
                 res = new S();
             return res;
         }, cr)();
@@ -133,55 +123,37 @@ class Parser {
                 log('S_$0');
             let res = null;
             if (true
-                && this.matchA($$dpth + 1, cr)
-                && this.regexAccept(String.raw `c`, $$dpth + 1, cr))
+                && this.matchA($$dpth + 1, cr) != null
+                && this.regexAccept(String.raw `c`, $$dpth + 1, cr) != null)
                 res = new S_$0();
             return res;
         }, cr)();
     }
     matchA($$dpth, cr) {
-        return this.choice([
-            () => { return this.matchA_1($$dpth + 1, cr); },
-            () => { return this.matchA_2($$dpth + 1, cr); },
-        ]);
-    }
-    matchA_1($$dpth, cr) {
         return this.runner($$dpth, (log) => {
             if (log)
-                log('A_1');
+                log('A');
             let res = null;
             if (true
-                && this.regexAccept(String.raw `a`, $$dpth + 1, cr)
-                && this.matchA($$dpth + 1, cr)
-                && this.regexAccept(String.raw `b`, $$dpth + 1, cr))
-                res = new A_1();
+                && this.regexAccept(String.raw `a`, $$dpth + 1, cr) != null
+                && ((this.matchA($$dpth + 1, cr)) || true)
+                && this.regexAccept(String.raw `b`, $$dpth + 1, cr) != null)
+                res = new A();
             return res;
         }, cr)();
-    }
-    matchA_2($$dpth, cr) {
-        return this.regexAccept(String.raw `ab`, $$dpth + 1, cr);
     }
     matchB($$dpth, cr) {
-        return this.choice([
-            () => { return this.matchB_1($$dpth + 1, cr); },
-            () => { return this.matchB_2($$dpth + 1, cr); },
-        ]);
-    }
-    matchB_1($$dpth, cr) {
         return this.runner($$dpth, (log) => {
             if (log)
-                log('B_1');
+                log('B');
             let res = null;
             if (true
-                && this.regexAccept(String.raw `b`, $$dpth + 1, cr)
-                && this.matchB($$dpth + 1, cr)
-                && this.regexAccept(String.raw `c`, $$dpth + 1, cr))
-                res = new B_1();
+                && this.regexAccept(String.raw `b`, $$dpth + 1, cr) != null
+                && ((this.matchB($$dpth + 1, cr)) || true)
+                && this.regexAccept(String.raw `c`, $$dpth + 1, cr) != null)
+                res = new B();
             return res;
         }, cr)();
-    }
-    matchB_2($$dpth, cr) {
-        return this.regexAccept(String.raw `bc`, $$dpth + 1, cr);
     }
     parse() {
         const mrk = this.mark();

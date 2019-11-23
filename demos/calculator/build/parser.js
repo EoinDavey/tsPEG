@@ -1,23 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class $$StrMatch {
-    constructor(val) {
-        this.kind = ASTKinds.$$StrMatch;
-        this.match = val;
-    }
-}
-exports.$$StrMatch = $$StrMatch;
 var ASTKinds;
 (function (ASTKinds) {
-    ASTKinds[ASTKinds["$$StrMatch"] = 0] = "$$StrMatch";
-    ASTKinds[ASTKinds["SUM"] = 1] = "SUM";
-    ASTKinds[ASTKinds["SUM_$0"] = 2] = "SUM_$0";
-    ASTKinds[ASTKinds["FAC"] = 3] = "FAC";
-    ASTKinds[ASTKinds["FAC_$0"] = 4] = "FAC_$0";
-    ASTKinds[ASTKinds["ATOM_1"] = 5] = "ATOM_1";
-    ASTKinds[ASTKinds["ATOM_2"] = 6] = "ATOM_2";
-    ASTKinds[ASTKinds["INT"] = 7] = "INT";
-    ASTKinds[ASTKinds["_"] = 8] = "_";
+    ASTKinds[ASTKinds["SUM"] = 0] = "SUM";
+    ASTKinds[ASTKinds["SUM_$0"] = 1] = "SUM_$0";
+    ASTKinds[ASTKinds["FAC"] = 2] = "FAC";
+    ASTKinds[ASTKinds["FAC_$0"] = 3] = "FAC_$0";
+    ASTKinds[ASTKinds["ATOM_1"] = 4] = "ATOM_1";
+    ASTKinds[ASTKinds["ATOM_2"] = 5] = "ATOM_2";
+    ASTKinds[ASTKinds["INT"] = 6] = "INT";
+    ASTKinds[ASTKinds["_"] = 7] = "_";
 })(ASTKinds = exports.ASTKinds || (exports.ASTKinds = {}));
 class SUM {
     constructor(head, tail) {
@@ -109,7 +101,7 @@ class Parser {
                 cr.record(mrk, $$dpth, res, extraInfo);
                 return res;
             })() : fn();
-            if (res)
+            if (res !== null)
                 return res;
             this.reset(mrk);
             return null;
@@ -134,10 +126,16 @@ class Parser {
             const res = reg.exec(this.input);
             if (res) {
                 this.pos = reg.lastIndex;
-                return new $$StrMatch(res[0]);
+                return res[0];
             }
             return null;
         }, cr)();
+    }
+    noConsume($$dpth, fn, cr) {
+        const mrk = this.mark();
+        const res = fn();
+        this.reset(mrk);
+        return res;
     }
     matchSUM($$dpth, cr) {
         return this.runner($$dpth, (log) => {
@@ -147,8 +145,8 @@ class Parser {
             let tail;
             let res = null;
             if (true
-                && (head = this.matchFAC($$dpth + 1, cr))
-                && (tail = this.loop(() => this.matchSUM_$0($$dpth + 1, cr), true)))
+                && (head = this.matchFAC($$dpth + 1, cr)) != null
+                && (tail = this.loop(() => this.matchSUM_$0($$dpth + 1, cr), true)) != null)
                 res = new SUM(head, tail);
             return res;
         }, cr)();
@@ -161,8 +159,8 @@ class Parser {
             let sm;
             let res = null;
             if (true
-                && (op = this.regexAccept(String.raw `\+|-`, $$dpth + 1, cr))
-                && (sm = this.matchFAC($$dpth + 1, cr)))
+                && (op = this.regexAccept(String.raw `\+|-`, $$dpth + 1, cr)) != null
+                && (sm = this.matchFAC($$dpth + 1, cr)) != null)
                 res = new SUM_$0(op, sm);
             return res;
         }, cr)();
@@ -175,8 +173,8 @@ class Parser {
             let tail;
             let res = null;
             if (true
-                && (head = this.matchATOM($$dpth + 1, cr))
-                && (tail = this.loop(() => this.matchFAC_$0($$dpth + 1, cr), true)))
+                && (head = this.matchATOM($$dpth + 1, cr)) != null
+                && (tail = this.loop(() => this.matchFAC_$0($$dpth + 1, cr), true)) != null)
                 res = new FAC(head, tail);
             return res;
         }, cr)();
@@ -189,8 +187,8 @@ class Parser {
             let sm;
             let res = null;
             if (true
-                && (op = this.regexAccept(String.raw `\*|/`, $$dpth + 1, cr))
-                && (sm = this.matchATOM($$dpth + 1, cr)))
+                && (op = this.regexAccept(String.raw `\*|/`, $$dpth + 1, cr)) != null
+                && (sm = this.matchATOM($$dpth + 1, cr)) != null)
                 res = new FAC_$0(op, sm);
             return res;
         }, cr)();
@@ -208,9 +206,9 @@ class Parser {
             let val;
             let res = null;
             if (true
-                && this.match_($$dpth + 1, cr)
-                && (val = this.matchINT($$dpth + 1, cr))
-                && this.match_($$dpth + 1, cr))
+                && this.match_($$dpth + 1, cr) != null
+                && (val = this.matchINT($$dpth + 1, cr)) != null
+                && this.match_($$dpth + 1, cr) != null)
                 res = new ATOM_1(val);
             return res;
         }, cr)();
@@ -222,11 +220,11 @@ class Parser {
             let val;
             let res = null;
             if (true
-                && this.match_($$dpth + 1, cr)
-                && this.regexAccept(String.raw `\(`, $$dpth + 1, cr)
-                && (val = this.matchSUM($$dpth + 1, cr))
-                && this.regexAccept(String.raw `\)`, $$dpth + 1, cr)
-                && this.match_($$dpth + 1, cr))
+                && this.match_($$dpth + 1, cr) != null
+                && this.regexAccept(String.raw `\(`, $$dpth + 1, cr) != null
+                && (val = this.matchSUM($$dpth + 1, cr)) != null
+                && this.regexAccept(String.raw `\)`, $$dpth + 1, cr) != null
+                && this.match_($$dpth + 1, cr) != null)
                 res = new ATOM_2(val);
             return res;
         }, cr)();
@@ -238,7 +236,7 @@ class Parser {
             let val;
             let res = null;
             if (true
-                && (val = this.regexAccept(String.raw `[0-9]+`, $$dpth + 1, cr)))
+                && (val = this.regexAccept(String.raw `[0-9]+`, $$dpth + 1, cr)) != null)
                 res = new INT(val);
             return res;
         }, cr)();

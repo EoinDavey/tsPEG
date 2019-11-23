@@ -23,7 +23,7 @@ class Ruledef {
 const subRules : Map<ATOM, string> = new Map();
 
 function AST2Gram(g : GRAM) : Grammar {
-    const gram = g.map(def => extractRules(compressRULE(def.rule), def.name.match));
+    const gram = g.map(def => extractRules(compressRULE(def.rule), def.name));
     return gram.reduce((x, y) => x.concat(y));
 }
 
@@ -55,14 +55,14 @@ function preType(expr : PREOP) : string {
 }
 
 function preRule(expr : PREOP) : string {
-    if(expr.op && expr.op.match === '&')
+    if(expr.op && expr.op === '&')
         return `this.noConsume<${atomType(expr.at)}>($$dpth + 1, () => ${atomRule(expr.at)})`;
     return atomRule(expr.at);
 }
 
 function postType(expr : POSTOP) : string {
     if(expr.op){
-        if(expr.op.match === '?')
+        if(expr.op === '?')
             return `Nullable<${preType(expr.pre)}>`;
         return `${preType(expr.pre)}[]`;
     }
@@ -70,16 +70,16 @@ function postType(expr : POSTOP) : string {
 }
 
 function postRule(expr : POSTOP) : string {
-    if(expr.op && expr.op.match !== '?')
-            return `this.loop<${preType(expr.pre)}>(()=> ${preRule(expr.pre)}, ${expr.op.match === '+' ? 'false' : 'true'})`;
+    if(expr.op && expr.op !== '?')
+            return `this.loop<${preType(expr.pre)}>(()=> ${preRule(expr.pre)}, ${expr.op === '+' ? 'false' : 'true'})`;
     return preRule(expr.pre);
 }
 
 function atomRule(at : ATOM) : string {
     if(at.kind === ASTKinds.ATOM_1)
-        return `this.match${at.name.match}($$dpth + 1, cr)`;
+        return `this.match${at.name}($$dpth + 1, cr)`;
     if(at.kind === ASTKinds.ATOM_2)
-        return `this.regexAccept(String.raw\`${at.match.val.match}\`, $$dpth+1, cr)`;
+        return `this.regexAccept(String.raw\`${at.match.val}\`, $$dpth+1, cr)`;
     const subname = subRules.get(at);
     if(subname)
         return `this.match${subname}($$dpth + 1, cr)`;
@@ -88,9 +88,9 @@ function atomRule(at : ATOM) : string {
 
 function atomType(at : ATOM) : string {
     if(at.kind === ASTKinds.ATOM_1)
-        return at.name.match;
+        return at.name;
     if(at.kind === ASTKinds.ATOM_2)
-        return '$$StrMatch';
+        return 'string';
     const subname = subRules.get(at);
     if(subname)
         return subname;
@@ -98,7 +98,7 @@ function atomType(at : ATOM) : string {
 }
 
 function writeKinds(gram : Grammar) : Block {
-    let astKinds = ["$$StrMatch"];
+    let astKinds = [];
     for(let ruledef of gram) {
         const nm = ruledef.name;
         for(let i = 0; i < ruledef.rule.length; i++) {
@@ -118,7 +118,7 @@ function writeChoice(name : string, alt : Alt) : Block {
     for(let match of alt) {
         if(match.kind === ASTKinds.MATCHSPEC_1){
             const at = match.rule;
-            namedTypes.push([match.name.match, postType(at)]);
+            namedTypes.push([match.name, postType(at)]);
         }
     }
     // Rules with no named matches and only one match are rule aliases
@@ -165,7 +165,7 @@ function writeRuleClasses(gram : Grammar) : Block {
 }
 
 function isOptional(expr : POSTOP) : boolean {
-    return expr.op != null && expr.op.match === '?';
+    return expr.op != null && expr.op === '?';
 }
 
 function writeParseIfStmt(alt : Alt) : Block {
@@ -175,14 +175,14 @@ function writeParseIfStmt(alt : Alt) : Block {
         const rn = postRule(expr);
         if(match.kind === ASTKinds.MATCHSPEC_1){
             if(isOptional(expr))
-                checks.push(`&& ((${match.name.match} = ${rn}) || true)`);
+                checks.push(`&& ((${match.name} = ${rn}) || true)`);
             else
-                checks.push(`&& (${match.name.match} = ${rn})`);
+                checks.push(`&& (${match.name} = ${rn}) != null`);
         } else {
             if(isOptional(expr))
                 checks.push(`&& ((${rn}) || true)`);
             else
-            checks.push(`&& ${rn}`);
+            checks.push(`&& ${rn} != null`);
         }
     }
     return checks;
@@ -204,7 +204,7 @@ function writeChoiceParseFn(name : string, alt : Alt) : Block {
         const expr = match.rule;
         const rn = postType(expr);
         if(match.kind === ASTKinds.MATCHSPEC_1){
-            namedTypes.push([match.name.match, rn]);
+            namedTypes.push([match.name, rn]);
         } else {
             unnamedTypes.push(rn);
         }

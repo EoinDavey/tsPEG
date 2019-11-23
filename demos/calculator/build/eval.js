@@ -11,7 +11,7 @@ function evaluate(input) {
 }
 exports.evaluate = evaluate;
 function calcInt(at) {
-    return parseInt(at.val.match);
+    return parseInt(at.val);
 }
 function calcAtom(at) {
     if (at.kind === Parser.ASTKinds.ATOM_1)
@@ -20,14 +20,14 @@ function calcAtom(at) {
 }
 function calcFac(at) {
     return at.tail.reduce((x, y) => {
-        if (y.op.match === '*')
+        if (y.op === '*')
             return x * calcAtom(y.sm);
         return x / calcAtom(y.sm);
     }, calcAtom(at.head));
 }
 function calcSum(at) {
     return at.tail.reduce((x, y) => {
-        if (y.op.match === '+')
+        if (y.op === '+')
             return x + calcFac(y.sm);
         return x - calcFac(y.sm);
     }, calcFac(at.head));

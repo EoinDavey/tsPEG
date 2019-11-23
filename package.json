@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc",
+        "preinstall": "tsc",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Eoin Davey <eoind@vey.ie>",
@@ -12,5 +13,8 @@
     "devDependencies": {
         "@types/node": "^12.12.6",
         "typescript": "^3.7.2"
+    },
+    "bin": {
+        "ts-peg": "tsbuild/cli.js"
     }
 }
