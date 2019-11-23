@@ -143,6 +143,14 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
             ]
         ],
         '}',
+        'private noConsume<T>($$dpth : number, fn : $$RuleType<T>, cr? : ContextRecorder) : Nullable<T> {',
+        [
+            'const mrk = this.mark();',
+            'const res = fn();',
+            'this.reset(mrk);',
+            'return res;',
+        ],
+        '}',
         ...ruleParseFns,
     ],
     '}',

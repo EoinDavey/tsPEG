@@ -1,4 +1,4 @@
-import { Parser, ASTKinds, GRAM, RULEXPR, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, STRLIT } from './meta';
+import { Parser, ASTKinds, GRAM, POSTOP, PREOP, RULEDEF, RULE, ALT, MATCHSPEC, ATOM, STRLIT } from './meta';
 
 import { expandTemplate } from './template';
 
@@ -27,35 +27,56 @@ function AST2Gram(g : GRAM) : Grammar {
     return gram.reduce((x, y) => x.concat(y));
 }
 
+function getAtom(expr : POSTOP) : ATOM {
+    const pre : PREOP = expr.kind === ASTKinds.POSTOP_1 ? expr.at : expr;
+    const at : ATOM = pre.kind === ASTKinds.PREOP_1 ? pre.at : pre;
+    return at;
+}
+
 function extractRules(rule : Rule, name : string) : Ruledef[] {
     let cnt = 0;
     const rules = [new Ruledef(name, rule)];
     for(let alt of rule){
         for(let match of alt){
-            const at : ATOM = match.rule.kind === ASTKinds.RULEXPR_1 ? match.rule.at : match.rule;
-            if(at.kind === ASTKinds.ATOM_3){
-                const subrule = at.sub;
-                const nm = `${name}_$${cnt}`;
-                subRules.set(at, nm);
-                const rdfs = extractRules(compressRULE(subrule), nm);
-                rules.push(...rdfs)
-                ++cnt;
-            }
+            const at : POSTOP = getAtom(match.rule);
+            if(at.kind !== ASTKinds.ATOM_3)
+                continue;
+            const subrule = at.sub;
+            const nm = `${name}_$${cnt}`;
+            subRules.set(at, nm);
+            const rdfs = extractRules(compressRULE(subrule), nm);
+            rules.push(...rdfs)
+            ++cnt;
         }
     }
     return rules;
 }
 
-function exprType(expr : RULEXPR) : string {
-    if(expr.kind === ASTKinds.RULEXPR_1)
-        return `${atomType(expr.at)}[]`;
+function preType(expr : PREOP) : string {
+    if(expr.kind === ASTKinds.PREOP_1)
+        return 'ERR';
     return atomType(expr);
 }
 
-function exprRule(expr : RULEXPR) : string {
-    if(expr.kind === ASTKinds.RULEXPR_1)
-        return `this.loop<${atomType(expr.at)}>(()=> ${atomRule(expr.at)}, ${expr.op.match === '+' ? 'false' : 'true'})`;
+function preRule(expr : PREOP) : string {
+    if(expr.kind === ASTKinds.PREOP_1){
+        if(expr.op.match === '&')
+            return `this.noConsume<${atomType(expr.at)}>($$dpth + 1, () => ${atomRule(expr.at)})`;
+        return 'ERR';
+    }
     return atomRule(expr);
+}
+
+function postType(expr : POSTOP) : string {
+    if(expr.kind === ASTKinds.POSTOP_1)
+        return `${preType(expr.at)}[]`;
+    return preType(expr);
+}
+
+function postRule(expr : POSTOP) : string {
+    if(expr.kind === ASTKinds.POSTOP_1)
+        return `this.loop<${preType(expr.at)}>(()=> ${preRule(expr.at)}, ${expr.op.match === '+' ? 'false' : 'true'})`;
+    return preRule(expr);
 }
 
 function atomRule(at : ATOM) : string {
@@ -101,13 +122,13 @@ function writeChoice(name : string, alt : Alt) : Block {
     for(let match of alt) {
         if(match.kind === ASTKinds.MATCHSPEC_1){
             const at = match.rule;
-            namedTypes.push([match.name.match, exprType(at)]);
+            namedTypes.push([match.name.match, postType(at)]);
         }
     }
     // Rules with no named matches and only one match are rule aliases
     if(namedTypes.length == 0 && alt.length == 1){
         const at = alt[0].rule;
-        return [`export type ${name} = ${exprType(at)};`];
+        return [`export type ${name} = ${postType(at)};`];
     }
     const blk : Block = [
         `export class ${name} implements ASTNodeIntf {`,
@@ -151,7 +172,7 @@ function writeParseIfStmt(alt : Alt) : Block {
     let checks : string[] = [];
     for(let match of alt) {
         const expr = match.rule;
-        const rn = exprRule(expr);
+        const rn = postRule(expr);
         if(match.kind === ASTKinds.MATCHSPEC_1)
             checks.push(`&& (${match.name.match} = ${rn})`);
         else
@@ -160,10 +181,10 @@ function writeParseIfStmt(alt : Alt) : Block {
     return checks;
 }
 
-function writeRuleAliasFn(name : string, expr : RULEXPR) : Block {
+function writeRuleAliasFn(name : string, expr : POSTOP) : Block {
     return [`match${name}($$dpth : number, cr? : ContextRecorder) : Nullable<${name}> {`,
         [
-            `return ${exprRule(expr)};`
+            `return ${postRule(expr)};`
         ],
         '}'
     ];
@@ -174,7 +195,7 @@ function writeChoiceParseFn(name : string, alt : Alt) : Block {
     let unnamedTypes : string[] = [];
     for(let match of alt) {
         const expr = match.rule;
-        const rn = exprType(expr);
+        const rn = postType(expr);
         if(match.kind === ASTKinds.MATCHSPEC_1){
             namedTypes.push([match.name.match, rn]);
         } else {

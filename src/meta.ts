@@ -4,9 +4,11 @@
 * RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _ ';' _;
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*;
 * ALT       := MATCHSPEC+;
-* MATCHSPEC := _ name=NAME '=' rule=RULEXPR _
-*            | _ rule=RULEXPR _;
-* RULEXPR   := at=ATOM op='\+|\*'
+* MATCHSPEC := _ name=NAME '=' rule=POSTOP _
+*            | _ rule=POSTOP _;
+* POSTOP    := at=PREOP op='\+|\*'
+*            | PREOP;
+* PREOP     := op='\&' at=ATOM
 *            | ATOM;
 * ATOM      := name=NAME
 *            | match=STRLIT
@@ -39,8 +41,10 @@ export enum ASTKinds {
     ALT,
     MATCHSPEC_1,
     MATCHSPEC_2,
-    RULEXPR_1,
-    RULEXPR_2,
+    POSTOP_1,
+    POSTOP_2,
+    PREOP_1,
+    PREOP_2,
     ATOM_1,
     ATOM_2,
     ATOM_3,
@@ -79,30 +83,41 @@ export type MATCHSPEC = MATCHSPEC_1 | MATCHSPEC_2;
 export class MATCHSPEC_1 implements ASTNodeIntf {
     kind : ASTKinds.MATCHSPEC_1 = ASTKinds.MATCHSPEC_1;
     name : NAME;
-    rule : RULEXPR;
-    constructor(name : NAME,rule : RULEXPR){
+    rule : POSTOP;
+    constructor(name : NAME,rule : POSTOP){
         this.name = name;
         this.rule = rule;
     }
 }
 export class MATCHSPEC_2 implements ASTNodeIntf {
     kind : ASTKinds.MATCHSPEC_2 = ASTKinds.MATCHSPEC_2;
-    rule : RULEXPR;
-    constructor(rule : RULEXPR){
+    rule : POSTOP;
+    constructor(rule : POSTOP){
         this.rule = rule;
     }
 }
-export type RULEXPR = RULEXPR_1 | RULEXPR_2;
-export class RULEXPR_1 implements ASTNodeIntf {
-    kind : ASTKinds.RULEXPR_1 = ASTKinds.RULEXPR_1;
-    at : ATOM;
+export type POSTOP = POSTOP_1 | POSTOP_2;
+export class POSTOP_1 implements ASTNodeIntf {
+    kind : ASTKinds.POSTOP_1 = ASTKinds.POSTOP_1;
+    at : PREOP;
     op : $$StrMatch;
-    constructor(at : ATOM,op : $$StrMatch){
+    constructor(at : PREOP,op : $$StrMatch){
         this.at = at;
         this.op = op;
     }
 }
-export type RULEXPR_2 = ATOM;
+export type POSTOP_2 = PREOP;
+export type PREOP = PREOP_1 | PREOP_2;
+export class PREOP_1 implements ASTNodeIntf {
+    kind : ASTKinds.PREOP_1 = ASTKinds.PREOP_1;
+    op : $$StrMatch;
+    at : ATOM;
+    constructor(op : $$StrMatch,at : ATOM){
+        this.op = op;
+        this.at = at;
+    }
+}
+export type PREOP_2 = ATOM;
 export type ATOM = ATOM_1 | ATOM_2 | ATOM_3;
 export class ATOM_1 implements ASTNodeIntf {
     kind : ASTKinds.ATOM_1 = ASTKinds.ATOM_1;
@@ -278,13 +293,13 @@ export class Parser {
                 if(log)
                     log('MATCHSPEC_1');
                 let name : Nullable<NAME>;
-                let rule : Nullable<RULEXPR>;
+                let rule : Nullable<POSTOP>;
                 let res : Nullable<MATCHSPEC_1> = null;
                 if(true
                     && this.match_($$dpth + 1, cr)
                     && (name = this.matchNAME($$dpth + 1, cr))
                     && this.regexAccept(String.raw`=`, $$dpth+1, cr)
-                    && (rule = this.matchRULEXPR($$dpth + 1, cr))
+                    && (rule = this.matchPOSTOP($$dpth + 1, cr))
                     && this.match_($$dpth + 1, cr)
                 )
                     res = new MATCHSPEC_1(name, rule);
@@ -296,40 +311,65 @@ export class Parser {
             (log) => {
                 if(log)
                     log('MATCHSPEC_2');
-                let rule : Nullable<RULEXPR>;
+                let rule : Nullable<POSTOP>;
                 let res : Nullable<MATCHSPEC_2> = null;
                 if(true
                     && this.match_($$dpth + 1, cr)
-                    && (rule = this.matchRULEXPR($$dpth + 1, cr))
+                    && (rule = this.matchPOSTOP($$dpth + 1, cr))
                     && this.match_($$dpth + 1, cr)
                 )
                     res = new MATCHSPEC_2(rule);
                 return res;
             }, cr)();
     }
-    matchRULEXPR($$dpth : number, cr? : ContextRecorder) : Nullable<RULEXPR> {
-        return this.choice<RULEXPR>([
-            () => { return this.matchRULEXPR_1($$dpth + 1, cr) },
-            () => { return this.matchRULEXPR_2($$dpth + 1, cr) },
+    matchPOSTOP($$dpth : number, cr? : ContextRecorder) : Nullable<POSTOP> {
+        return this.choice<POSTOP>([
+            () => { return this.matchPOSTOP_1($$dpth + 1, cr) },
+            () => { return this.matchPOSTOP_2($$dpth + 1, cr) },
         ]);
     }
-    matchRULEXPR_1($$dpth : number, cr? : ContextRecorder) : Nullable<RULEXPR_1> {
-        return this.runner<RULEXPR_1>($$dpth,
+    matchPOSTOP_1($$dpth : number, cr? : ContextRecorder) : Nullable<POSTOP_1> {
+        return this.runner<POSTOP_1>($$dpth,
             (log) => {
                 if(log)
-                    log('RULEXPR_1');
-                let at : Nullable<ATOM>;
+                    log('POSTOP_1');
+                let at : Nullable<PREOP>;
                 let op : Nullable<$$StrMatch>;
-                let res : Nullable<RULEXPR_1> = null;
+                let res : Nullable<POSTOP_1> = null;
                 if(true
-                    && (at = this.matchATOM($$dpth + 1, cr))
+                    && (at = this.matchPREOP($$dpth + 1, cr))
                     && (op = this.regexAccept(String.raw`\+|\*`, $$dpth+1, cr))
                 )
-                    res = new RULEXPR_1(at, op);
+                    res = new POSTOP_1(at, op);
                 return res;
             }, cr)();
     }
-    matchRULEXPR_2($$dpth : number, cr? : ContextRecorder) : Nullable<RULEXPR_2> {
+    matchPOSTOP_2($$dpth : number, cr? : ContextRecorder) : Nullable<POSTOP_2> {
+        return this.matchPREOP($$dpth + 1, cr);
+    }
+    matchPREOP($$dpth : number, cr? : ContextRecorder) : Nullable<PREOP> {
+        return this.choice<PREOP>([
+            () => { return this.matchPREOP_1($$dpth + 1, cr) },
+            () => { return this.matchPREOP_2($$dpth + 1, cr) },
+        ]);
+    }
+    matchPREOP_1($$dpth : number, cr? : ContextRecorder) : Nullable<PREOP_1> {
+        return this.runner<PREOP_1>($$dpth,
+            (log) => {
+                if(log)
+                    log('PREOP_1');
+                let op : Nullable<$$StrMatch>;
+                let at : Nullable<ATOM>;
+                let res : Nullable<PREOP_1> = null;
+                if(true
+                    && (op = this.regexAccept(String.raw`\&`, $$dpth+1, cr))
+                    && (at = this.matchATOM($$dpth + 1, cr))
+                )
+                    res = new PREOP_1(op, at);
+                return res;
+            }, cr)();
+    }
+    matchPREOP_2($$dpth : number, cr? : ContextRecorder) : Nullable<PREOP_2> {
         return this.matchATOM($$dpth + 1, cr);
     }
     matchATOM($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM> {
@@ -459,7 +499,7 @@ class ErrorTracker implements ContextRecorder {
         if(this.mxpos === pos && extraInfo.length >= 2 && extraInfo[0] === '$$StrMatch')
             this.pmatches.add(extraInfo[1]);
         if(this.mxpos === pos && this.mnd === depth)
-            extraInfo.forEach(x => this.prules.add(x));
+            extraInfo.forEach(x => { if(x !== '$$StrMatch') this.prules.add(x)});
     }
     getErr() : SyntaxErr | null {
         if(this.mxpos !== -1)
