@@ -28,9 +28,7 @@ function AST2Gram(g : GRAM) : Grammar {
 }
 
 function getAtom(expr : POSTOP) : ATOM {
-    const pre : PREOP = expr.kind === ASTKinds.POSTOP_1 ? expr.at : expr;
-    const at : ATOM = pre.kind === ASTKinds.PREOP_1 ? pre.at : pre;
-    return at;
+    return expr.pre.at;
 }
 
 function extractRules(rule : Rule, name : string) : Ruledef[] {
@@ -38,7 +36,7 @@ function extractRules(rule : Rule, name : string) : Ruledef[] {
     const rules = [new Ruledef(name, rule)];
     for(let alt of rule){
         for(let match of alt){
-            const at : POSTOP = getAtom(match.rule);
+            const at : ATOM = getAtom(match.rule);
             if(at.kind !== ASTKinds.ATOM_3)
                 continue;
             const subrule = at.sub;
@@ -53,30 +51,28 @@ function extractRules(rule : Rule, name : string) : Ruledef[] {
 }
 
 function preType(expr : PREOP) : string {
-    if(expr.kind === ASTKinds.PREOP_1)
-        return 'ERR';
-    return atomType(expr);
+    return atomType(expr.at);
 }
 
 function preRule(expr : PREOP) : string {
-    if(expr.kind === ASTKinds.PREOP_1){
-        if(expr.op.match === '&')
-            return `this.noConsume<${atomType(expr.at)}>($$dpth + 1, () => ${atomRule(expr.at)})`;
-        return 'ERR';
-    }
-    return atomRule(expr);
+    if(expr.op && expr.op.match === '&')
+        return `this.noConsume<${atomType(expr.at)}>($$dpth + 1, () => ${atomRule(expr.at)})`;
+    return atomRule(expr.at);
 }
 
 function postType(expr : POSTOP) : string {
-    if(expr.kind === ASTKinds.POSTOP_1)
-        return `${preType(expr.at)}[]`;
-    return preType(expr);
+    if(expr.op){
+        if(expr.op.match === '?')
+            return `Nullable<${preType(expr.pre)}>`;
+        return `${preType(expr.pre)}[]`;
+    }
+    return preType(expr.pre);
 }
 
 function postRule(expr : POSTOP) : string {
-    if(expr.kind === ASTKinds.POSTOP_1)
-        return `this.loop<${preType(expr.at)}>(()=> ${preRule(expr.at)}, ${expr.op.match === '+' ? 'false' : 'true'})`;
-    return preRule(expr);
+    if(expr.op && expr.op.match !== '?')
+            return `this.loop<${preType(expr.pre)}>(()=> ${preRule(expr.pre)}, ${expr.op.match === '+' ? 'false' : 'true'})`;
+    return preRule(expr.pre);
 }
 
 function atomRule(at : ATOM) : string {
@@ -135,7 +131,7 @@ function writeChoice(name : string, alt : Alt) : Block {
         [
             `kind : ASTKinds.${name} = ASTKinds.${name};`,
             ...namedTypes.map(x => `${x[0]} : ${x[1]};`),
-            `constructor(${namedTypes.map(x => `${x[0]} : ${x[1]}`).join(',')}){`,
+            `constructor(${namedTypes.map(x => `${x[0]} : ${x[1]}`).join(', ')}){`,
             namedTypes.map(x => `this.${x[0]} = ${x[0]};`),
             '}'
         ],
@@ -168,15 +164,26 @@ function writeRuleClasses(gram : Grammar) : Block {
     return rules;
 }
 
+function isOptional(expr : POSTOP) : boolean {
+    return expr.op != null && expr.op.match === '?';
+}
+
 function writeParseIfStmt(alt : Alt) : Block {
     let checks : string[] = [];
     for(let match of alt) {
         const expr = match.rule;
         const rn = postRule(expr);
-        if(match.kind === ASTKinds.MATCHSPEC_1)
-            checks.push(`&& (${match.name.match} = ${rn})`);
-        else
+        if(match.kind === ASTKinds.MATCHSPEC_1){
+            if(isOptional(expr))
+                checks.push(`&& ((${match.name.match} = ${rn}) || true)`);
+            else
+                checks.push(`&& (${match.name.match} = ${rn})`);
+        } else {
+            if(isOptional(expr))
+                checks.push(`&& ((${rn}) || true)`);
+            else
             checks.push(`&& ${rn}`);
+        }
     }
     return checks;
 }

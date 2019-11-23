@@ -6,10 +6,8 @@
 * ALT       := MATCHSPEC+;
 * MATCHSPEC := _ name=NAME '=' rule=POSTOP _
 *            | _ rule=POSTOP _;
-* POSTOP    := at=PREOP op='\+|\*'
-*            | PREOP;
-* PREOP     := op='\&' at=ATOM
-*            | ATOM;
+* POSTOP    := pre=PREOP op='\+|\*|\?'?;
+* PREOP     := op='\&'? at=ATOM;
 * ATOM      := name=NAME
 *            | match=STRLIT
 *            | '{' _ sub=RULE _ '}';
@@ -41,10 +39,8 @@ export enum ASTKinds {
     ALT,
     MATCHSPEC_1,
     MATCHSPEC_2,
-    POSTOP_1,
-    POSTOP_2,
-    PREOP_1,
-    PREOP_2,
+    POSTOP,
+    PREOP,
     ATOM_1,
     ATOM_2,
     ATOM_3,
@@ -57,7 +53,7 @@ export class RULEDEF implements ASTNodeIntf {
     kind : ASTKinds.RULEDEF = ASTKinds.RULEDEF;
     name : NAME;
     rule : RULE;
-    constructor(name : NAME,rule : RULE){
+    constructor(name : NAME, rule : RULE){
         this.name = name;
         this.rule = rule;
     }
@@ -66,7 +62,7 @@ export class RULE implements ASTNodeIntf {
     kind : ASTKinds.RULE = ASTKinds.RULE;
     head : ALT;
     tail : RULE_$0[];
-    constructor(head : ALT,tail : RULE_$0[]){
+    constructor(head : ALT, tail : RULE_$0[]){
         this.head = head;
         this.tail = tail;
     }
@@ -84,7 +80,7 @@ export class MATCHSPEC_1 implements ASTNodeIntf {
     kind : ASTKinds.MATCHSPEC_1 = ASTKinds.MATCHSPEC_1;
     name : NAME;
     rule : POSTOP;
-    constructor(name : NAME,rule : POSTOP){
+    constructor(name : NAME, rule : POSTOP){
         this.name = name;
         this.rule = rule;
     }
@@ -96,28 +92,24 @@ export class MATCHSPEC_2 implements ASTNodeIntf {
         this.rule = rule;
     }
 }
-export type POSTOP = POSTOP_1 | POSTOP_2;
-export class POSTOP_1 implements ASTNodeIntf {
-    kind : ASTKinds.POSTOP_1 = ASTKinds.POSTOP_1;
-    at : PREOP;
-    op : $$StrMatch;
-    constructor(at : PREOP,op : $$StrMatch){
-        this.at = at;
+export class POSTOP implements ASTNodeIntf {
+    kind : ASTKinds.POSTOP = ASTKinds.POSTOP;
+    pre : PREOP;
+    op : Nullable<$$StrMatch>;
+    constructor(pre : PREOP, op : Nullable<$$StrMatch>){
+        this.pre = pre;
         this.op = op;
     }
 }
-export type POSTOP_2 = PREOP;
-export type PREOP = PREOP_1 | PREOP_2;
-export class PREOP_1 implements ASTNodeIntf {
-    kind : ASTKinds.PREOP_1 = ASTKinds.PREOP_1;
-    op : $$StrMatch;
+export class PREOP implements ASTNodeIntf {
+    kind : ASTKinds.PREOP = ASTKinds.PREOP;
+    op : Nullable<$$StrMatch>;
     at : ATOM;
-    constructor(op : $$StrMatch,at : ATOM){
+    constructor(op : Nullable<$$StrMatch>, at : ATOM){
         this.op = op;
         this.at = at;
     }
 }
-export type PREOP_2 = ATOM;
 export type ATOM = ATOM_1 | ATOM_2 | ATOM_3;
 export class ATOM_1 implements ASTNodeIntf {
     kind : ASTKinds.ATOM_1 = ASTKinds.ATOM_1;
@@ -218,6 +210,12 @@ export class Parser {
                 }
                 return null;
             }, cr)();
+    }
+    private noConsume<T>($$dpth : number, fn : $$RuleType<T>, cr? : ContextRecorder) : Nullable<T> {
+        const mrk = this.mark();
+        const res = fn();
+        this.reset(mrk);
+        return res;
     }
     matchGRAM($$dpth : number, cr? : ContextRecorder) : Nullable<GRAM> {
         return this.loop<RULEDEF>(()=> this.matchRULEDEF($$dpth + 1, cr), false);
@@ -323,54 +321,36 @@ export class Parser {
             }, cr)();
     }
     matchPOSTOP($$dpth : number, cr? : ContextRecorder) : Nullable<POSTOP> {
-        return this.choice<POSTOP>([
-            () => { return this.matchPOSTOP_1($$dpth + 1, cr) },
-            () => { return this.matchPOSTOP_2($$dpth + 1, cr) },
-        ]);
-    }
-    matchPOSTOP_1($$dpth : number, cr? : ContextRecorder) : Nullable<POSTOP_1> {
-        return this.runner<POSTOP_1>($$dpth,
+        return this.runner<POSTOP>($$dpth,
             (log) => {
                 if(log)
-                    log('POSTOP_1');
-                let at : Nullable<PREOP>;
-                let op : Nullable<$$StrMatch>;
-                let res : Nullable<POSTOP_1> = null;
+                    log('POSTOP');
+                let pre : Nullable<PREOP>;
+                let op : Nullable<Nullable<$$StrMatch>>;
+                let res : Nullable<POSTOP> = null;
                 if(true
-                    && (at = this.matchPREOP($$dpth + 1, cr))
-                    && (op = this.regexAccept(String.raw`\+|\*`, $$dpth+1, cr))
+                    && (pre = this.matchPREOP($$dpth + 1, cr))
+                    && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth+1, cr)) || true)
                 )
-                    res = new POSTOP_1(at, op);
+                    res = new POSTOP(pre, op);
                 return res;
             }, cr)();
-    }
-    matchPOSTOP_2($$dpth : number, cr? : ContextRecorder) : Nullable<POSTOP_2> {
-        return this.matchPREOP($$dpth + 1, cr);
     }
     matchPREOP($$dpth : number, cr? : ContextRecorder) : Nullable<PREOP> {
-        return this.choice<PREOP>([
-            () => { return this.matchPREOP_1($$dpth + 1, cr) },
-            () => { return this.matchPREOP_2($$dpth + 1, cr) },
-        ]);
-    }
-    matchPREOP_1($$dpth : number, cr? : ContextRecorder) : Nullable<PREOP_1> {
-        return this.runner<PREOP_1>($$dpth,
+        return this.runner<PREOP>($$dpth,
             (log) => {
                 if(log)
-                    log('PREOP_1');
-                let op : Nullable<$$StrMatch>;
+                    log('PREOP');
+                let op : Nullable<Nullable<$$StrMatch>>;
                 let at : Nullable<ATOM>;
-                let res : Nullable<PREOP_1> = null;
+                let res : Nullable<PREOP> = null;
                 if(true
-                    && (op = this.regexAccept(String.raw`\&`, $$dpth+1, cr))
+                    && ((op = this.regexAccept(String.raw`\&`, $$dpth+1, cr)) || true)
                     && (at = this.matchATOM($$dpth + 1, cr))
                 )
-                    res = new PREOP_1(op, at);
+                    res = new PREOP(op, at);
                 return res;
             }, cr)();
-    }
-    matchPREOP_2($$dpth : number, cr? : ContextRecorder) : Nullable<PREOP_2> {
-        return this.matchATOM($$dpth + 1, cr);
     }
     matchATOM($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM> {
         return this.choice<ATOM>([

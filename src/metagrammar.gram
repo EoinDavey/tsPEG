@@ -4,10 +4,8 @@ RULE      := head=ALT tail={_ '\|' _ alt=ALT }*;
 ALT       := MATCHSPEC+;
 MATCHSPEC := _ name=NAME '=' rule=POSTOP _
            | _ rule=POSTOP _;
-POSTOP    := at=PREOP op='\+|\*'
-           | PREOP;
-PREOP     := op='\&' at=ATOM
-           | ATOM;
+POSTOP    := pre=PREOP op='\+|\*|\?'?;
+PREOP     := op='\&'? at=ATOM;
 ATOM      := name=NAME
            | match=STRLIT
            | '{' _ sub=RULE _ '}';
