@@ -10,7 +10,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
     'type $$RuleType<T> = (log? : (msg : string) => void) => Nullable<T>;',
     'export interface ContextRecorder {',
     [
-        'record(pos: number, depth : number, result: any, extraInfo : string[]) : void;'
+        'record(pos: PosInfo, depth : number, result: any, extraInfo : string[]) : void;'
     ],
     '}',
     'interface ASTNodeIntf {',
@@ -22,26 +22,27 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
     ...ruleClasses,
     'export class Parser {',
     [
-        'private pos : number = 0;',
+        'private pos : PosInfo;',
         'readonly input : string;',
         'constructor(input : string) {',
         [
+            'this.pos = new PosInfo(0, 1, 0);',
             'this.input = input;'
         ],
         '}',
-        'private mark() : number {',
+        'private mark() : PosInfo {',
         [
             'return this.pos;'
         ],
         '}',
-        'reset(pos : number) {',
+        'reset(pos : PosInfo) {',
         [
             'this.pos = pos;',
         ],
         '}',
         'finished() : boolean {',
         [
-            'return this.pos == this.input.length;'
+            'return this.pos.overall_pos === this.input.length;'
         ],
         '}',
         'private loop<T>(func : $$RuleType<T>, star : boolean = false) : Nullable<T[]> {',
@@ -118,11 +119,23 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
                     ],
                     '}',
                     'var reg = new RegExp(match, \'y\');',
-                    'reg.lastIndex = this.mark();',
+                    'reg.lastIndex = this.mark().overall_pos;',
                     'const res = reg.exec(this.input);',
                     'if(res){',
                     [
-                        'this.pos = reg.lastIndex;',
+                        'let lineJmp = 0;',
+                        'let lind = -1;',
+                        'for(let i = 0; i < res[0].length; ++i){',
+                        [
+                            'if(res[0][i] === \'\\n\'){',
+                            [
+                                '++lineJmp;',
+                                'lind = i;',
+                            ],
+                            '}',
+                        ],
+                        '}',
+                        'this.pos = new PosInfo(reg.lastIndex, this.pos.line + lineJmp, lind === -1 ? this.pos.offset + res[0].length: (res[0].length - lind));',
                         'return res[0];'
                     ],
                     '}',
@@ -146,12 +159,26 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
 
     ...parseResult,
 
+    'export class PosInfo {',
+    [
+        'overall_pos : number;',
+        'line : number;',
+        'offset : number;',
+        'constructor(overall_pos : number, line : number, offset : number) {',
+        [
+            'this.overall_pos = overall_pos;',
+            'this.line = line;',
+            'this.offset = offset;',
+        ],
+        '}',
+    ],
+    '}',
     'export class SyntaxErr {',
     [
-        'pos : number;',
+        'pos : PosInfo;',
         'exprules : string[];',
         'expmatches : string[]',
-        'constructor(pos : number, exprules : Set<string>, expmatches : Set<string>){',
+        'constructor(pos : PosInfo, exprules : Set<string>, expmatches : Set<string>){',
         [
             'this.pos = pos;',
             'this.exprules = [...exprules];',
@@ -160,41 +187,41 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
         '}',
         'toString() : string {',
         [
-            'return `Syntax Error at position ${this.pos}. Tried to match rules ${this.exprules.join(\', \')}. Expected one of ${this.expmatches.map(x => ` \'${x}\'`)}`;',
+            'return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Tried to match rules ${this.exprules.join(\', \')}. Expected one of ${this.expmatches.map(x => ` \'${x}\'`)}`;'
         ],
         '}',
     ],
     '}',
     'class ErrorTracker implements ContextRecorder {',
     [
-        'mxpos : number = -1;',
+        'mxpos : PosInfo = new PosInfo(-1, -1, -1)',
         'mnd : number = -1;',
         'prules : Set<string> = new Set();',
         'pmatches: Set<string> = new Set();',
-        'record(pos : number, depth : number, result : any, extraInfo : string[]){',
+        'record(pos : PosInfo, depth : number, result : any, extraInfo : string[]){',
         [
             'if(result !== null)',
             [
                 'return;',
             ],
-            'if(pos > this.mxpos){',
+            'if(pos.overall_pos > this.mxpos.overall_pos){',
             [
                 'this.mxpos = pos;',
                 'this.mnd = depth;',
                 'this.pmatches.clear();',
                 'this.prules.clear();',
             ],
-            '} else if(pos === this.mxpos && depth < this.mnd){',
+            '} else if(pos.overall_pos === this.mxpos.overall_pos && depth < this.mnd){',
             [
                 'this.mnd = depth;',
                 'this.prules.clear();',
             ],
             '}',
-            'if(this.mxpos === pos && extraInfo.length >= 2 && extraInfo[0] === \'$$StrMatch\')',
+            'if(this.mxpos.overall_pos === pos.overall_pos && extraInfo.length >= 2 && extraInfo[0] === \'$$StrMatch\')',
             [
                 'this.pmatches.add(extraInfo[1]);',
             ],
-            'if(this.mxpos === pos && this.mnd === depth)',
+            'if(this.mxpos.overall_pos === pos.overall_pos && this.mnd === depth)',
             [
                 'extraInfo.forEach(x => { if(x !== \'$$StrMatch\') this.prules.add(x)});',
             ],
@@ -202,7 +229,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
         '}',
         'getErr() : SyntaxErr | null {',
         [
-            'if(this.mxpos !== -1)',
+            'if(this.mxpos.overall_pos !== -1)',
             [
                 'return new SyntaxErr(this.mxpos, this.prules, this.pmatches);',
             ],
