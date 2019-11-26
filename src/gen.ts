@@ -121,9 +121,9 @@ export class Generator {
     writeChoice(name : string, alt : Alt) : Block {
         let namedTypes : [string, string][] = [];
         for(let match of alt) {
-            if(match.kind === ASTKinds.MATCHSPEC_1){
+            if(match.named){
                 const at = match.rule;
-                namedTypes.push([match.name, this.postType(at)]);
+                namedTypes.push([match.named.name, this.postType(at)]);
             }
         }
         // Rules with no named matches and only one match are rule aliases
@@ -174,11 +174,11 @@ export class Generator {
         for(let match of alt) {
             const expr = match.rule;
             const rn = this.postRule(expr);
-            if(match.kind === ASTKinds.MATCHSPEC_1){
+            if(match.named){
                 if(isOptional(expr))
-                    checks.push(`&& ((${match.name} = ${rn}) || true)`);
+                    checks.push(`&& ((${match.named.name} = ${rn}) || true)`);
                 else
-                    checks.push(`&& (${match.name} = ${rn}) != null`);
+                    checks.push(`&& (${match.named.name} = ${rn}) != null`);
             } else {
                 if(isOptional(expr))
                     checks.push(`&& ((${rn}) || true)`);
@@ -204,8 +204,8 @@ export class Generator {
         for(let match of alt) {
             const expr = match.rule;
             const rn = this.postType(expr);
-            if(match.kind === ASTKinds.MATCHSPEC_1){
-                namedTypes.push([match.name, rn]);
+            if(match.named){
+                namedTypes.push([match.named.name, rn]);
             } else {
                 unnamedTypes.push(rn);
             }

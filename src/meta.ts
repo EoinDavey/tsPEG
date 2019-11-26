@@ -4,8 +4,7 @@
 * RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _ ';' _;
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*;
 * ALT       := MATCHSPEC+;
-* MATCHSPEC := _ name=NAME '=' rule=POSTOP _
-*            | _ rule=POSTOP _;
+* MATCHSPEC := _ named={name=NAME '='}? rule=POSTOP _;
 * POSTOP    := pre=PREOP op='\+|\*|\?'?;
 * PREOP     := op='\&'? at=ATOM;
 * ATOM      := name=NAME
@@ -29,8 +28,8 @@ export enum ASTKinds {
     RULE,
     RULE_$0,
     ALT,
-    MATCHSPEC_1,
-    MATCHSPEC_2,
+    MATCHSPEC,
+    MATCHSPEC_$0,
     POSTOP,
     PREOP,
     ATOM_1,
@@ -41,6 +40,9 @@ export enum ASTKinds {
     _,
 }
 export type GRAM = RULEDEF[];
+export function isRULEDEF(at : any) : at is RULEDEF {
+    return "kind" in at && at.kind === ASTKinds.RULEDEF;
+}
 export class RULEDEF implements ASTNodeIntf {
     kind : ASTKinds.RULEDEF = ASTKinds.RULEDEF;
     name : NAME;
@@ -67,21 +69,20 @@ export class RULE_$0 implements ASTNodeIntf {
     }
 }
 export type ALT = MATCHSPEC[];
-export type MATCHSPEC = MATCHSPEC_1 | MATCHSPEC_2;
-export class MATCHSPEC_1 implements ASTNodeIntf {
-    kind : ASTKinds.MATCHSPEC_1 = ASTKinds.MATCHSPEC_1;
-    name : NAME;
+export class MATCHSPEC implements ASTNodeIntf {
+    kind : ASTKinds.MATCHSPEC = ASTKinds.MATCHSPEC;
+    named : Nullable<MATCHSPEC_$0>;
     rule : POSTOP;
-    constructor(name : NAME, rule : POSTOP){
-        this.name = name;
+    constructor(named : Nullable<MATCHSPEC_$0>, rule : POSTOP){
+        this.named = named;
         this.rule = rule;
     }
 }
-export class MATCHSPEC_2 implements ASTNodeIntf {
-    kind : ASTKinds.MATCHSPEC_2 = ASTKinds.MATCHSPEC_2;
-    rule : POSTOP;
-    constructor(rule : POSTOP){
-        this.rule = rule;
+export class MATCHSPEC_$0 implements ASTNodeIntf {
+    kind : ASTKinds.MATCHSPEC_$0 = ASTKinds.MATCHSPEC_$0;
+    name : NAME;
+    constructor(name : NAME){
+        this.name = name;
     }
 }
 export class POSTOP implements ASTNodeIntf {
@@ -281,43 +282,35 @@ export class Parser {
         return this.loop<MATCHSPEC>(()=> this.matchMATCHSPEC($$dpth + 1, cr), false);
     }
     matchMATCHSPEC($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC> {
-        return this.choice<MATCHSPEC>([
-            () => { return this.matchMATCHSPEC_1($$dpth + 1, cr) },
-            () => { return this.matchMATCHSPEC_2($$dpth + 1, cr) },
-        ]);
-    }
-    matchMATCHSPEC_1($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC_1> {
-        return this.runner<MATCHSPEC_1>($$dpth,
+        return this.runner<MATCHSPEC>($$dpth,
             (log) => {
                 if(log)
-                    log('MATCHSPEC_1');
-                let name : Nullable<NAME>;
+                    log('MATCHSPEC');
+                let named : Nullable<Nullable<MATCHSPEC_$0>>;
                 let rule : Nullable<POSTOP>;
-                let res : Nullable<MATCHSPEC_1> = null;
+                let res : Nullable<MATCHSPEC> = null;
                 if(true
                     && this.match_($$dpth + 1, cr) != null
-                    && (name = this.matchNAME($$dpth + 1, cr)) != null
-                    && this.regexAccept(String.raw`=`, $$dpth+1, cr) != null
+                    && ((named = this.matchMATCHSPEC_$0($$dpth + 1, cr)) || true)
                     && (rule = this.matchPOSTOP($$dpth + 1, cr)) != null
                     && this.match_($$dpth + 1, cr) != null
                 )
-                    res = new MATCHSPEC_1(name, rule);
+                    res = new MATCHSPEC(named, rule);
                 return res;
             }, cr)();
     }
-    matchMATCHSPEC_2($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC_2> {
-        return this.runner<MATCHSPEC_2>($$dpth,
+    matchMATCHSPEC_$0($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC_$0> {
+        return this.runner<MATCHSPEC_$0>($$dpth,
             (log) => {
                 if(log)
-                    log('MATCHSPEC_2');
-                let rule : Nullable<POSTOP>;
-                let res : Nullable<MATCHSPEC_2> = null;
+                    log('MATCHSPEC_$0');
+                let name : Nullable<NAME>;
+                let res : Nullable<MATCHSPEC_$0> = null;
                 if(true
-                    && this.match_($$dpth + 1, cr) != null
-                    && (rule = this.matchPOSTOP($$dpth + 1, cr)) != null
-                    && this.match_($$dpth + 1, cr) != null
+                    && (name = this.matchNAME($$dpth + 1, cr)) != null
+                    && this.regexAccept(String.raw`=`, $$dpth+1, cr) != null
                 )
-                    res = new MATCHSPEC_2(rule);
+                    res = new MATCHSPEC_$0(name);
                 return res;
             }, cr)();
     }

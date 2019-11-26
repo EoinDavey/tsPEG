@@ -2,8 +2,7 @@ GRAM      := RULEDEF+;
 RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _ ';' _;
 RULE      := head=ALT tail={_ '\|' _ alt=ALT }*;
 ALT       := MATCHSPEC+;
-MATCHSPEC := _ name=NAME '=' rule=POSTOP _
-           | _ rule=POSTOP _;
+MATCHSPEC := _ named={name=NAME '='}? rule=POSTOP _;
 POSTOP    := pre=PREOP op='\+|\*|\?'?;
 PREOP     := op='\&'? at=ATOM;
 ATOM      := name=NAME
