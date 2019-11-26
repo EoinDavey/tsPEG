@@ -56,12 +56,16 @@ export class Generator {
     }
 
     preType(expr : PREOP) : string {
+        if(expr.op && expr.op === '!') // Negation types return null if matched, true otherwise
+            return 'Nullable<boolean>';
         return this.atomType(expr.at);
     }
 
     preRule(expr : PREOP) : string {
         if(expr.op && expr.op === '&')
-            return `this.noConsume<${this.atomType(expr.at)}>($$dpth + 1, () => ${this.atomRule(expr.at)})`;
+            return `this.noConsume<${this.atomType(expr.at)}>(() => ${this.atomRule(expr.at)})`;
+        if(expr.op && expr.op === '!')
+            return `this.negate(() => ${this.atomRule(expr.at)})`;
         return this.atomRule(expr.at);
     }
 

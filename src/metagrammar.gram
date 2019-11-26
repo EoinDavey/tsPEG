@@ -4,7 +4,7 @@ RULE      := head=ALT tail={_ '\|' _ alt=ALT }*;
 ALT       := MATCHSPEC+;
 MATCHSPEC := _ named={name=NAME '='}? rule=POSTOP _;
 POSTOP    := pre=PREOP op='\+|\*|\?'?;
-PREOP     := op='\&'? at=ATOM;
+PREOP     := op='\&|!'? at=ATOM;
 ATOM      := name=NAME
            | match=STRLIT
            | '{' _ sub=RULE _ '}';

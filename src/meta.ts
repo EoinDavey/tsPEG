@@ -6,7 +6,7 @@
 * ALT       := MATCHSPEC+;
 * MATCHSPEC := _ named={name=NAME '='}? rule=POSTOP _;
 * POSTOP    := pre=PREOP op='\+|\*|\?'?;
-* PREOP     := op='\&'? at=ATOM;
+* PREOP     := op='\&|!'? at=ATOM;
 * ATOM      := name=NAME
 *            | match=STRLIT
 *            | '{' _ sub=RULE _ '}';
@@ -17,7 +17,7 @@
 type Nullable<T> = T | null;
 type $$RuleType<T> = (log? : (msg : string) => void) => Nullable<T>;
 export interface ContextRecorder {
-    record(pos: PosInfo, depth : number, result: any, extraInfo : string[]) : void;
+    record(pos: PosInfo, depth : number, result: any, negating : boolean, extraInfo : string[]) : void;
 }
 interface ASTNodeIntf {
     kind: ASTKinds;
@@ -40,9 +40,6 @@ export enum ASTKinds {
     _,
 }
 export type GRAM = RULEDEF[];
-export function isRULEDEF(at : any) : at is RULEDEF {
-    return "kind" in at && at.kind === ASTKinds.RULEDEF;
-}
 export class RULEDEF implements ASTNodeIntf {
     kind : ASTKinds.RULEDEF = ASTKinds.RULEDEF;
     name : NAME;
@@ -137,6 +134,7 @@ export type _ = string;
 export class Parser {
     private pos : PosInfo;
     readonly input : string;
+    private negating: boolean = false;
     constructor(input : string) {
         this.pos = new PosInfo(0, 1, 0);
         this.input = input;
@@ -171,7 +169,7 @@ export class Parser {
             const res = cr ? (()=>{
                 let extraInfo : string[] = [];
                 const res = fn((msg : string) => extraInfo.push(msg));
-                cr.record(mrk, $$dpth, res, extraInfo);
+                cr.record(mrk, $$dpth, res, this.negating, extraInfo);
                 return res;
             })() : fn();
             if(res !== null)
@@ -192,7 +190,10 @@ export class Parser {
         return this.runner<string>(dpth,
             (log) => {
                 if(log){
-                    log('$$StrMatch');
+                    if(this.negating)
+                        log('$$!StrMatch');
+                    else
+                        log('$$StrMatch');
                     log(match);
                 }
                 var reg = new RegExp(match, 'y');
@@ -213,11 +214,20 @@ export class Parser {
                 return null;
             }, cr)();
     }
-    private noConsume<T>($$dpth : number, fn : $$RuleType<T>, cr? : ContextRecorder) : Nullable<T> {
+    private noConsume<T>(fn : $$RuleType<T>) : Nullable<T> {
         const mrk = this.mark();
         const res = fn();
         this.reset(mrk);
         return res;
+    }
+    private negate<T>(fn : $$RuleType<T>) : Nullable<boolean> {
+        const mrk = this.mark();
+        const oneg = this.negating;
+        this.negating = !oneg
+        const res = fn();
+        this.negating = oneg;
+        this.reset(mrk);
+        return res === null ? true : null;
     }
     matchGRAM($$dpth : number, cr? : ContextRecorder) : Nullable<GRAM> {
         return this.loop<RULEDEF>(()=> this.matchRULEDEF($$dpth + 1, cr), false);
@@ -339,7 +349,7 @@ export class Parser {
                 let at : Nullable<ATOM>;
                 let res : Nullable<PREOP> = null;
                 if(true
-                    && ((op = this.regexAccept(String.raw`\&`, $$dpth+1, cr)) || true)
+                    && ((op = this.regexAccept(String.raw`\&|!`, $$dpth+1, cr)) || true)
                     && (at = this.matchATOM($$dpth + 1, cr)) != null
                 )
                     res = new PREOP(op, at);
@@ -468,8 +478,8 @@ class ErrorTracker implements ContextRecorder {
     mnd : number = -1;
     prules : Set<string> = new Set();
     pmatches: Set<string> = new Set();
-    record(pos : PosInfo, depth : number, result : any, extraInfo : string[]){
-        if(result !== null)
+    record(pos : PosInfo, depth : number, result : any, negating : boolean, extraInfo : string[]){
+        if((result === null) === negating)
             return;
         if(pos.overall_pos > this.mxpos.overall_pos){
             this.mxpos = pos;
@@ -480,10 +490,14 @@ class ErrorTracker implements ContextRecorder {
             this.mnd = depth;
             this.prules.clear();
         }
-        if(this.mxpos.overall_pos === pos.overall_pos && extraInfo.length >= 2 && extraInfo[0] === '$$StrMatch')
-            this.pmatches.add(extraInfo[1]);
+        if(this.mxpos.overall_pos === pos.overall_pos && extraInfo.length >= 2) {
+            if(extraInfo[0] === '$$StrMatch')
+                this.pmatches.add(extraInfo[1]);
+            if(extraInfo[0] === '$$!StrMatch')
+                this.pmatches.add(`not ${extraInfo[1]}`);
+        }
         if(this.mxpos.overall_pos === pos.overall_pos && this.mnd === depth)
-            extraInfo.forEach(x => { if(x !== '$$StrMatch') this.prules.add(x)});
+            extraInfo.forEach(x => { if(x !== '$$StrMatch' && x !== '$$!StrMatch') this.prules.add(x)});
     }
     getErr() : SyntaxErr | null {
         if(this.mxpos.overall_pos !== -1)

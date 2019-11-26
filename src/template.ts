@@ -10,7 +10,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
     'type $$RuleType<T> = (log? : (msg : string) => void) => Nullable<T>;',
     'export interface ContextRecorder {',
     [
-        'record(pos: PosInfo, depth : number, result: any, extraInfo : string[]) : void;'
+        'record(pos: PosInfo, depth : number, result: any, negating : boolean, extraInfo : string[]) : void;'
     ],
     '}',
     'interface ASTNodeIntf {',
@@ -24,6 +24,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
     [
         'private pos : PosInfo;',
         'readonly input : string;',
+        'private negating: boolean = false;',
         'constructor(input : string) {',
         [
             'this.pos = new PosInfo(0, 1, 0);',
@@ -77,7 +78,7 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
                 [
                     'let extraInfo : string[] = [];',
                     'const res = fn((msg : string) => extraInfo.push(msg));',
-                    'cr.record(mrk, $$dpth, res, extraInfo);',
+                    'cr.record(mrk, $$dpth, res, this.negating, extraInfo);',
                     'return res;'
                 ],
                 '})() : fn();',
@@ -114,8 +115,15 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
                 [
                     'if(log){',
                     [
-                        'log(\'$$StrMatch\');',
-                        'log(match);'
+                        'if(this.negating)',
+                        [
+                            'log(\'$$!StrMatch\');',
+                        ],
+                        'else',
+                        [
+                            'log(\'$$StrMatch\');',
+                        ],
+                        'log(match);',
                     ],
                     '}',
                     'var reg = new RegExp(match, \'y\');',
@@ -145,12 +153,23 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
             ]
         ],
         '}',
-        'private noConsume<T>($$dpth : number, fn : $$RuleType<T>, cr? : ContextRecorder) : Nullable<T> {',
+        'private noConsume<T>(fn : $$RuleType<T>) : Nullable<T> {',
         [
             'const mrk = this.mark();',
             'const res = fn();',
             'this.reset(mrk);',
             'return res;',
+        ],
+        '}',
+        'private negate<T>(fn : $$RuleType<T>) : Nullable<boolean> {',
+        [
+            'const mrk = this.mark();',
+            'const oneg = this.negating;',
+            'this.negating = !oneg',
+            'const res = fn();',
+            'this.negating = oneg;',
+            'this.reset(mrk);',
+            'return res === null ? true : null;',
         ],
         '}',
         ...ruleParseFns,
@@ -198,9 +217,9 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
         'mnd : number = -1;',
         'prules : Set<string> = new Set();',
         'pmatches: Set<string> = new Set();',
-        'record(pos : PosInfo, depth : number, result : any, extraInfo : string[]){',
+        'record(pos : PosInfo, depth : number, result : any, negating : boolean, extraInfo : string[]){',
         [
-            'if(result !== null)',
+            'if((result === null) === negating)',
             [
                 'return;',
             ],
@@ -217,13 +236,21 @@ export function expandTemplate(input: string, kinds : Block, ruleClasses : Block
                 'this.prules.clear();',
             ],
             '}',
-            'if(this.mxpos.overall_pos === pos.overall_pos && extraInfo.length >= 2 && extraInfo[0] === \'$$StrMatch\')',
+            'if(this.mxpos.overall_pos === pos.overall_pos && extraInfo.length >= 2) {',
             [
-                'this.pmatches.add(extraInfo[1]);',
+                'if(extraInfo[0] === \'$$StrMatch\')',
+                [
+                    'this.pmatches.add(extraInfo[1]);'
+                ],
+                'if(extraInfo[0] === \'$$!StrMatch\')',
+                [
+                    'this.pmatches.add(`not ${extraInfo[1]}`);'
+                ],
             ],
+            '}',
             'if(this.mxpos.overall_pos === pos.overall_pos && this.mnd === depth)',
             [
-                'extraInfo.forEach(x => { if(x !== \'$$StrMatch\') this.prules.add(x)});',
+                'extraInfo.forEach(x => { if(x !== \'$$StrMatch\' && x !== \'$$!StrMatch\') this.prules.add(x)});'
             ],
         ],
         '}',
