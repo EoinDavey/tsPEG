@@ -56,7 +56,7 @@ class INT {
 }
 ```
 
-And for `ATOM` we would get something like
+And for `ATOM` ts-peg would generate something like
 ```
 type ATOM = ATOM_1 | ATOM_2;
 class ATOM_1 {
