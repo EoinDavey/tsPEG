@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - '12.13'
+before_install:
+  - npm install -g typescript
+deploy:
+  provider: npm
+  email: eoind@vey.ie
+  on:
+    tags: true
+    repo: EoinDavey/ts-PEG
+  api_key: "$NPM_TOKEN"
+  edge: true

@@ -1,14 +1,19 @@
 {
     "name": "tspeg",
-    "version": "1.0.0",
+    "version": "1.0.1",
+    "homepage": "https://github.com/EoinDavey/ts-PEG",
     "description": "TypeScript parser generator",
+    "author": "Eoin Davey <eoind@vey.ie>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/EoinDavey/ts-PEG.git"
+    },
     "main": "index.js",
     "scripts": {
         "build": "tsc",
         "preinstall": "tsc",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"no tests\""
     },
-    "author": "Eoin Davey <eoind@vey.ie>",
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^12.12.6",
