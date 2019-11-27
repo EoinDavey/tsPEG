@@ -3,7 +3,11 @@ node_js:
   - '12.13'
 before_install:
   - npm install -g typescript
+
+script: tsc
+
 deploy:
+  cleanup: false
   provider: npm
   email: eoind@vey.ie
   on:
