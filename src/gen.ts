@@ -136,13 +136,10 @@ export class Generator {
             return [`export type ${name} = ${this.postType(at)};`];
         }
         const blk : Block = [
-            `export class ${name} implements ASTNodeIntf {`,
+            `export interface ${name} {`,
             [
-                `kind : ASTKinds.${name} = ASTKinds.${name};`,
+                `kind : ASTKinds.${name};`,
                 ...namedTypes.map(x => `${x[0]} : ${x[1]};`),
-                `constructor(${namedTypes.map(x => `${x[0]} : ${x[1]}`).join(', ')}){`,
-                namedTypes.map(x => `this.${x[0]} = ${x[0]};`),
-                '}'
             ],
             '}',
         ]
@@ -232,7 +229,7 @@ export class Generator {
                         this.writeParseIfStmt(alt),
                         ')',
                         [
-                            `res = new ${name}(${namedTypes.map(x => x[0]).join(', ')});`,
+                            `res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]} : ${x[0]}`).join(', ')}};`,
                         ],
                         'return res;'
                     ],

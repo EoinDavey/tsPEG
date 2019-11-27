@@ -47,31 +47,22 @@ For each rule the generator will output classes, storing the named rules in it's
 For example the class for rule `INT` will look something like
 
 ```
-class INT {
-    kind : ASTKinds.ATOM_2 = ASTKinds.ATOM_2;
+interface INT {
+    kind : ASTKinds.ATOM_2
     val : string;
-    constructor(val : string){
-        this.val = val;
-    }
 }
 ```
 
 And for `ATOM` ts-peg would generate something like
 ```
 type ATOM = ATOM_1 | ATOM_2;
-class ATOM_1 {
-    kind : ASTKinds.ATOM_1 = ASTKinds.ATOM_1;
+interface ATOM_1 {
+    kind : ASTKinds.ATOM_1;
     val : INT;
-    constructor(val : INT){
-        this.val = val;
-    }
 }
-class ATOM_2 {
-    kind : ASTKinds.ATOM_2 = ASTKinds.ATOM_2;
+interface ATOM_2 {
+    kind : ASTKinds.ATOM_2;
     val : SUM;
-    constructor(val : SUM){
-        this.val = val;
-    }
 }
 ```
 

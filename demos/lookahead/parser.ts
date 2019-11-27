@@ -18,25 +18,17 @@ export enum ASTKinds {
     A,
     B,
 }
-export class S implements ASTNodeIntf {
-    kind : ASTKinds.S = ASTKinds.S;
-    constructor(){
-    }
+export interface S {
+    kind : ASTKinds.S;
 }
-export class S_$0 implements ASTNodeIntf {
-    kind : ASTKinds.S_$0 = ASTKinds.S_$0;
-    constructor(){
-    }
+export interface S_$0 {
+    kind : ASTKinds.S_$0;
 }
-export class A implements ASTNodeIntf {
-    kind : ASTKinds.A = ASTKinds.A;
-    constructor(){
-    }
+export interface A {
+    kind : ASTKinds.A;
 }
-export class B implements ASTNodeIntf {
-    kind : ASTKinds.B = ASTKinds.B;
-    constructor(){
-    }
+export interface B {
+    kind : ASTKinds.B;
 }
 export class Parser {
     private pos : PosInfo;
@@ -147,7 +139,7 @@ export class Parser {
                     && this.loop<string>(()=> this.regexAccept(String.raw`a`, $$dpth+1, cr), false) != null
                     && this.matchB($$dpth + 1, cr) != null
                 )
-                    res = new S();
+                    res = {kind: ASTKinds.S, };
                 return res;
             }, cr)();
     }
@@ -161,7 +153,7 @@ export class Parser {
                     && this.matchA($$dpth + 1, cr) != null
                     && this.regexAccept(String.raw`c`, $$dpth+1, cr) != null
                 )
-                    res = new S_$0();
+                    res = {kind: ASTKinds.S_$0, };
                 return res;
             }, cr)();
     }
@@ -176,7 +168,7 @@ export class Parser {
                     && ((this.matchA($$dpth + 1, cr)) || true)
                     && this.regexAccept(String.raw`b`, $$dpth+1, cr) != null
                 )
-                    res = new A();
+                    res = {kind: ASTKinds.A, };
                 return res;
             }, cr)();
     }
@@ -191,7 +183,7 @@ export class Parser {
                     && ((this.matchB($$dpth + 1, cr)) || true)
                     && this.regexAccept(String.raw`c`, $$dpth+1, cr) != null
                 )
-                    res = new B();
+                    res = {kind: ASTKinds.B, };
                 return res;
             }, cr)();
     }

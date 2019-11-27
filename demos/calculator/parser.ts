@@ -24,63 +24,38 @@ export enum ASTKinds {
     INT,
     _,
 }
-export class SUM implements ASTNodeIntf {
-    kind : ASTKinds.SUM = ASTKinds.SUM;
+export interface SUM {
+    kind : ASTKinds.SUM;
     head : FAC;
     tail : SUM_$0[];
-    constructor(head : FAC, tail : SUM_$0[]){
-        this.head = head;
-        this.tail = tail;
-    }
 }
-export class SUM_$0 implements ASTNodeIntf {
-    kind : ASTKinds.SUM_$0 = ASTKinds.SUM_$0;
+export interface SUM_$0 {
+    kind : ASTKinds.SUM_$0;
     op : string;
     sm : FAC;
-    constructor(op : string, sm : FAC){
-        this.op = op;
-        this.sm = sm;
-    }
 }
-export class FAC implements ASTNodeIntf {
-    kind : ASTKinds.FAC = ASTKinds.FAC;
+export interface FAC {
+    kind : ASTKinds.FAC;
     head : ATOM;
     tail : FAC_$0[];
-    constructor(head : ATOM, tail : FAC_$0[]){
-        this.head = head;
-        this.tail = tail;
-    }
 }
-export class FAC_$0 implements ASTNodeIntf {
-    kind : ASTKinds.FAC_$0 = ASTKinds.FAC_$0;
+export interface FAC_$0 {
+    kind : ASTKinds.FAC_$0;
     op : string;
     sm : ATOM;
-    constructor(op : string, sm : ATOM){
-        this.op = op;
-        this.sm = sm;
-    }
 }
 export type ATOM = ATOM_1 | ATOM_2;
-export class ATOM_1 implements ASTNodeIntf {
-    kind : ASTKinds.ATOM_1 = ASTKinds.ATOM_1;
+export interface ATOM_1 {
+    kind : ASTKinds.ATOM_1;
     val : INT;
-    constructor(val : INT){
-        this.val = val;
-    }
 }
-export class ATOM_2 implements ASTNodeIntf {
-    kind : ASTKinds.ATOM_2 = ASTKinds.ATOM_2;
+export interface ATOM_2 {
+    kind : ASTKinds.ATOM_2;
     val : SUM;
-    constructor(val : SUM){
-        this.val = val;
-    }
 }
-export class INT implements ASTNodeIntf {
-    kind : ASTKinds.INT = ASTKinds.INT;
+export interface INT {
+    kind : ASTKinds.INT;
     val : string;
-    constructor(val : string){
-        this.val = val;
-    }
 }
 export type _ = string;
 export class Parser {
@@ -193,7 +168,7 @@ export class Parser {
                     && (head = this.matchFAC($$dpth + 1, cr)) != null
                     && (tail = this.loop<SUM_$0>(()=> this.matchSUM_$0($$dpth + 1, cr), true)) != null
                 )
-                    res = new SUM(head, tail);
+                    res = {kind: ASTKinds.SUM, head : head, tail : tail};
                 return res;
             }, cr)();
     }
@@ -209,7 +184,7 @@ export class Parser {
                     && (op = this.regexAccept(String.raw`\+|-`, $$dpth+1, cr)) != null
                     && (sm = this.matchFAC($$dpth + 1, cr)) != null
                 )
-                    res = new SUM_$0(op, sm);
+                    res = {kind: ASTKinds.SUM_$0, op : op, sm : sm};
                 return res;
             }, cr)();
     }
@@ -225,7 +200,7 @@ export class Parser {
                     && (head = this.matchATOM($$dpth + 1, cr)) != null
                     && (tail = this.loop<FAC_$0>(()=> this.matchFAC_$0($$dpth + 1, cr), true)) != null
                 )
-                    res = new FAC(head, tail);
+                    res = {kind: ASTKinds.FAC, head : head, tail : tail};
                 return res;
             }, cr)();
     }
@@ -241,7 +216,7 @@ export class Parser {
                     && (op = this.regexAccept(String.raw`\*|/`, $$dpth+1, cr)) != null
                     && (sm = this.matchATOM($$dpth + 1, cr)) != null
                 )
-                    res = new FAC_$0(op, sm);
+                    res = {kind: ASTKinds.FAC_$0, op : op, sm : sm};
                 return res;
             }, cr)();
     }
@@ -263,7 +238,7 @@ export class Parser {
                     && (val = this.matchINT($$dpth + 1, cr)) != null
                     && this.match_($$dpth + 1, cr) != null
                 )
-                    res = new ATOM_1(val);
+                    res = {kind: ASTKinds.ATOM_1, val : val};
                 return res;
             }, cr)();
     }
@@ -281,7 +256,7 @@ export class Parser {
                     && this.regexAccept(String.raw`\)`, $$dpth+1, cr) != null
                     && this.match_($$dpth + 1, cr) != null
                 )
-                    res = new ATOM_2(val);
+                    res = {kind: ASTKinds.ATOM_2, val : val};
                 return res;
             }, cr)();
     }
@@ -295,7 +270,7 @@ export class Parser {
                 if(true
                     && (val = this.regexAccept(String.raw`[0-9]+`, $$dpth+1, cr)) != null
                 )
-                    res = new INT(val);
+                    res = {kind: ASTKinds.INT, val : val};
                 return res;
             }, cr)();
     }

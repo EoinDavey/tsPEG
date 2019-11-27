@@ -40,95 +40,57 @@ export enum ASTKinds {
     _,
 }
 export type GRAM = RULEDEF[];
-export class RULEDEF implements ASTNodeIntf {
-    kind : ASTKinds.RULEDEF = ASTKinds.RULEDEF;
+export interface RULEDEF {
+    kind : ASTKinds.RULEDEF;
     name : NAME;
     rule : RULE;
-    constructor(name : NAME, rule : RULE){
-        this.name = name;
-        this.rule = rule;
-    }
 }
-export class RULE implements ASTNodeIntf {
-    kind : ASTKinds.RULE = ASTKinds.RULE;
+export interface RULE {
+    kind : ASTKinds.RULE;
     head : ALT;
     tail : RULE_$0[];
-    constructor(head : ALT, tail : RULE_$0[]){
-        this.head = head;
-        this.tail = tail;
-    }
 }
-export class RULE_$0 implements ASTNodeIntf {
-    kind : ASTKinds.RULE_$0 = ASTKinds.RULE_$0;
+export interface RULE_$0 {
+    kind : ASTKinds.RULE_$0;
     alt : ALT;
-    constructor(alt : ALT){
-        this.alt = alt;
-    }
 }
 export type ALT = MATCHSPEC[];
-export class MATCHSPEC implements ASTNodeIntf {
-    kind : ASTKinds.MATCHSPEC = ASTKinds.MATCHSPEC;
+export interface MATCHSPEC {
+    kind : ASTKinds.MATCHSPEC;
     named : Nullable<MATCHSPEC_$0>;
     rule : POSTOP;
-    constructor(named : Nullable<MATCHSPEC_$0>, rule : POSTOP){
-        this.named = named;
-        this.rule = rule;
-    }
 }
-export class MATCHSPEC_$0 implements ASTNodeIntf {
-    kind : ASTKinds.MATCHSPEC_$0 = ASTKinds.MATCHSPEC_$0;
+export interface MATCHSPEC_$0 {
+    kind : ASTKinds.MATCHSPEC_$0;
     name : NAME;
-    constructor(name : NAME){
-        this.name = name;
-    }
 }
-export class POSTOP implements ASTNodeIntf {
-    kind : ASTKinds.POSTOP = ASTKinds.POSTOP;
+export interface POSTOP {
+    kind : ASTKinds.POSTOP;
     pre : PREOP;
     op : Nullable<string>;
-    constructor(pre : PREOP, op : Nullable<string>){
-        this.pre = pre;
-        this.op = op;
-    }
 }
-export class PREOP implements ASTNodeIntf {
-    kind : ASTKinds.PREOP = ASTKinds.PREOP;
+export interface PREOP {
+    kind : ASTKinds.PREOP;
     op : Nullable<string>;
     at : ATOM;
-    constructor(op : Nullable<string>, at : ATOM){
-        this.op = op;
-        this.at = at;
-    }
 }
 export type ATOM = ATOM_1 | ATOM_2 | ATOM_3;
-export class ATOM_1 implements ASTNodeIntf {
-    kind : ASTKinds.ATOM_1 = ASTKinds.ATOM_1;
+export interface ATOM_1 {
+    kind : ASTKinds.ATOM_1;
     name : NAME;
-    constructor(name : NAME){
-        this.name = name;
-    }
 }
-export class ATOM_2 implements ASTNodeIntf {
-    kind : ASTKinds.ATOM_2 = ASTKinds.ATOM_2;
+export interface ATOM_2 {
+    kind : ASTKinds.ATOM_2;
     match : STRLIT;
-    constructor(match : STRLIT){
-        this.match = match;
-    }
 }
-export class ATOM_3 implements ASTNodeIntf {
-    kind : ASTKinds.ATOM_3 = ASTKinds.ATOM_3;
+export interface ATOM_3 {
+    kind : ASTKinds.ATOM_3;
     sub : RULE;
-    constructor(sub : RULE){
-        this.sub = sub;
-    }
 }
 export type NAME = string;
-export class STRLIT implements ASTNodeIntf {
-    kind : ASTKinds.STRLIT = ASTKinds.STRLIT;
+export interface STRLIT {
+    kind : ASTKinds.STRLIT;
     val : string;
-    constructor(val : string){
-        this.val = val;
-    }
 }
 export type _ = string;
 export class Parser {
@@ -249,7 +211,7 @@ export class Parser {
                     && (rule = this.matchRULE($$dpth + 1, cr)) != null
                     && this.match_($$dpth + 1, cr) != null
                 )
-                    res = new RULEDEF(name, rule);
+                    res = {kind: ASTKinds.RULEDEF, name : name, rule : rule};
                 return res;
             }, cr)();
     }
@@ -265,7 +227,7 @@ export class Parser {
                     && (head = this.matchALT($$dpth + 1, cr)) != null
                     && (tail = this.loop<RULE_$0>(()=> this.matchRULE_$0($$dpth + 1, cr), true)) != null
                 )
-                    res = new RULE(head, tail);
+                    res = {kind: ASTKinds.RULE, head : head, tail : tail};
                 return res;
             }, cr)();
     }
@@ -282,7 +244,7 @@ export class Parser {
                     && this.match_($$dpth + 1, cr) != null
                     && (alt = this.matchALT($$dpth + 1, cr)) != null
                 )
-                    res = new RULE_$0(alt);
+                    res = {kind: ASTKinds.RULE_$0, alt : alt};
                 return res;
             }, cr)();
     }
@@ -303,7 +265,7 @@ export class Parser {
                     && (rule = this.matchPOSTOP($$dpth + 1, cr)) != null
                     && this.match_($$dpth + 1, cr) != null
                 )
-                    res = new MATCHSPEC(named, rule);
+                    res = {kind: ASTKinds.MATCHSPEC, named : named, rule : rule};
                 return res;
             }, cr)();
     }
@@ -318,7 +280,7 @@ export class Parser {
                     && (name = this.matchNAME($$dpth + 1, cr)) != null
                     && this.regexAccept(String.raw`=`, $$dpth+1, cr) != null
                 )
-                    res = new MATCHSPEC_$0(name);
+                    res = {kind: ASTKinds.MATCHSPEC_$0, name : name};
                 return res;
             }, cr)();
     }
@@ -334,7 +296,7 @@ export class Parser {
                     && (pre = this.matchPREOP($$dpth + 1, cr)) != null
                     && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth+1, cr)) || true)
                 )
-                    res = new POSTOP(pre, op);
+                    res = {kind: ASTKinds.POSTOP, pre : pre, op : op};
                 return res;
             }, cr)();
     }
@@ -350,7 +312,7 @@ export class Parser {
                     && ((op = this.regexAccept(String.raw`\&|!`, $$dpth+1, cr)) || true)
                     && (at = this.matchATOM($$dpth + 1, cr)) != null
                 )
-                    res = new PREOP(op, at);
+                    res = {kind: ASTKinds.PREOP, op : op, at : at};
                 return res;
             }, cr)();
     }
@@ -372,7 +334,7 @@ export class Parser {
                     && (name = this.matchNAME($$dpth + 1, cr)) != null
                     && this.negate(() => this.regexAccept(String.raw`\s*:=`, $$dpth+1, cr)) != null
                 )
-                    res = new ATOM_1(name);
+                    res = {kind: ASTKinds.ATOM_1, name : name};
                 return res;
             }, cr)();
     }
@@ -386,7 +348,7 @@ export class Parser {
                 if(true
                     && (match = this.matchSTRLIT($$dpth + 1, cr)) != null
                 )
-                    res = new ATOM_2(match);
+                    res = {kind: ASTKinds.ATOM_2, match : match};
                 return res;
             }, cr)();
     }
@@ -404,7 +366,7 @@ export class Parser {
                     && this.match_($$dpth + 1, cr) != null
                     && this.regexAccept(String.raw`}`, $$dpth+1, cr) != null
                 )
-                    res = new ATOM_3(sub);
+                    res = {kind: ASTKinds.ATOM_3, sub : sub};
                 return res;
             }, cr)();
     }
@@ -423,7 +385,7 @@ export class Parser {
                     && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, $$dpth+1, cr)) != null
                     && this.regexAccept(String.raw`\'`, $$dpth+1, cr) != null
                 )
-                    res = new STRLIT(val);
+                    res = {kind: ASTKinds.STRLIT, val : val};
                 return res;
             }, cr)();
     }

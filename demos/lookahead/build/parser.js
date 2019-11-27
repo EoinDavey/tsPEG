@@ -7,30 +7,6 @@ var ASTKinds;
     ASTKinds[ASTKinds["A"] = 2] = "A";
     ASTKinds[ASTKinds["B"] = 3] = "B";
 })(ASTKinds = exports.ASTKinds || (exports.ASTKinds = {}));
-class S {
-    constructor() {
-        this.kind = ASTKinds.S;
-    }
-}
-exports.S = S;
-class S_$0 {
-    constructor() {
-        this.kind = ASTKinds.S_$0;
-    }
-}
-exports.S_$0 = S_$0;
-class A {
-    constructor() {
-        this.kind = ASTKinds.A;
-    }
-}
-exports.A = A;
-class B {
-    constructor() {
-        this.kind = ASTKinds.B;
-    }
-}
-exports.B = B;
 class Parser {
     constructor(input) {
         this.negating = false;
@@ -134,7 +110,7 @@ class Parser {
                 && this.noConsume(() => this.matchS_$0($$dpth + 1, cr)) != null
                 && this.loop(() => this.regexAccept(String.raw `a`, $$dpth + 1, cr), false) != null
                 && this.matchB($$dpth + 1, cr) != null)
-                res = new S();
+                res = { kind: ASTKinds.S, };
             return res;
         }, cr)();
     }
@@ -146,7 +122,7 @@ class Parser {
             if (true
                 && this.matchA($$dpth + 1, cr) != null
                 && this.regexAccept(String.raw `c`, $$dpth + 1, cr) != null)
-                res = new S_$0();
+                res = { kind: ASTKinds.S_$0, };
             return res;
         }, cr)();
     }
@@ -159,7 +135,7 @@ class Parser {
                 && this.regexAccept(String.raw `a`, $$dpth + 1, cr) != null
                 && ((this.matchA($$dpth + 1, cr)) || true)
                 && this.regexAccept(String.raw `b`, $$dpth + 1, cr) != null)
-                res = new A();
+                res = { kind: ASTKinds.A, };
             return res;
         }, cr)();
     }
@@ -172,7 +148,7 @@ class Parser {
                 && this.regexAccept(String.raw `b`, $$dpth + 1, cr) != null
                 && ((this.matchB($$dpth + 1, cr)) || true)
                 && this.regexAccept(String.raw `c`, $$dpth + 1, cr) != null)
-                res = new B();
+                res = { kind: ASTKinds.B, };
             return res;
         }, cr)();
     }
