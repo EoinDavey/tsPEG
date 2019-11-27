@@ -33,7 +33,8 @@ class B {
 exports.B = B;
 class Parser {
     constructor(input) {
-        this.pos = 0;
+        this.negating = false;
+        this.pos = new PosInfo(0, 1, 0);
         this.input = input;
     }
     mark() {
@@ -43,7 +44,7 @@ class Parser {
         this.pos = pos;
     }
     finished() {
-        return this.pos == this.input.length;
+        return this.pos.overall_pos === this.input.length;
     }
     loop(func, star = false) {
         const mrk = this.mark();
@@ -65,7 +66,7 @@ class Parser {
             const res = cr ? (() => {
                 let extraInfo = [];
                 const res = fn((msg) => extraInfo.push(msg));
-                cr.record(mrk, $$dpth, res, extraInfo);
+                cr.record(mrk, $$dpth, res, this.negating, extraInfo);
                 return res;
             })() : fn();
             if (res !== null)
@@ -85,24 +86,44 @@ class Parser {
     regexAccept(match, dpth, cr) {
         return this.runner(dpth, (log) => {
             if (log) {
-                log('$$StrMatch');
+                if (this.negating)
+                    log('$$!StrMatch');
+                else
+                    log('$$StrMatch');
                 log(match);
             }
             var reg = new RegExp(match, 'y');
-            reg.lastIndex = this.mark();
+            reg.lastIndex = this.mark().overall_pos;
             const res = reg.exec(this.input);
             if (res) {
-                this.pos = reg.lastIndex;
+                let lineJmp = 0;
+                let lind = -1;
+                for (let i = 0; i < res[0].length; ++i) {
+                    if (res[0][i] === '\n') {
+                        ++lineJmp;
+                        lind = i;
+                    }
+                }
+                this.pos = new PosInfo(reg.lastIndex, this.pos.line + lineJmp, lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind));
                 return res[0];
             }
             return null;
         }, cr)();
     }
-    noConsume($$dpth, fn, cr) {
+    noConsume(fn) {
         const mrk = this.mark();
         const res = fn();
         this.reset(mrk);
         return res;
+    }
+    negate(fn) {
+        const mrk = this.mark();
+        const oneg = this.negating;
+        this.negating = !oneg;
+        const res = fn();
+        this.negating = oneg;
+        this.reset(mrk);
+        return res === null ? true : null;
     }
     matchS($$dpth, cr) {
         return this.runner($$dpth, (log) => {
@@ -110,7 +131,7 @@ class Parser {
                 log('S');
             let res = null;
             if (true
-                && this.noConsume($$dpth + 1, () => this.matchS_$0($$dpth + 1, cr)) != null
+                && this.noConsume(() => this.matchS_$0($$dpth + 1, cr)) != null
                 && this.loop(() => this.regexAccept(String.raw `a`, $$dpth + 1, cr), false) != null
                 && this.matchB($$dpth + 1, cr) != null)
                 res = new S();
@@ -174,6 +195,14 @@ class ParseResult {
     }
 }
 exports.ParseResult = ParseResult;
+class PosInfo {
+    constructor(overall_pos, line, offset) {
+        this.overall_pos = overall_pos;
+        this.line = line;
+        this.offset = offset;
+    }
+}
+exports.PosInfo = PosInfo;
 class SyntaxErr {
     constructor(pos, exprules, expmatches) {
         this.pos = pos;
@@ -181,38 +210,42 @@ class SyntaxErr {
         this.expmatches = [...expmatches];
     }
     toString() {
-        return `Syntax Error at position ${this.pos}. Tried to match rules ${this.exprules.join(', ')}. Expected one of ${this.expmatches.map(x => ` '${x}'`)}`;
+        return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Tried to match rules ${this.exprules.join(', ')}. Expected one of ${this.expmatches.map(x => ` '${x}'`)}`;
     }
 }
 exports.SyntaxErr = SyntaxErr;
 class ErrorTracker {
     constructor() {
-        this.mxpos = -1;
+        this.mxpos = new PosInfo(-1, -1, -1);
         this.mnd = -1;
         this.prules = new Set();
         this.pmatches = new Set();
     }
-    record(pos, depth, result, extraInfo) {
-        if (result !== null)
+    record(pos, depth, result, negating, extraInfo) {
+        if ((result === null) === negating)
             return;
-        if (pos > this.mxpos) {
+        if (pos.overall_pos > this.mxpos.overall_pos) {
             this.mxpos = pos;
             this.mnd = depth;
             this.pmatches.clear();
             this.prules.clear();
         }
-        else if (pos === this.mxpos && depth < this.mnd) {
+        else if (pos.overall_pos === this.mxpos.overall_pos && depth < this.mnd) {
             this.mnd = depth;
             this.prules.clear();
         }
-        if (this.mxpos === pos && extraInfo.length >= 2 && extraInfo[0] === '$$StrMatch')
-            this.pmatches.add(extraInfo[1]);
-        if (this.mxpos === pos && this.mnd === depth)
-            extraInfo.forEach(x => { if (x !== '$$StrMatch')
+        if (this.mxpos.overall_pos === pos.overall_pos && extraInfo.length >= 2) {
+            if (extraInfo[0] === '$$StrMatch')
+                this.pmatches.add(extraInfo[1]);
+            if (extraInfo[0] === '$$!StrMatch')
+                this.pmatches.add(`not ${extraInfo[1]}`);
+        }
+        if (this.mxpos.overall_pos === pos.overall_pos && this.mnd === depth)
+            extraInfo.forEach(x => { if (x !== '$$StrMatch' && x !== '$$!StrMatch')
                 this.prules.add(x); });
     }
     getErr() {
-        if (this.mxpos !== -1)
+        if (this.mxpos.overall_pos !== -1)
             return new SyntaxErr(this.mxpos, this.prules, this.pmatches);
         return null;
     }

@@ -1,5 +1,5 @@
-SUM  := head=FAC tail={ op='\+|-' sm=FAC }*;
-FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*;
-ATOM := _ val=INT _ | _ '\(' val=SUM '\)' _;
-INT  := val='[0-9]+';
-_    := '\s*';
+SUM  := head=FAC tail={ op='\+|-' sm=FAC }*
+FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*
+ATOM := _ val=INT _ | _ '\(' val=SUM '\)' _
+INT  := val='[0-9]+'
+_    := '\s*'

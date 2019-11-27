@@ -1,13 +1,13 @@
-GRAM      := RULEDEF+;
-RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _ ';' _;
-RULE      := head=ALT tail={_ '\|' _ alt=ALT }*;
-ALT       := MATCHSPEC+;
-MATCHSPEC := _ named={name=NAME '='}? rule=POSTOP _;
-POSTOP    := pre=PREOP op='\+|\*|\?'?;
-PREOP     := op='\&|!'? at=ATOM;
-ATOM      := name=NAME
+GRAM      := RULEDEF+
+RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _
+RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
+ALT       := MATCHSPEC+
+MATCHSPEC := _ named={name=NAME '='}? rule=POSTOP _
+POSTOP    := pre=PREOP op='\+|\*|\?'?
+PREOP     := op='\&|!'? at=ATOM
+ATOM      := name=NAME !'\s*:='
            | match=STRLIT
-           | '{' _ sub=RULE _ '}';
-NAME      := '[a-zA-Z_]+';
-STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\'';
-_         := '\s*';
+           | '{' _ sub=RULE _ '}'
+NAME      := '[a-zA-Z_]+'
+STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\''
+_         := '\s*'

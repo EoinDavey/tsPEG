@@ -36,11 +36,11 @@ Grammars are defined in a syntax similar to standard EBNF format.
 Here is an example grammar to parse arithmetic expressions.
 
 ```
-SUM  := head=FAC tail={ op='\+|-' sm=FAC }*;
-FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*;
+SUM  := head=FAC tail={ op='\+|-' sm=FAC }*
+FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*
 ATOM := val=INT
-      | '\(' val=SUM '\)';
-INT  := val='[0-9]+';
+      | '\(' val=SUM '\)'
+INT  := val='[0-9]+'
 ```
 
 For each rule the generator will output classes, storing the named rules in it's member fields.
