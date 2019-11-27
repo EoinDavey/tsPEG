@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.com/EoinDavey/ts-PEG.svg?branch=master)](https://travis-ci.com/EoinDavey/ts-PEG)
 
-# ts-PEG : A PEG Parser for TypeScript
+# ts-PEG : A PEG Parser Generator for TypeScript
 
 ts-PEG is a PEG Parser generator for TypeScript. ts-peg takes in an intuitive description of a grammar and outputs a fully featured parser that takes full advantage of the typescript type system.
 
