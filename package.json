@@ -1,12 +1,12 @@
 {
     "name": "tspeg",
-    "version": "1.1.0",
-    "homepage": "https://github.com/EoinDavey/ts-PEG",
+    "version": "1.1.1",
+    "homepage": "https://github.com/EoinDavey/tsPEG",
     "description": "TypeScript parser generator",
     "author": "Eoin Davey <eoind@vey.ie>",
     "repository": {
         "type": "git",
-        "url": "https://github.com/EoinDavey/ts-PEG.git"
+        "url": "https://github.com/EoinDavey/tsPEG.git"
     },
     "main": "index.js",
     "scripts": {
@@ -20,6 +20,6 @@
         "typescript": "^3.7.2"
     },
     "bin": {
-        "ts-peg": "tsbuild/cli.js"
+        "tspeg": "tsbuild/cli.js"
     }
 }

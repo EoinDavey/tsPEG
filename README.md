@@ -1,15 +1,15 @@
 [![Build Status](https://travis-ci.com/EoinDavey/ts-PEG.svg?branch=master)](https://travis-ci.com/EoinDavey/ts-PEG)
 
-# ts-PEG : A PEG Parser Generator for TypeScript
+# tsPEG : A PEG Parser Generator for TypeScript
 
-ts-PEG is a PEG Parser generator for TypeScript. ts-peg takes in an intuitive description of a grammar and outputs a fully featured parser that takes full advantage of the typescript type system.
+tsPEG is a PEG Parser generator for TypeScript. ts-peg takes in an intuitive description of a grammar and outputs a fully featured parser that takes full advantage of the typescript type system.
 
 ## Installation
 
-`ts-peg` can be installed by running
+`tspeg` can be installed by running
 
 ```
-npm install -g ts-peg
+npm install -g tspeg
 ```
 
 ## Features
@@ -23,7 +23,7 @@ npm install -g ts-peg
 
 The cli invocation syntax is as follows
 
-`ts-peg <grammar-file> <output-file>`
+`tspeg <grammar-file> <output-file>`
 
 This generates a TypeScript ES6 module that exports a parser class, as well as classes that represent your AST.
 
