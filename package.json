@@ -1,6 +1,6 @@
 {
     "name": "tspeg",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "homepage": "https://github.com/EoinDavey/tsPEG",
     "description": "TypeScript parser generator",
     "author": "Eoin Davey <eoind@vey.ie>",
@@ -11,15 +11,16 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc",
-        "preinstall": "tsc",
         "test": "echo \"no tests\""
     },
     "license": "ISC",
     "devDependencies": {
-        "@types/node": "^12.12.6",
         "typescript": "^3.7.2"
     },
     "bin": {
         "tspeg": "tsbuild/cli.js"
+    },
+    "dependencies": {
+        "@types/node": "^12.12.14"
     }
 }
