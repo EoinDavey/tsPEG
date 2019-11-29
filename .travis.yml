@@ -12,6 +12,6 @@ deploy:
   email: eoind@vey.ie
   on:
     tags: true
-    repo: EoinDavey/ts-PEG
+    repo: EoinDavey/tsPEG
   api_key: "$NPM_TOKEN"
   edge: true
