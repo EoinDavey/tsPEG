@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/EoinDavey/ts-PEG.svg?branch=master)](https://travis-ci.com/EoinDavey/ts-PEG)
+[![Build Status](https://travis-ci.com/EoinDavey/tsPEG.svg?branch=master)](https://travis-ci.com/EoinDavey/tsPEG)
 
 # tsPEG : A PEG Parser Generator for TypeScript
 
