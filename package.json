@@ -15,12 +15,10 @@
     },
     "license": "ISC",
     "devDependencies": {
+        "@types/node": "^12.12.14",
         "typescript": "^3.7.2"
     },
     "bin": {
         "tspeg": "tsbuild/cli.js"
-    },
-    "dependencies": {
-        "@types/node": "^12.12.14"
     }
 }
