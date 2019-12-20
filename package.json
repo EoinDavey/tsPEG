@@ -11,11 +11,14 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc",
+        "lint": "tslint --force",
+        "lint-all": "tslint --force \"src/**/*.ts\"",
         "test": "echo \"no tests\""
     },
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^12.12.14",
+        "tslint": "^5.20.1",
         "typescript": "^3.7.2"
     },
     "bin": {

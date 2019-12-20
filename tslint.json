@@ -1,0 +1,17 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "no-console": false,
+        "interface-name": false
+    },
+    "linterOptions": {
+        "exclude": [
+            "src/meta.ts"
+        ]
+    },
+    "rulesDirectory": []
+}
