@@ -54,7 +54,7 @@ export function expandTemplate(input: string, kinds: Block, ruleClasses: Block, 
             "for (;;) {",
             [
                 "const t = func();",
-                "if (!t) {",
+                "if (t === null) {",
                 [
                     "break;",
                 ],
