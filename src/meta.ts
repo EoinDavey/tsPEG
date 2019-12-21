@@ -379,7 +379,7 @@ export class Parser {
     private choice<T>(fns: Array<$$RuleType<T>>): Nullable<T> {
         for (const f of fns) {
             const res = f();
-            if (res) {
+            if (res !== null) {
                 return res;
             }
         }

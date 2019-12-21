@@ -101,7 +101,7 @@ export function expandTemplate(input: string, kinds: Block, ruleClasses: Block, 
             "for (const f of fns) {",
             [
                 "const res = f();",
-                "if (res) {",
+                "if (res !== null) {",
                 [
                     "return res;",
                 ],
