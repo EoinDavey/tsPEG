@@ -4,14 +4,15 @@
         "tslint:recommended"
     ],
     "jsRules": {},
-    "rules": {
-        "no-console": false,
-        "interface-name": false
-    },
     "linterOptions": {
         "exclude": [
             "src/meta.ts"
         ]
+    },
+    "rules": {
+        "class-name": false,
+        "interface-name": false,
+        "no-console": false
     },
     "rulesDirectory": []
 }

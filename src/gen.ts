@@ -81,7 +81,7 @@ export class Generator {
 
     public postRule(expr: POSTOP): string {
         if (expr.op && expr.op !== "?") {
-                return `this.loop<${this.preType(expr.pre)}>(()=> ${this.preRule(expr.pre)}, ${expr.op === "+" ? "false" : "true"})`;
+                return `this.loop<${this.preType(expr.pre)}>(() => ${this.preRule(expr.pre)}, ${expr.op === "+" ? "false" : "true"})`;
         }
         return this.preRule(expr.pre);
     }
@@ -91,7 +91,7 @@ export class Generator {
             return `this.match${at.name}($$dpth + 1, cr)`;
         }
         if (at.kind === ASTKinds.ATOM_2) {
-            return `this.regexAccept(String.raw\`${at.match.val}\`, $$dpth+1, cr)`;
+            return `this.regexAccept(String.raw\`${at.match.val}\`, $$dpth + 1, cr)`;
         }
         const subname = this.subRules.get(at);
         if (subname) {
@@ -146,8 +146,8 @@ export class Generator {
         const blk: Block = [
             `export interface ${name} {`,
             [
-                `kind : ASTKinds.${name};`,
-                ...namedTypes.map((x) => `${x[0]} : ${x[1]};`),
+                `kind: ASTKinds.${name};`,
+                ...namedTypes.map((x) => `${x[0]}: ${x[1]};`),
             ],
             "}",
         ];
@@ -187,13 +187,13 @@ export class Generator {
                 if (isOptional(expr)) {
                     checks.push(`&& ((${match.named.name} = ${rn}) || true)`);
                 } else {
-                    checks.push(`&& (${match.named.name} = ${rn}) != null`);
+                    checks.push(`&& (${match.named.name} = ${rn}) !== null`);
                 }
             } else {
                 if (isOptional(expr)) {
                     checks.push(`&& ((${rn}) || true)`);
                 } else {
-                checks.push(`&& ${rn} != null`);
+                checks.push(`&& ${rn} !== null`);
                 }
             }
         }
@@ -201,7 +201,7 @@ export class Generator {
     }
 
     public writeRuleAliasFn(name: string, expr: POSTOP): Block {
-        return [`match${name}($$dpth : number, cr? : ContextRecorder) : Nullable<${name}> {`,
+        return [`public match${name}($$dpth: number, cr?: ContextRecorder): Nullable<${name}> {`,
             [
                 `return ${this.postRule(expr)};`,
             ],
@@ -224,24 +224,26 @@ export class Generator {
         if (namedTypes.length === 0 && alt.length === 1) {
             return this.writeRuleAliasFn(name, alt[0].rule);
         }
-        return [`match${name}($$dpth : number, cr? : ContextRecorder) : Nullable<${name}> {`,
+        return [`public match${name}($$dpth: number, cr?: ContextRecorder): Nullable<${name}> {`,
             [
                 `return this.runner<${name}>($$dpth,`,
                 [
                     "(log) => {",
                     [
-                        "if(log)",
+                        "if (log) {",
                         [
-                            `log('${name}');`,
+                            `log("${name}");`,
                         ],
-                        ...namedTypes.map((x) => `let ${x[0]} : Nullable<${x[1]}>;`),
-                        `let res : Nullable<${name}> = null;`,
-                        "if(true",
+                        "}",
+                        ...namedTypes.map((x) => `let ${x[0]}: Nullable<${x[1]}>;`),
+                        `let res: Nullable<${name}> = null;`,
+                        "if (true",
                         this.writeParseIfStmt(alt),
-                        ")",
+                        ") {",
                         [
-                            `res = {kind: ASTKinds.${name}, ${namedTypes.map((x) => `${x[0]} : ${x[0]}`).join(", ")}};`,
+                            `res = {kind: ASTKinds.${name}, ${namedTypes.map((x) => x[0]).join(", ")}};`,
                         ],
+                        "}",
                         "return res;",
                     ],
                     "}, cr)();",
@@ -261,10 +263,10 @@ export class Generator {
             choices.push(...this.writeChoiceParseFn(md, ruledef.rule[i]));
         }
         const union = ruledef.rule.length <= 1 ? []
-            : [`match${nm}($$dpth : number, cr? : ContextRecorder) : Nullable<${nm}> {`,
+            : [`public match${nm}($$dpth: number, cr?: ContextRecorder): Nullable<${nm}> {`,
                 [
                     `return this.choice<${nm}>([`,
-                    nms.map((x) => `() => { return this.match${x}($$dpth + 1, cr) },`),
+                    nms.map((x) => `() => this.match${x}($$dpth + 1, cr),`),
                     `]);`,
                 ],
                 `}`];
@@ -278,14 +280,15 @@ export class Generator {
         }
         const S: string = gram[0].name;
         return [...fns,
-            "parse() : ParseResult {",
+            "public parse(): ParseResult {",
             [
                 "const mrk = this.mark();",
                 `const res = this.match${S}(0);`,
-                "if(res && this.finished())",
+                "if (res && this.finished()) {",
                 [
                     "return new ParseResult(res, null);",
                 ],
+                "}",
                 "this.reset(mrk);",
                 "const rec = new ErrorTracker();",
                 `this.match${S}(0, rec);`,
@@ -300,9 +303,9 @@ export class Generator {
         const startname = head.name;
         return ["export class ParseResult {",
             [
-                `ast : Nullable<${startname}>;`,
-                "err : Nullable<SyntaxErr>;",
-                `constructor(ast : Nullable<${startname}>, err : Nullable<SyntaxErr>){`,
+                `public ast: Nullable<${startname}>;`,
+                "public err: Nullable<SyntaxErr>;",
+                `constructor(ast: Nullable<${startname}>, err: Nullable<SyntaxErr>) {`,
                 [
                     "this.ast = ast;",
                     "this.err = err;",

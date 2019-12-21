@@ -15,9 +15,9 @@
 * _         := '\s*'
 */
 type Nullable<T> = T | null;
-type $$RuleType<T> = (log? : (msg : string) => void) => Nullable<T>;
+type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
 export interface ContextRecorder {
-    record(pos: PosInfo, depth : number, result: any, negating : boolean, extraInfo : string[]) : void;
+    record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]): void;
 }
 interface ASTNodeIntf {
     kind: ASTKinds;
@@ -41,428 +41,461 @@ export enum ASTKinds {
 }
 export type GRAM = RULEDEF[];
 export interface RULEDEF {
-    kind : ASTKinds.RULEDEF;
-    name : NAME;
-    rule : RULE;
+    kind: ASTKinds.RULEDEF;
+    name: NAME;
+    rule: RULE;
 }
 export interface RULE {
-    kind : ASTKinds.RULE;
-    head : ALT;
-    tail : RULE_$0[];
+    kind: ASTKinds.RULE;
+    head: ALT;
+    tail: RULE_$0[];
 }
 export interface RULE_$0 {
-    kind : ASTKinds.RULE_$0;
-    alt : ALT;
+    kind: ASTKinds.RULE_$0;
+    alt: ALT;
 }
 export type ALT = MATCHSPEC[];
 export interface MATCHSPEC {
-    kind : ASTKinds.MATCHSPEC;
-    named : Nullable<MATCHSPEC_$0>;
-    rule : POSTOP;
+    kind: ASTKinds.MATCHSPEC;
+    named: Nullable<MATCHSPEC_$0>;
+    rule: POSTOP;
 }
 export interface MATCHSPEC_$0 {
-    kind : ASTKinds.MATCHSPEC_$0;
-    name : NAME;
+    kind: ASTKinds.MATCHSPEC_$0;
+    name: NAME;
 }
 export interface POSTOP {
-    kind : ASTKinds.POSTOP;
-    pre : PREOP;
-    op : Nullable<string>;
+    kind: ASTKinds.POSTOP;
+    pre: PREOP;
+    op: Nullable<string>;
 }
 export interface PREOP {
-    kind : ASTKinds.PREOP;
-    op : Nullable<string>;
-    at : ATOM;
+    kind: ASTKinds.PREOP;
+    op: Nullable<string>;
+    at: ATOM;
 }
 export type ATOM = ATOM_1 | ATOM_2 | ATOM_3;
 export interface ATOM_1 {
-    kind : ASTKinds.ATOM_1;
-    name : NAME;
+    kind: ASTKinds.ATOM_1;
+    name: NAME;
 }
 export interface ATOM_2 {
-    kind : ASTKinds.ATOM_2;
-    match : STRLIT;
+    kind: ASTKinds.ATOM_2;
+    match: STRLIT;
 }
 export interface ATOM_3 {
-    kind : ASTKinds.ATOM_3;
-    sub : RULE;
+    kind: ASTKinds.ATOM_3;
+    sub: RULE;
 }
 export type NAME = string;
 export interface STRLIT {
-    kind : ASTKinds.STRLIT;
-    val : string;
+    kind: ASTKinds.STRLIT;
+    val: string;
 }
 export type _ = string;
 export class Parser {
-    private pos : PosInfo;
-    readonly input : string;
+    private readonly input: string;
+    private pos: PosInfo;
     private negating: boolean = false;
-    constructor(input : string) {
+    constructor(input: string) {
         this.pos = new PosInfo(0, 1, 0);
         this.input = input;
     }
-    private mark() : PosInfo {
-        return this.pos;
-    }
-    reset(pos : PosInfo) {
+    public reset(pos: PosInfo) {
         this.pos = pos;
     }
-    finished() : boolean {
-        return this.pos.overall_pos === this.input.length;
+    public finished(): boolean {
+        return this.pos.overallPos === this.input.length;
     }
-    private loop<T>(func : $$RuleType<T>, star : boolean = false) : Nullable<T[]> {
-        const mrk = this.mark();
-        let res : T[] = [];
-        for(;;) {
-            const t = func();
-            if(!t)
-                break;
-            res.push(t);
-        }
-        if(star || res.length > 0)
-            return res;
-        this.reset(mrk);
-        return null;
+    public matchGRAM($$dpth: number, cr?: ContextRecorder): Nullable<GRAM> {
+        return this.loop<RULEDEF>(() => this.matchRULEDEF($$dpth + 1, cr), false);
     }
-    private runner<T>($$dpth : number, fn : $$RuleType<T>,
-        cr? : ContextRecorder) : $$RuleType<T> {
-        return () => {
-            const mrk = this.mark();
-            const res = cr ? (()=>{
-                let extraInfo : string[] = [];
-                const res = fn((msg : string) => extraInfo.push(msg));
-                cr.record(mrk, $$dpth, res, this.negating, extraInfo);
-                return res;
-            })() : fn();
-            if(res !== null)
-                return res;
-            this.reset(mrk);
-            return null
-        }
-    }
-    private choice<T>(fns : $$RuleType<T>[]) : Nullable<T> {
-        for(let f of fns){
-            const res = f();
-            if(res)
-                return res;
-        }
-        return null;
-    }
-    private regexAccept(match : string, dpth : number, cr? : ContextRecorder) : Nullable<string> {
-        return this.runner<string>(dpth,
-            (log) => {
-                if(log){
-                    if(this.negating)
-                        log('$$!StrMatch');
-                    else
-                        log('$$StrMatch');
-                    log(match);
-                }
-                var reg = new RegExp(match, 'y');
-                reg.lastIndex = this.mark().overall_pos;
-                const res = reg.exec(this.input);
-                if(res){
-                    let lineJmp = 0;
-                    let lind = -1;
-                    for(let i = 0; i < res[0].length; ++i){
-                        if(res[0][i] === '\n'){
-                            ++lineJmp;
-                            lind = i;
-                        }
-                    }
-                    this.pos = new PosInfo(reg.lastIndex, this.pos.line + lineJmp, lind === -1 ? this.pos.offset + res[0].length: (res[0].length - lind));
-                    return res[0];
-                }
-                return null;
-            }, cr)();
-    }
-    private noConsume<T>(fn : $$RuleType<T>) : Nullable<T> {
-        const mrk = this.mark();
-        const res = fn();
-        this.reset(mrk);
-        return res;
-    }
-    private negate<T>(fn : $$RuleType<T>) : Nullable<boolean> {
-        const mrk = this.mark();
-        const oneg = this.negating;
-        this.negating = !oneg
-        const res = fn();
-        this.negating = oneg;
-        this.reset(mrk);
-        return res === null ? true : null;
-    }
-    matchGRAM($$dpth : number, cr? : ContextRecorder) : Nullable<GRAM> {
-        return this.loop<RULEDEF>(()=> this.matchRULEDEF($$dpth + 1, cr), false);
-    }
-    matchRULEDEF($$dpth : number, cr? : ContextRecorder) : Nullable<RULEDEF> {
+    public matchRULEDEF($$dpth: number, cr?: ContextRecorder): Nullable<RULEDEF> {
         return this.runner<RULEDEF>($$dpth,
             (log) => {
-                if(log)
-                    log('RULEDEF');
-                let name : Nullable<NAME>;
-                let rule : Nullable<RULE>;
-                let res : Nullable<RULEDEF> = null;
-                if(true
-                    && this.match_($$dpth + 1, cr) != null
-                    && (name = this.matchNAME($$dpth + 1, cr)) != null
-                    && this.match_($$dpth + 1, cr) != null
-                    && this.regexAccept(String.raw`:=`, $$dpth+1, cr) != null
-                    && this.match_($$dpth + 1, cr) != null
-                    && (rule = this.matchRULE($$dpth + 1, cr)) != null
-                    && this.match_($$dpth + 1, cr) != null
-                )
-                    res = {kind: ASTKinds.RULEDEF, name : name, rule : rule};
+                if (log) {
+                    log("RULEDEF");
+                }
+                let name: Nullable<NAME>;
+                let rule: Nullable<RULE>;
+                let res: Nullable<RULEDEF> = null;
+                if (true
+                    && this.match_($$dpth + 1, cr) !== null
+                    && (name = this.matchNAME($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`:=`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                    && (rule = this.matchRULE($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                ) {
+                    res = {kind: ASTKinds.RULEDEF, name, rule};
+                }
                 return res;
             }, cr)();
     }
-    matchRULE($$dpth : number, cr? : ContextRecorder) : Nullable<RULE> {
+    public matchRULE($$dpth: number, cr?: ContextRecorder): Nullable<RULE> {
         return this.runner<RULE>($$dpth,
             (log) => {
-                if(log)
-                    log('RULE');
-                let head : Nullable<ALT>;
-                let tail : Nullable<RULE_$0[]>;
-                let res : Nullable<RULE> = null;
-                if(true
-                    && (head = this.matchALT($$dpth + 1, cr)) != null
-                    && (tail = this.loop<RULE_$0>(()=> this.matchRULE_$0($$dpth + 1, cr), true)) != null
-                )
-                    res = {kind: ASTKinds.RULE, head : head, tail : tail};
+                if (log) {
+                    log("RULE");
+                }
+                let head: Nullable<ALT>;
+                let tail: Nullable<RULE_$0[]>;
+                let res: Nullable<RULE> = null;
+                if (true
+                    && (head = this.matchALT($$dpth + 1, cr)) !== null
+                    && (tail = this.loop<RULE_$0>(() => this.matchRULE_$0($$dpth + 1, cr), true)) !== null
+                ) {
+                    res = {kind: ASTKinds.RULE, head, tail};
+                }
                 return res;
             }, cr)();
     }
-    matchRULE_$0($$dpth : number, cr? : ContextRecorder) : Nullable<RULE_$0> {
+    public matchRULE_$0($$dpth: number, cr?: ContextRecorder): Nullable<RULE_$0> {
         return this.runner<RULE_$0>($$dpth,
             (log) => {
-                if(log)
-                    log('RULE_$0');
-                let alt : Nullable<ALT>;
-                let res : Nullable<RULE_$0> = null;
-                if(true
-                    && this.match_($$dpth + 1, cr) != null
-                    && this.regexAccept(String.raw`\|`, $$dpth+1, cr) != null
-                    && this.match_($$dpth + 1, cr) != null
-                    && (alt = this.matchALT($$dpth + 1, cr)) != null
-                )
-                    res = {kind: ASTKinds.RULE_$0, alt : alt};
+                if (log) {
+                    log("RULE_$0");
+                }
+                let alt: Nullable<ALT>;
+                let res: Nullable<RULE_$0> = null;
+                if (true
+                    && this.match_($$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`\|`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                    && (alt = this.matchALT($$dpth + 1, cr)) !== null
+                ) {
+                    res = {kind: ASTKinds.RULE_$0, alt};
+                }
                 return res;
             }, cr)();
     }
-    matchALT($$dpth : number, cr? : ContextRecorder) : Nullable<ALT> {
-        return this.loop<MATCHSPEC>(()=> this.matchMATCHSPEC($$dpth + 1, cr), false);
+    public matchALT($$dpth: number, cr?: ContextRecorder): Nullable<ALT> {
+        return this.loop<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, cr), false);
     }
-    matchMATCHSPEC($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC> {
+    public matchMATCHSPEC($$dpth: number, cr?: ContextRecorder): Nullable<MATCHSPEC> {
         return this.runner<MATCHSPEC>($$dpth,
             (log) => {
-                if(log)
-                    log('MATCHSPEC');
-                let named : Nullable<Nullable<MATCHSPEC_$0>>;
-                let rule : Nullable<POSTOP>;
-                let res : Nullable<MATCHSPEC> = null;
-                if(true
-                    && this.match_($$dpth + 1, cr) != null
+                if (log) {
+                    log("MATCHSPEC");
+                }
+                let named: Nullable<Nullable<MATCHSPEC_$0>>;
+                let rule: Nullable<POSTOP>;
+                let res: Nullable<MATCHSPEC> = null;
+                if (true
+                    && this.match_($$dpth + 1, cr) !== null
                     && ((named = this.matchMATCHSPEC_$0($$dpth + 1, cr)) || true)
-                    && (rule = this.matchPOSTOP($$dpth + 1, cr)) != null
-                    && this.match_($$dpth + 1, cr) != null
-                )
-                    res = {kind: ASTKinds.MATCHSPEC, named : named, rule : rule};
+                    && (rule = this.matchPOSTOP($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                ) {
+                    res = {kind: ASTKinds.MATCHSPEC, named, rule};
+                }
                 return res;
             }, cr)();
     }
-    matchMATCHSPEC_$0($$dpth : number, cr? : ContextRecorder) : Nullable<MATCHSPEC_$0> {
+    public matchMATCHSPEC_$0($$dpth: number, cr?: ContextRecorder): Nullable<MATCHSPEC_$0> {
         return this.runner<MATCHSPEC_$0>($$dpth,
             (log) => {
-                if(log)
-                    log('MATCHSPEC_$0');
-                let name : Nullable<NAME>;
-                let res : Nullable<MATCHSPEC_$0> = null;
-                if(true
-                    && (name = this.matchNAME($$dpth + 1, cr)) != null
-                    && this.regexAccept(String.raw`=`, $$dpth+1, cr) != null
-                )
-                    res = {kind: ASTKinds.MATCHSPEC_$0, name : name};
+                if (log) {
+                    log("MATCHSPEC_$0");
+                }
+                let name: Nullable<NAME>;
+                let res: Nullable<MATCHSPEC_$0> = null;
+                if (true
+                    && (name = this.matchNAME($$dpth + 1, cr)) !== null
+                    && this.regexAccept(String.raw`=`, $$dpth + 1, cr) !== null
+                ) {
+                    res = {kind: ASTKinds.MATCHSPEC_$0, name};
+                }
                 return res;
             }, cr)();
     }
-    matchPOSTOP($$dpth : number, cr? : ContextRecorder) : Nullable<POSTOP> {
+    public matchPOSTOP($$dpth: number, cr?: ContextRecorder): Nullable<POSTOP> {
         return this.runner<POSTOP>($$dpth,
             (log) => {
-                if(log)
-                    log('POSTOP');
-                let pre : Nullable<PREOP>;
-                let op : Nullable<Nullable<string>>;
-                let res : Nullable<POSTOP> = null;
-                if(true
-                    && (pre = this.matchPREOP($$dpth + 1, cr)) != null
-                    && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth+1, cr)) || true)
-                )
-                    res = {kind: ASTKinds.POSTOP, pre : pre, op : op};
+                if (log) {
+                    log("POSTOP");
+                }
+                let pre: Nullable<PREOP>;
+                let op: Nullable<Nullable<string>>;
+                let res: Nullable<POSTOP> = null;
+                if (true
+                    && (pre = this.matchPREOP($$dpth + 1, cr)) !== null
+                    && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth + 1, cr)) || true)
+                ) {
+                    res = {kind: ASTKinds.POSTOP, pre, op};
+                }
                 return res;
             }, cr)();
     }
-    matchPREOP($$dpth : number, cr? : ContextRecorder) : Nullable<PREOP> {
+    public matchPREOP($$dpth: number, cr?: ContextRecorder): Nullable<PREOP> {
         return this.runner<PREOP>($$dpth,
             (log) => {
-                if(log)
-                    log('PREOP');
-                let op : Nullable<Nullable<string>>;
-                let at : Nullable<ATOM>;
-                let res : Nullable<PREOP> = null;
-                if(true
-                    && ((op = this.regexAccept(String.raw`\&|!`, $$dpth+1, cr)) || true)
-                    && (at = this.matchATOM($$dpth + 1, cr)) != null
-                )
-                    res = {kind: ASTKinds.PREOP, op : op, at : at};
+                if (log) {
+                    log("PREOP");
+                }
+                let op: Nullable<Nullable<string>>;
+                let at: Nullable<ATOM>;
+                let res: Nullable<PREOP> = null;
+                if (true
+                    && ((op = this.regexAccept(String.raw`\&|!`, $$dpth + 1, cr)) || true)
+                    && (at = this.matchATOM($$dpth + 1, cr)) !== null
+                ) {
+                    res = {kind: ASTKinds.PREOP, op, at};
+                }
                 return res;
             }, cr)();
     }
-    matchATOM($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM> {
+    public matchATOM($$dpth: number, cr?: ContextRecorder): Nullable<ATOM> {
         return this.choice<ATOM>([
-            () => { return this.matchATOM_1($$dpth + 1, cr) },
-            () => { return this.matchATOM_2($$dpth + 1, cr) },
-            () => { return this.matchATOM_3($$dpth + 1, cr) },
+            () => this.matchATOM_1($$dpth + 1, cr),
+            () => this.matchATOM_2($$dpth + 1, cr),
+            () => this.matchATOM_3($$dpth + 1, cr),
         ]);
     }
-    matchATOM_1($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM_1> {
+    public matchATOM_1($$dpth: number, cr?: ContextRecorder): Nullable<ATOM_1> {
         return this.runner<ATOM_1>($$dpth,
             (log) => {
-                if(log)
-                    log('ATOM_1');
-                let name : Nullable<NAME>;
-                let res : Nullable<ATOM_1> = null;
-                if(true
-                    && (name = this.matchNAME($$dpth + 1, cr)) != null
-                    && this.negate(() => this.regexAccept(String.raw`\s*:=`, $$dpth+1, cr)) != null
-                )
-                    res = {kind: ASTKinds.ATOM_1, name : name};
+                if (log) {
+                    log("ATOM_1");
+                }
+                let name: Nullable<NAME>;
+                let res: Nullable<ATOM_1> = null;
+                if (true
+                    && (name = this.matchNAME($$dpth + 1, cr)) !== null
+                    && this.negate(() => this.regexAccept(String.raw`\s*:=`, $$dpth + 1, cr)) !== null
+                ) {
+                    res = {kind: ASTKinds.ATOM_1, name};
+                }
                 return res;
             }, cr)();
     }
-    matchATOM_2($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM_2> {
+    public matchATOM_2($$dpth: number, cr?: ContextRecorder): Nullable<ATOM_2> {
         return this.runner<ATOM_2>($$dpth,
             (log) => {
-                if(log)
-                    log('ATOM_2');
-                let match : Nullable<STRLIT>;
-                let res : Nullable<ATOM_2> = null;
-                if(true
-                    && (match = this.matchSTRLIT($$dpth + 1, cr)) != null
-                )
-                    res = {kind: ASTKinds.ATOM_2, match : match};
+                if (log) {
+                    log("ATOM_2");
+                }
+                let match: Nullable<STRLIT>;
+                let res: Nullable<ATOM_2> = null;
+                if (true
+                    && (match = this.matchSTRLIT($$dpth + 1, cr)) !== null
+                ) {
+                    res = {kind: ASTKinds.ATOM_2, match};
+                }
                 return res;
             }, cr)();
     }
-    matchATOM_3($$dpth : number, cr? : ContextRecorder) : Nullable<ATOM_3> {
+    public matchATOM_3($$dpth: number, cr?: ContextRecorder): Nullable<ATOM_3> {
         return this.runner<ATOM_3>($$dpth,
             (log) => {
-                if(log)
-                    log('ATOM_3');
-                let sub : Nullable<RULE>;
-                let res : Nullable<ATOM_3> = null;
-                if(true
-                    && this.regexAccept(String.raw`{`, $$dpth+1, cr) != null
-                    && this.match_($$dpth + 1, cr) != null
-                    && (sub = this.matchRULE($$dpth + 1, cr)) != null
-                    && this.match_($$dpth + 1, cr) != null
-                    && this.regexAccept(String.raw`}`, $$dpth+1, cr) != null
-                )
-                    res = {kind: ASTKinds.ATOM_3, sub : sub};
+                if (log) {
+                    log("ATOM_3");
+                }
+                let sub: Nullable<RULE>;
+                let res: Nullable<ATOM_3> = null;
+                if (true
+                    && this.regexAccept(String.raw`{`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                    && (sub = this.matchRULE($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`}`, $$dpth + 1, cr) !== null
+                ) {
+                    res = {kind: ASTKinds.ATOM_3, sub};
+                }
                 return res;
             }, cr)();
     }
-    matchNAME($$dpth : number, cr? : ContextRecorder) : Nullable<NAME> {
-        return this.regexAccept(String.raw`[a-zA-Z_]+`, $$dpth+1, cr);
+    public matchNAME($$dpth: number, cr?: ContextRecorder): Nullable<NAME> {
+        return this.regexAccept(String.raw`[a-zA-Z_]+`, $$dpth + 1, cr);
     }
-    matchSTRLIT($$dpth : number, cr? : ContextRecorder) : Nullable<STRLIT> {
+    public matchSTRLIT($$dpth: number, cr?: ContextRecorder): Nullable<STRLIT> {
         return this.runner<STRLIT>($$dpth,
             (log) => {
-                if(log)
-                    log('STRLIT');
-                let val : Nullable<string>;
-                let res : Nullable<STRLIT> = null;
-                if(true
-                    && this.regexAccept(String.raw`\'`, $$dpth+1, cr) != null
-                    && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, $$dpth+1, cr)) != null
-                    && this.regexAccept(String.raw`\'`, $$dpth+1, cr) != null
-                )
-                    res = {kind: ASTKinds.STRLIT, val : val};
+                if (log) {
+                    log("STRLIT");
+                }
+                let val: Nullable<string>;
+                let res: Nullable<STRLIT> = null;
+                if (true
+                    && this.regexAccept(String.raw`\'`, $$dpth + 1, cr) !== null
+                    && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, $$dpth + 1, cr)) !== null
+                    && this.regexAccept(String.raw`\'`, $$dpth + 1, cr) !== null
+                ) {
+                    res = {kind: ASTKinds.STRLIT, val};
+                }
                 return res;
             }, cr)();
     }
-    match_($$dpth : number, cr? : ContextRecorder) : Nullable<_> {
-        return this.regexAccept(String.raw`\s*`, $$dpth+1, cr);
+    public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
+        return this.regexAccept(String.raw`\s*`, $$dpth + 1, cr);
     }
-    parse() : ParseResult {
+    public parse(): ParseResult {
         const mrk = this.mark();
         const res = this.matchGRAM(0);
-        if(res && this.finished())
+        if (res && this.finished()) {
             return new ParseResult(res, null);
+        }
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.matchGRAM(0, rec);
         return new ParseResult(res, rec.getErr());
     }
+    private mark(): PosInfo {
+        return this.pos;
+    }
+    private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
+        const mrk = this.mark();
+        const res: T[] = [];
+        for (;;) {
+            const t = func();
+            if (!t) {
+                break;
+            }
+            res.push(t);
+        }
+        if (star || res.length > 0) {
+            return res;
+        }
+        this.reset(mrk);
+        return null;
+    }
+    private runner<T>($$dpth: number, fn: $$RuleType<T>, cr?: ContextRecorder): $$RuleType<T> {
+        return () => {
+            const mrk = this.mark();
+            const res = cr ? (() => {
+                const extraInfo: string[] = [];
+                const result = fn((msg: string) => extraInfo.push(msg));
+                cr.record(mrk, $$dpth, result, this.negating, extraInfo);
+                return result;
+            })() : fn();
+            if (res !== null) {
+                return res;
+            }
+            this.reset(mrk);
+            return null;
+        };
+    }
+    private choice<T>(fns: Array<$$RuleType<T>>): Nullable<T> {
+        for (const f of fns) {
+            const res = f();
+            if (res) {
+                return res;
+            }
+        }
+        return null;
+    }
+    private regexAccept(match: string, dpth: number, cr?: ContextRecorder): Nullable<string> {
+        return this.runner<string>(dpth,
+            (log) => {
+                if (log) {
+                    if (this.negating) {
+                        log("$$!StrMatch");
+                    } else {
+                        log("$$StrMatch");
+                    }
+                    log(match);
+                }
+                const reg = new RegExp(match, "y");
+                reg.lastIndex = this.mark().overallPos;
+                const res = reg.exec(this.input);
+                if (res) {
+                    let lineJmp = 0;
+                    let lind = -1;
+                    for (let i = 0; i < res[0].length; ++i) {
+                        if (res[0][i] === "\n") {
+                            ++lineJmp;
+                            lind = i;
+                        }
+                    }
+                    this.pos = new PosInfo(reg.lastIndex, this.pos.line + lineJmp,
+                       lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind));
+                    return res[0];
+                }
+                return null;
+            }, cr)();
+    }
+    private noConsume<T>(fn: $$RuleType<T>): Nullable<T> {
+        const mrk = this.mark();
+        const res = fn();
+        this.reset(mrk);
+        return res;
+    }
+    private negate<T>(fn: $$RuleType<T>): Nullable<boolean> {
+        const mrk = this.mark();
+        const oneg = this.negating;
+        this.negating = !oneg;
+        const res = fn();
+        this.negating = oneg;
+        this.reset(mrk);
+        return res === null ? true : null;
+    }
 }
 export class ParseResult {
-    ast : Nullable<GRAM>;
-    err : Nullable<SyntaxErr>;
-    constructor(ast : Nullable<GRAM>, err : Nullable<SyntaxErr>){
+    public ast: Nullable<GRAM>;
+    public err: Nullable<SyntaxErr>;
+    constructor(ast: Nullable<GRAM>, err: Nullable<SyntaxErr>) {
         this.ast = ast;
         this.err = err;
     }
 }
 export class PosInfo {
-    overall_pos : number;
-    line : number;
-    offset : number;
-    constructor(overall_pos : number, line : number, offset : number) {
-        this.overall_pos = overall_pos;
+    public overallPos: number;
+    public line: number;
+    public offset: number;
+    constructor(overallPos: number, line: number, offset: number) {
+        this.overallPos = overallPos;
         this.line = line;
         this.offset = offset;
     }
 }
 export class SyntaxErr {
-    pos : PosInfo;
-    exprules : string[];
-    expmatches : string[]
-    constructor(pos : PosInfo, exprules : Set<string>, expmatches : Set<string>){
+    public pos: PosInfo;
+    public exprules: string[];
+    public expmatches: string[];
+    constructor(pos: PosInfo, exprules: Set<string>, expmatches: Set<string>) {
         this.pos = pos;
         this.exprules = [...exprules];
         this.expmatches = [...expmatches];
     }
-    toString() : string {
-        return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Tried to match rules ${this.exprules.join(', ')}. Expected one of ${this.expmatches.map(x => ` '${x}'`)}`;
+    public toString(): string {
+        return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Tried to match rules ${this.exprules.join(", ")}. Expected one of ${this.expmatches.map((x) => ` '${x}'`)}`;
     }
 }
 class ErrorTracker implements ContextRecorder {
-    mxpos : PosInfo = new PosInfo(-1, -1, -1)
-    mnd : number = -1;
-    prules : Set<string> = new Set();
-    pmatches: Set<string> = new Set();
-    record(pos : PosInfo, depth : number, result : any, negating : boolean, extraInfo : string[]){
-        if((result === null) === negating)
+    private mxpos: PosInfo = new PosInfo(-1, -1, -1);
+    private mnd: number = -1;
+    private prules: Set<string> = new Set();
+    private pmatches: Set<string> = new Set();
+    public record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]) {
+        if ((result === null) === negating) {
             return;
-        if(pos.overall_pos > this.mxpos.overall_pos){
+        }
+        if (pos.overallPos > this.mxpos.overallPos) {
             this.mxpos = pos;
             this.mnd = depth;
             this.pmatches.clear();
             this.prules.clear();
-        } else if(pos.overall_pos === this.mxpos.overall_pos && depth < this.mnd){
+        } else if (pos.overallPos === this.mxpos.overallPos && depth < this.mnd) {
             this.mnd = depth;
             this.prules.clear();
         }
-        if(this.mxpos.overall_pos === pos.overall_pos && extraInfo.length >= 2) {
-            if(extraInfo[0] === '$$StrMatch')
+        if (this.mxpos.overallPos === pos.overallPos && extraInfo.length >= 2) {
+            if (extraInfo[0] === "$$StrMatch") {
                 this.pmatches.add(extraInfo[1]);
-            if(extraInfo[0] === '$$!StrMatch')
+            }
+            if (extraInfo[0] === "$$!StrMatch") {
                 this.pmatches.add(`not ${extraInfo[1]}`);
+            }
         }
-        if(this.mxpos.overall_pos === pos.overall_pos && this.mnd === depth)
-            extraInfo.forEach(x => { if(x !== '$$StrMatch' && x !== '$$!StrMatch') this.prules.add(x)});
+        if (this.mxpos.overallPos === pos.overallPos && this.mnd === depth) {
+            extraInfo.forEach((x) => { if (x !== "$$StrMatch" && x !== "$$!StrMatch") { this.prules.add(x); } });
+        }
     }
-    getErr() : SyntaxErr | null {
-        if(this.mxpos.overall_pos !== -1)
+    public getErr(): SyntaxErr | null {
+        if (this.mxpos.overallPos !== -1) {
             return new SyntaxErr(this.mxpos, this.prules, this.pmatches);
+        }
         return null;
     }
 }
