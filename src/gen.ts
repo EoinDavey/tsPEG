@@ -4,31 +4,43 @@ import { expandTemplate } from "./template";
 
 import { Block, indentBlock, writeBlock } from "./util";
 
-function compressRULE(st: RULE): Rule {
-    return [st.head, ...st.tail.map((x) => x.alt)];
-}
-
-type Alt = MATCHSPEC[];
-type Rule = Alt[];
+type Rule = ALT[];
 type Grammar = Ruledef[];
 interface Ruledef {
     name: string;
     rule: Rule;
 }
 
+function unescapeSeqs(s: string): string {
+    let out = "";
+    for (let i = 0; i < s.length; ++i) {
+        if (s[i] !== "\\") {
+            out += s[i];
+            continue;
+        }
+        if (s[i + 1] === "{" || s[i + 1] === "}" || s[i + 1] === "\\") {
+            out += s[i + 1];
+        } else {
+            throw new Error(`Unknown escape code \\${s[i + 1]}`);
+        }
+        ++i;
+    }
+    return out;
+}
+
 function getAtom(expr: POSTOP): ATOM {
     return expr.pre.at;
 }
 
-function isOptional(expr: POSTOP): boolean {
-    return expr.op != null && expr.op === "?";
+function hasAttrs(alt: ALT): boolean {
+    return alt.attrs.length > 0;
 }
 
 export class Generator {
     private subRules: Map<ATOM, string> = new Map();
 
     public AST2Gram(g: GRAM): Grammar {
-        const gram = g.map((def) => this.extractRules(compressRULE(def.rule), def.name));
+        const gram = g.map((def) => this.extractRules(def.rule.list, def.name));
         return gram.reduce((x, y) => x.concat(y));
     }
 
@@ -36,7 +48,7 @@ export class Generator {
         let cnt = 0;
         const rules = [{name, rule}];
         for (const alt of rule) {
-            for (const match of alt) {
+            for (const match of alt.matches) {
                 const at: ATOM = getAtom(match.rule);
                 if (at.kind !== ASTKinds.ATOM_3) {
                     continue;
@@ -44,7 +56,7 @@ export class Generator {
                 const subrule = at.sub;
                 const nm = `${name}_$${cnt}`;
                 this.subRules.set(at, nm);
-                const rdfs = this.extractRules(compressRULE(subrule), nm);
+                const rdfs = this.extractRules(subrule.list, nm);
                 rules.push(...rdfs);
                 ++cnt;
             }
@@ -130,18 +142,36 @@ export class Generator {
         ];
     }
 
-    public writeChoice(name: string, alt: Alt): Block {
+    public writeChoice(name: string, alt: ALT): Block {
         const namedTypes: Array<[string, string]> = [];
-        for (const match of alt) {
+        for (const match of alt.matches) {
             if (match.named) {
                 const at = match.rule;
                 namedTypes.push([match.named.name, this.postType(at)]);
             }
         }
-        // Rules with no named matches and only one match are rule aliases
-        if (namedTypes.length === 0 && alt.length === 1) {
-            const at = alt[0].rule;
+        // Rules with no named matches, no attrs and only one match are rule aliases
+        if (namedTypes.length === 0 && alt.matches.length === 1 && !hasAttrs(alt)) {
+            const at = alt.matches[0].rule;
             return [`export type ${name} = ${this.postType(at)};`];
+        }
+        if (hasAttrs(alt)) {
+            const blk: Block = [
+                `export class ${name} {`,
+                [
+                    `public kind: ASTKinds.${name} = ASTKinds.${name}`,
+                    ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
+                    ...alt.attrs.map((x) => `public ${x.name}: ${x.type}`),
+                     `constructor(${namedTypes.map((x) => `${x[0]} : ${x[1]}`).join(", ")}){`,
+                    namedTypes.map((x) => `this.${x[0]} = ${x[0]};`),
+                    ...alt.attrs.map((x) => [`this.${x.name} = (() => {`,
+                            unescapeSeqs(x.action).trim(),
+                        "})()"]),
+                    "}",
+                ],
+                "}",
+            ];
+            return blk;
         }
         const blk: Block = [
             `export interface ${name} {`,
@@ -152,7 +182,6 @@ export class Generator {
             "}",
         ];
         return blk;
-
     }
 
     public writeRuleClass(ruledef: Ruledef): Block {
@@ -178,19 +207,19 @@ export class Generator {
         return rules;
     }
 
-    public writeParseIfStmt(alt: Alt): Block {
+    public writeParseIfStmt(alt: ALT): Block {
         const checks: string[] = [];
-        for (const match of alt) {
+        for (const match of alt.matches) {
             const expr = match.rule;
             const rn = this.postRule(expr);
             if (match.named) {
-                if (isOptional(expr)) {
+                if (expr.optional) {
                     checks.push(`&& ((${match.named.name} = ${rn}) || true)`);
                 } else {
                     checks.push(`&& (${match.named.name} = ${rn}) !== null`);
                 }
             } else {
-                if (isOptional(expr)) {
+                if (expr.optional) {
                     checks.push(`&& ((${rn}) || true)`);
                 } else {
                 checks.push(`&& ${rn} !== null`);
@@ -209,10 +238,10 @@ export class Generator {
         ];
     }
 
-    public writeChoiceParseFn(name: string, alt: Alt): Block {
+    public writeChoiceParseFn(name: string, alt: ALT): Block {
         const namedTypes: Array<[string, string]> = [];
         const unnamedTypes: string[] = [];
-        for (const match of alt) {
+        for (const match of alt.matches) {
             const expr = match.rule;
             const rn = this.postType(expr);
             if (match.named) {
@@ -221,8 +250,8 @@ export class Generator {
                 unnamedTypes.push(rn);
             }
         }
-        if (namedTypes.length === 0 && alt.length === 1) {
-            return this.writeRuleAliasFn(name, alt[0].rule);
+        if (namedTypes.length === 0 && alt.matches.length === 1) {
+            return this.writeRuleAliasFn(name, alt.matches[0].rule);
         }
         return [`public match${name}($$dpth: number, cr?: ContextRecorder): Nullable<${name}> {`,
             [
@@ -241,7 +270,9 @@ export class Generator {
                         this.writeParseIfStmt(alt),
                         ") {",
                         [
-                            `res = {kind: ASTKinds.${name}, ${namedTypes.map((x) => x[0]).join(", ")}};`,
+                            hasAttrs(alt)
+                            ? `res = new ${name}(${namedTypes.map((x) => x[0]).join(", ")});`
+                            : `res = {kind: ASTKinds.${name}, ${namedTypes.map((x) => x[0]).join(", ")}};`,
                         ],
                         "}",
                         "return res;",

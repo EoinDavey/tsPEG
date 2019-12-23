@@ -3,13 +3,18 @@
 * GRAM      := RULEDEF+
 * RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
-* ALT       := MATCHSPEC+
+*           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
+* ALT       := matches=MATCHSPEC+ attrs=ATTR*
 * MATCHSPEC := _ named={name=NAME _ '=' _}? rule=POSTOP _
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
+*             .optional = boolean { return this.op !== null && this.op === '?'}
 * PREOP     := op='\&|!'? at=ATOM
 * ATOM      := name=NAME !'\s*:='
 *            | match=STRLIT
 *            | '{' _ sub=RULE _ '}'
+* ATTR      := _ '.' name=NAME _ '=' _ type='[^\s\{]+' _ '\{'
+*     action='([^\{\}\\]|(\\.))*'
+* '\}'
 * NAME      := '[a-zA-Z_]+'
 * STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\''
 * _         := '\s*'
@@ -35,6 +40,7 @@ export enum ASTKinds {
     ATOM_1,
     ATOM_2,
     ATOM_3,
+    ATTR,
     NAME,
     STRLIT,
     _,
@@ -45,16 +51,28 @@ export interface RULEDEF {
     name: NAME;
     rule: RULE;
 }
-export interface RULE {
-    kind: ASTKinds.RULE;
-    head: ALT;
-    tail: RULE_$0[];
+export class RULE {
+    public kind: ASTKinds.RULE = ASTKinds.RULE
+    public head: ALT;
+    public tail: RULE_$0[];
+    public list: ALT[]
+    constructor(head : ALT, tail : RULE_$0[]){
+        this.head = head;
+        this.tail = tail;
+        this.list = (() => {
+        return [this.head, ...this.tail.map((x) => x.alt)];
+        })()
+    }
 }
 export interface RULE_$0 {
     kind: ASTKinds.RULE_$0;
     alt: ALT;
 }
-export type ALT = MATCHSPEC[];
+export interface ALT {
+    kind: ASTKinds.ALT;
+    matches: MATCHSPEC[];
+    attrs: ATTR[];
+}
 export interface MATCHSPEC {
     kind: ASTKinds.MATCHSPEC;
     named: Nullable<MATCHSPEC_$0>;
@@ -64,10 +82,18 @@ export interface MATCHSPEC_$0 {
     kind: ASTKinds.MATCHSPEC_$0;
     name: NAME;
 }
-export interface POSTOP {
-    kind: ASTKinds.POSTOP;
-    pre: PREOP;
-    op: Nullable<string>;
+export class POSTOP {
+    public kind: ASTKinds.POSTOP = ASTKinds.POSTOP
+    public pre: PREOP;
+    public op: Nullable<string>;
+    public optional: boolean
+    constructor(pre : PREOP, op : Nullable<string>){
+        this.pre = pre;
+        this.op = op;
+        this.optional = (() => {
+        return this.op !== null && this.op === '?'
+        })()
+    }
 }
 export interface PREOP {
     kind: ASTKinds.PREOP;
@@ -86,6 +112,12 @@ export interface ATOM_2 {
 export interface ATOM_3 {
     kind: ASTKinds.ATOM_3;
     sub: RULE;
+}
+export interface ATTR {
+    kind: ASTKinds.ATTR;
+    name: NAME;
+    type: string;
+    action: string;
 }
 export type NAME = string;
 export interface STRLIT {
@@ -146,7 +178,7 @@ export class Parser {
                     && (head = this.matchALT($$dpth + 1, cr)) !== null
                     && (tail = this.loop<RULE_$0>(() => this.matchRULE_$0($$dpth + 1, cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.RULE, head, tail};
+                    res = new RULE(head, tail);
                 }
                 return res;
             }, cr)();
@@ -171,7 +203,22 @@ export class Parser {
             }, cr)();
     }
     public matchALT($$dpth: number, cr?: ContextRecorder): Nullable<ALT> {
-        return this.loop<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, cr), false);
+        return this.runner<ALT>($$dpth,
+            (log) => {
+                if (log) {
+                    log("ALT");
+                }
+                let matches: Nullable<MATCHSPEC[]>;
+                let attrs: Nullable<ATTR[]>;
+                let res: Nullable<ALT> = null;
+                if (true
+                    && (matches = this.loop<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, cr), false)) !== null
+                    && (attrs = this.loop<ATTR>(() => this.matchATTR($$dpth + 1, cr), true)) !== null
+                ) {
+                    res = {kind: ASTKinds.ALT, matches, attrs};
+                }
+                return res;
+            }, cr)();
     }
     public matchMATCHSPEC($$dpth: number, cr?: ContextRecorder): Nullable<MATCHSPEC> {
         return this.runner<MATCHSPEC>($$dpth,
@@ -225,7 +272,7 @@ export class Parser {
                     && (pre = this.matchPREOP($$dpth + 1, cr)) !== null
                     && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth + 1, cr)) || true)
                 ) {
-                    res = {kind: ASTKinds.POSTOP, pre, op};
+                    res = new POSTOP(pre, op);
                 }
                 return res;
             }, cr)();
@@ -304,6 +351,34 @@ export class Parser {
                     && this.regexAccept(String.raw`}`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.ATOM_3, sub};
+                }
+                return res;
+            }, cr)();
+    }
+    public matchATTR($$dpth: number, cr?: ContextRecorder): Nullable<ATTR> {
+        return this.runner<ATTR>($$dpth,
+            (log) => {
+                if (log) {
+                    log("ATTR");
+                }
+                let name: Nullable<NAME>;
+                let type: Nullable<string>;
+                let action: Nullable<string>;
+                let res: Nullable<ATTR> = null;
+                if (true
+                    && this.match_($$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`.`, $$dpth + 1, cr) !== null
+                    && (name = this.matchNAME($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`=`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                    && (type = this.regexAccept(String.raw`[^\s\{]+`, $$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`\{`, $$dpth + 1, cr) !== null
+                    && (action = this.regexAccept(String.raw`([^\{\}\\]|(\\.))*`, $$dpth + 1, cr)) !== null
+                    && this.regexAccept(String.raw`\}`, $$dpth + 1, cr) !== null
+                ) {
+                    res = {kind: ASTKinds.ATTR, name, type, action};
                 }
                 return res;
             }, cr)();

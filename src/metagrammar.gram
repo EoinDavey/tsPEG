@@ -1,13 +1,18 @@
 GRAM      := RULEDEF+
 RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _
 RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
-ALT       := MATCHSPEC+
+          .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
+ALT       := matches=MATCHSPEC+ attrs=ATTR*
 MATCHSPEC := _ named={name=NAME _ '=' _}? rule=POSTOP _
 POSTOP    := pre=PREOP op='\+|\*|\?'?
+            .optional = boolean { return this.op !== null && this.op === '?'}
 PREOP     := op='\&|!'? at=ATOM
 ATOM      := name=NAME !'\s*:='
            | match=STRLIT
            | '{' _ sub=RULE _ '}'
+ATTR      := _ '.' name=NAME _ '=' _ type='[^\s\{]+' _ '\{'
+    action='([^\{\}\\]|(\\.))*'
+'\}'
 NAME      := '[a-zA-Z_]+'
 STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\''
 _         := '\s*'
