@@ -40,7 +40,7 @@ export class Generator {
     private subRules: Map<ATOM, string> = new Map();
 
     public AST2Gram(g: GRAM): Grammar {
-        const gram = g.map((def) => this.extractRules(def.rule.list, def.name));
+        const gram = g.rules.map((def) => this.extractRules(def.rule.list, def.name));
         return gram.reduce((x, y) => x.concat(y));
     }
 
@@ -357,7 +357,8 @@ export class Generator {
             throw new Error("No AST found");
         }
         const gram = this.AST2Gram(res.ast);
-        const parseBlock = expandTemplate(s, this.writeKinds(gram), this.writeRuleClasses(gram),
+        const hdr: Block = res.ast.header ? [res.ast.header.content] : [];
+        const parseBlock = expandTemplate(s, hdr, this.writeKinds(gram), this.writeRuleClasses(gram),
             this.writeRuleParseFns(gram), this.writeParseResultClass(gram));
         return writeBlock(parseBlock).join("\n");
     }
