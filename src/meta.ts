@@ -4,7 +4,7 @@
 * RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
 * ALT       := MATCHSPEC+
-* MATCHSPEC := _ named={name=NAME '='}? rule=POSTOP _
+* MATCHSPEC := _ named={name=NAME _ '=' _}? rule=POSTOP _
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
 * PREOP     := op='\&|!'? at=ATOM
 * ATOM      := name=NAME !'\s*:='
@@ -203,7 +203,9 @@ export class Parser {
                 let res: Nullable<MATCHSPEC_$0> = null;
                 if (true
                     && (name = this.matchNAME($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, cr) !== null
                     && this.regexAccept(String.raw`=`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.MATCHSPEC_$0, name};
                 }
