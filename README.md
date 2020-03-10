@@ -76,7 +76,7 @@ Putting this grammar into a file called "grammar.peg" and running `tspeg grammar
 
 As you can see we get `null` error for 'Hello World', and 'Hello Mars', this means the match was successful. But when we try 'Hello Jupiter' we get an error object, and it lists the location of the error, and the expected matches at that location, namely 'Mars' or 'World'. You can see more about errors in the [Syntax Error section.](#syntax-errors)
 
-Notably the `ast` field of the parse result is empty. This is because we haven't told *tsPEG* what elements of the grammar we would like to be returned. When we write a rule definition, we can specify the fields we'd like to save in the AST by assigning them with an `=` sign. For example, say we want to match a string that's the sum of 2 numbers, e.g. "2+3", "123+456", we'd like to save both side of the sum in our AST, we can do this by writing a grammar like the following. *Note that we had to write '\+' to escape the '+' symbol as the '+' symbol has special meaning in regex*.
+Notably the `ast` field of the parse result is empty. This is because we haven't told *tsPEG* what elements of the grammar we would like to be returned. When we write a rule definition, we can specify the fields we'd like to save in the AST by assigning them with an `=` sign. For example, say we want to match a string that's the sum of 2 numbers, e.g. "2+3", "123+456", we'd like to save both side of the sum in our AST, we can do this by writing a grammar like the following. *Note that we had to write '\\+' to escape the '+' symbol as the '+' symbol has special meaning in regex*.
 
 ```
 sum := left=num '\+' right=num
@@ -110,7 +110,7 @@ Calling this file "calc.ts" we can use it to calculate our sums:
 
 ![Calc screenshot](assets/calc.png)
 
-We can also use computed properties to calculate the result of the sum during the parsing process.
+We can also use [computed properties](#computed-properties) to calculate the result of the sum during the parsing process.
 
 ## Operators
 
