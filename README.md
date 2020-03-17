@@ -136,6 +136,14 @@ We can also use [computed properties](#computed-properties) to calculate the res
    This will match the phrase "The banned word is X" for any value of X, except when X is 'Macbeth'
 - The `&` operator is called the "*postitive lookahead*" operator, this operator will change a match so that it will test for the match, and fail if it doesn't work, but it will not consume the input. This allows you to lookahead at what comes next in the string, but not to consume it.
 
+## Sub-rules
+
+Inline sub-rules can be specified in *tsPEG*. These use the `{` and `}` brackets for grouping, and allow you to write smaller rules inline in a larger rule. For example
+```
+rule1 := 'start' {some optional part}? 'finish'
+```
+We want the part in the middle to be optional, so we wrap it in `{` and `}` and apply the `?` operator. The `{}` brackets create a sub-rule. Note that if you want to assign the subrules values to the tree you do need to assign a name to it e.g. `rule := 'start' middle={some optional part}? 'finish'`.
+
 ## Syntax Errors
 
 A `SyntaxErr` object is composed of two fields, a `pos` field with the position of the error, and `expmatches` which contains a list of expected matches.
