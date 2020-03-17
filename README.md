@@ -140,7 +140,7 @@ We can also use [computed properties](#computed-properties) to calculate the res
 
 Inline sub-rules can be specified in *tsPEG*. These use the `{` and `}` brackets for grouping, and allow you to write smaller rules inline in a larger rule. For example
 ```
-rule1 := 'start' {some optional part}? 'finish'
+rule := 'start' {some optional part}? 'finish'
 ```
 We want the part in the middle to be optional, so we wrap it in `{` and `}` and apply the `?` operator. The `{}` brackets create a sub-rule. Note that if you want to assign the subrules values to the tree you do need to assign a name to it e.g. `rule := 'start' middle={some optional part}? 'finish'`.
 
@@ -208,3 +208,37 @@ import { myFunc, myType } from "./mypackage";
 rule := hello='Hello World'
         .value = myType { return myFunc(this.hello); }
 ```
+
+## Kind Checking
+
+*tsPEG* uses [discriminated unions](https://www.typescriptlang.org/docs/handbook/advanced-types.html#discriminated-unions) to distinguish between types of AST nodes. Each AST node type has a field called `kind` which contains some value from the `ASTKinds` enum. This `kind` field can be used to differentiate between AST results.
+
+### Example
+
+```
+Choice := Word | Int
+Word   := word='[a-z]+'
+Int    := val='[0-9]+'
+```
+
+When writing a function to process the parse tree for this grammar, you can check if `kind === ASTKinds.Word` or `kind === ASTKinds.Int` to see which rule was matched.
+
+```TypeScript
+import { Choice, Parser, ASTKinds } from  "./parser";
+
+function makeChoice(c: Choice) {
+    if(c.kind === ASTKinds.Word) {
+        console.log('Matched word ', c.word)
+    } else {
+        console.log('Matched int ', c.val)
+    }
+}
+```
+
+### Kind names
+The names of the ASTKinds enum entries vary.
+- For simples rules like `Rule := name='regex'` the kind will be `ASTKinds.Rule`.
+- For rules with multiple choices such as `Rule := choiceA='regexA' | choiceB='regexB'` the `kind` will either be one of `ASTKinds.Rule_1` or `ASTKinds.Rule_2` depending on which rule was matched. In general they are of the form `ASTKinds.<RuleName>_N` for the `N`th choice.
+- Rules that directly reference a different rule like `rule := otherrule` don't get their own AST type, so inherit the `kind` from the other rule.
+- Sub-rules are given the kind `ASTKinds.<ParentRule>_$N` for the `N`th subrule of rule `ParentRule`. For example in the rule `Rule := sub={ name='regex' }` the `kind` for the sub-rule is `ASTKinds.Rule_$0`.
+- If in doubt it's simple to inspect the generated parser file to find what the correct kind name is. The compiler will also be sure to tell you when you're wrong.
