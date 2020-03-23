@@ -16,3 +16,21 @@ export function writeBlock(blk: Block): string[] {
     }
     return res;
 }
+
+export function unescapeSeqs(s: string): string {
+    let out = "";
+    for (let i = 0; i < s.length; ++i) {
+        if (s[i] !== "\\") {
+            out += s[i];
+            continue;
+        }
+        if (s[i + 1] === "{" || s[i + 1] === "}" || s[i + 1] === "\\") {
+            out += s[i + 1];
+        } else {
+            throw new Error(`Unknown escape code \\${s[i + 1]}`);
+        }
+        ++i;
+    }
+    return out;
+}
+

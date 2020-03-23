@@ -2,30 +2,13 @@ import { ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, POSTOP, PREOP, RULE, RULE
 
 import { expandTemplate } from "./template";
 
-import { Block, indentBlock, writeBlock } from "./util";
+import { unescapeSeqs, Block, indentBlock, writeBlock } from "./util";
 
 type Rule = ALT[];
 type Grammar = Ruledef[];
 interface Ruledef {
     name: string;
     rule: Rule;
-}
-
-function unescapeSeqs(s: string): string {
-    let out = "";
-    for (let i = 0; i < s.length; ++i) {
-        if (s[i] !== "\\") {
-            out += s[i];
-            continue;
-        }
-        if (s[i + 1] === "{" || s[i + 1] === "}" || s[i + 1] === "\\") {
-            out += s[i + 1];
-        } else {
-            throw new Error(`Unknown escape code \\${s[i + 1]}`);
-        }
-        ++i;
-    }
-    return out;
 }
 
 function getAtom(expr: POSTOP): ATOM {
@@ -103,6 +86,13 @@ export class Generator {
             return `this.match${at.name}($$dpth + 1, cr)`;
         }
         if (at.kind === ASTKinds.ATOM_2) {
+            // Regex match
+            try {
+                // Ensure the regex is valid
+                new RegExp(at.match.val);
+            } catch (err) {
+                throw new Error(`Couldnt' compile regex ${at.match.val}: ${err}`);
+            }
             return `this.regexAccept(String.raw\`${at.match.val}\`, $$dpth + 1, cr)`;
         }
         const subname = this.subRules.get(at);
