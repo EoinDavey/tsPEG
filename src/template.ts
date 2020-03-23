@@ -182,6 +182,13 @@ export function expandTemplate(input: string, header: Block, kinds: Block,
     ],
     "}",
 
+    "export function parse(s: string): ParseResult {",
+    [
+        "const p = new Parser(s);",
+        "return p.parse();"
+    ],
+    "}",
+
     ...parseResult,
 
     "export class PosInfo {",

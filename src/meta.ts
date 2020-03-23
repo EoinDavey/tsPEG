@@ -556,6 +556,10 @@ export class Parser {
         return res === null ? true : null;
     }
 }
+export function parse(s: string): ParseResult {
+    const p = new Parser(s);
+    return p.parse();
+}
 export class ParseResult {
     public ast: Nullable<GRAM>;
     public err: Nullable<SyntaxErr>;
