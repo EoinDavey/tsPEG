@@ -237,6 +237,7 @@ function makeChoice(c: Choice) {
 
 ### Kind names
 The names of the ASTKinds enum entries vary.
+
 - For simples rules like `Rule := name='regex'` the kind will be `ASTKinds.Rule`.
 - For rules with multiple choices such as `Rule := choiceA='regexA' | choiceB='regexB'` the `kind` will either be one of `ASTKinds.Rule_1` or `ASTKinds.Rule_2` depending on which rule was matched. In general they are of the form `ASTKinds.<RuleName>_N` for the `N`th choice.
 - Rules that directly reference a different rule like `rule := otherrule` don't get their own AST type, so inherit the `kind` from the other rule.

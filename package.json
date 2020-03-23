@@ -18,9 +18,9 @@
     },
     "license": "ISC",
     "devDependencies": {
-        "@types/node": "^12.12.14",
-        "tslint": "^5.20.1",
-        "typescript": "^3.7.2"
+        "@types/node": "^12.12.30",
+        "tslint": "^6.1.0",
+        "typescript": "^3.8.3"
     },
     "bin": {
         "tspeg": "tsbuild/cli.js"
