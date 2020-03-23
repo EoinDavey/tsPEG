@@ -143,7 +143,7 @@ export class Generator {
     }
 
     public writeChoice(name: string, alt: ALT): Block {
-        const namedTypes: Array<[string, string]> = [];
+        const namedTypes: [string, string][] = [];
         for (const match of alt.matches) {
             if (match.named) {
                 const at = match.rule;
@@ -156,7 +156,7 @@ export class Generator {
             return [`export type ${name} = ${this.postType(at)};`];
         }
         if (hasAttrs(alt)) {
-            const blk: Block = [
+            return [
                 `export class ${name} {`,
                 [
                     `public kind: ASTKinds.${name} = ASTKinds.${name}`,
@@ -171,9 +171,8 @@ export class Generator {
                 ],
                 "}",
             ];
-            return blk;
         }
-        const blk: Block = [
+        return [
             `export interface ${name} {`,
             [
                 `kind: ASTKinds.${name};`,
@@ -181,7 +180,6 @@ export class Generator {
             ],
             "}",
         ];
-        return blk;
     }
 
     public writeRuleClass(ruledef: Ruledef): Block {
@@ -239,7 +237,7 @@ export class Generator {
     }
 
     public writeChoiceParseFn(name: string, alt: ALT): Block {
-        const namedTypes: Array<[string, string]> = [];
+        const namedTypes: [string, string][] = [];
         const unnamedTypes: string[] = [];
         for (const match of alt.matches) {
             const expr = match.rule;
