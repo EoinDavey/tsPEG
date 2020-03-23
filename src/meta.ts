@@ -9,14 +9,14 @@
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
 *           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
 * ALT       := matches=MATCHSPEC+ attrs=ATTR*
-* MATCHSPEC := _ named={name=NAME _ '=' _}? rule=POSTOP _
+* MATCHSPEC := _ named={name=NAME _ '=' _}? rule=POSTOP
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
 *             .optional = boolean { return this.op !== null && this.op === '?'}
 * PREOP     := op='\&|!'? at=ATOM
 * ATOM      := name=NAME !'\s*:='
 *            | match=STRLIT
 *            | '{' _ sub=RULE _ '}'
-* ATTR      := _ '.' name=NAME _ '=' _ type='[^\s\{]+' _ '\{'
+* ATTR      := _ '\.' name=NAME _ '=' _ type='[^\s\{]+' _ '\{'
 *     action='([^\{\}\\]|(\\.))*'
 * '\}'
 * NAME      := '[a-zA-Z_]+'
@@ -282,7 +282,6 @@ export class Parser {
                     && this.match_($$dpth + 1, cr) !== null
                     && ((named = this.matchMATCHSPEC_$0($$dpth + 1, cr)) || true)
                     && (rule = this.matchPOSTOP($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.MATCHSPEC, named, rule};
                 }
@@ -416,7 +415,7 @@ export class Parser {
                 let res: Nullable<ATTR> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`.`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`\.`, $$dpth + 1, cr) !== null
                     && (name = this.matchNAME($$dpth + 1, cr)) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && this.regexAccept(String.raw`=`, $$dpth + 1, cr) !== null
