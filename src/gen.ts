@@ -299,6 +299,15 @@ export class Generator {
         }
         const S: string = gram[0].name;
         return [...fns,
+            "public test(): boolean {",
+            [
+                "const mrk = this.mark();",
+                `const res = this.match${S}(0);`,
+                "const ans = res !== null && this.finished();",
+                "this.reset(mrk);",
+                "return ans;",
+            ],
+            "}",
             "public parse(): ParseResult {",
             [
                 "const mrk = this.mark();",

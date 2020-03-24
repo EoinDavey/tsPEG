@@ -455,6 +455,13 @@ export class Parser {
     public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
         return this.regexAccept(String.raw`\s*`, $$dpth + 1, cr);
     }
+    public test(): boolean {
+        const mrk = this.mark();
+        const res = this.matchGRAM(0);
+        const ans = res !== null && this.finished();
+        this.reset(mrk);
+        return ans;
+    }
     public parse(): ParseResult {
         const mrk = this.mark();
         const res = this.matchGRAM(0);
