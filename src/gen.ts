@@ -97,7 +97,7 @@ export class Generator {
             const mtch = at.match;
             try {
                 // Ensure the regex is valid
-                new RegExp(mtch.val);
+                const _  = new RegExp(mtch.val);
             } catch (err) {
                 throw new Error(`Couldnt' compile regex ${mtch.val} at line ${mtch.start.line}:${mtch.start.offset} : ${err}`);
             }
