@@ -12,6 +12,7 @@
 * MATCHSPEC := _ named={name=NAME _ '=' _}? rule=POSTOP
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
 *             .optional = boolean { return this.op !== null && this.op === '?'}
+*             | op='@'
 * PREOP     := op='\&|!'? at=ATOM
 * ATOM      := name=NAME !'\s*:='
 *            | match=STRLIT
@@ -20,7 +21,7 @@
 *     action='([^\{\}\\]|(\\.))*'
 * '\}'
 * NAME      := '[a-zA-Z_]+'
-* STRLIT    := '\'' val='([^\'\\]|(\\.))*' '\''
+* STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
 * _         := '\s*'
 */
 
@@ -43,7 +44,8 @@ export enum ASTKinds {
     ALT,
     MATCHSPEC,
     MATCHSPEC_$0,
-    POSTOP,
+    POSTOP_1,
+    POSTOP_2,
     PREOP,
     ATOM_1,
     ATOM_2,
@@ -98,8 +100,9 @@ export interface MATCHSPEC_$0 {
     kind: ASTKinds.MATCHSPEC_$0;
     name: NAME;
 }
-export class POSTOP {
-    public kind: ASTKinds.POSTOP = ASTKinds.POSTOP
+export type POSTOP = POSTOP_1 | POSTOP_2;
+export class POSTOP_1 {
+    public kind: ASTKinds.POSTOP_1 = ASTKinds.POSTOP_1
     public pre: PREOP;
     public op: Nullable<string>;
     public optional: boolean
@@ -110,6 +113,10 @@ export class POSTOP {
         return this.op !== null && this.op === '?'
         })()
     }
+}
+export interface POSTOP_2 {
+    kind: ASTKinds.POSTOP_2;
+    op: string;
 }
 export interface PREOP {
     kind: ASTKinds.PREOP;
@@ -138,6 +145,7 @@ export interface ATTR {
 export type NAME = string;
 export interface STRLIT {
     kind: ASTKinds.STRLIT;
+    start: PosInfo;
     val: string;
 }
 export type _ = string;
@@ -146,7 +154,7 @@ export class Parser {
     private pos: PosInfo;
     private negating: boolean = false;
     constructor(input: string) {
-        this.pos = new PosInfo(0, 1, 0);
+        this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
     }
     public reset(pos: PosInfo) {
@@ -308,19 +316,41 @@ export class Parser {
             }, cr)();
     }
     public matchPOSTOP($$dpth: number, cr?: ContextRecorder): Nullable<POSTOP> {
-        return this.runner<POSTOP>($$dpth,
+        return this.choice<POSTOP>([
+            () => this.matchPOSTOP_1($$dpth + 1, cr),
+            () => this.matchPOSTOP_2($$dpth + 1, cr),
+        ]);
+    }
+    public matchPOSTOP_1($$dpth: number, cr?: ContextRecorder): Nullable<POSTOP_1> {
+        return this.runner<POSTOP_1>($$dpth,
             (log) => {
                 if (log) {
-                    log("POSTOP");
+                    log("POSTOP_1");
                 }
                 let pre: Nullable<PREOP>;
                 let op: Nullable<Nullable<string>>;
-                let res: Nullable<POSTOP> = null;
+                let res: Nullable<POSTOP_1> = null;
                 if (true
                     && (pre = this.matchPREOP($$dpth + 1, cr)) !== null
                     && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth + 1, cr)) || true)
                 ) {
-                    res = new POSTOP(pre, op);
+                    res = new POSTOP_1(pre, op);
+                }
+                return res;
+            }, cr)();
+    }
+    public matchPOSTOP_2($$dpth: number, cr?: ContextRecorder): Nullable<POSTOP_2> {
+        return this.runner<POSTOP_2>($$dpth,
+            (log) => {
+                if (log) {
+                    log("POSTOP_2");
+                }
+                let op: Nullable<string>;
+                let res: Nullable<POSTOP_2> = null;
+                if (true
+                    && (op = this.regexAccept(String.raw`@`, $$dpth + 1, cr)) !== null
+                ) {
+                    res = {kind: ASTKinds.POSTOP_2, op};
                 }
                 return res;
             }, cr)();
@@ -440,14 +470,16 @@ export class Parser {
                 if (log) {
                     log("STRLIT");
                 }
+                let start: Nullable<PosInfo>;
                 let val: Nullable<string>;
                 let res: Nullable<STRLIT> = null;
                 if (true
+                    && (start = this.mark()) !== null
                     && this.regexAccept(String.raw`\'`, $$dpth + 1, cr) !== null
                     && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, $$dpth + 1, cr)) !== null
                     && this.regexAccept(String.raw`\'`, $$dpth + 1, cr) !== null
                 ) {
-                    res = {kind: ASTKinds.STRLIT, val};
+                    res = {kind: ASTKinds.STRLIT, start, val};
                 }
                 return res;
             }, cr)();
@@ -540,8 +572,11 @@ export class Parser {
                             lind = i;
                         }
                     }
-                    this.pos = new PosInfo(reg.lastIndex, this.pos.line + lineJmp,
-                       lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind));
+                    this.pos = {
+                        overallPos: reg.lastIndex,
+                        line: this.pos.line + lineJmp,
+                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind)
+                    };
                     return res[0];
                 }
                 return null;
@@ -575,15 +610,10 @@ export class ParseResult {
         this.err = err;
     }
 }
-export class PosInfo {
-    public overallPos: number;
-    public line: number;
-    public offset: number;
-    constructor(overallPos: number, line: number, offset: number) {
-        this.overallPos = overallPos;
-        this.line = line;
-        this.offset = offset;
-    }
+export interface PosInfo {
+    readonly overallPos: number;
+    readonly line: number;
+    readonly offset: number;
 }
 export class SyntaxErr {
     public pos: PosInfo;
@@ -599,7 +629,7 @@ export class SyntaxErr {
     }
 }
 class ErrorTracker implements ContextRecorder {
-    private mxpos: PosInfo = new PosInfo(-1, -1, -1);
+    private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};
     private mnd: number = -1;
     private prules: Set<string> = new Set();
     private pmatches: Set<string> = new Set();

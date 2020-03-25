@@ -1,4 +1,4 @@
-import { ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, POSTOP, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
+import { ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, POSTOP, POSTOP_1, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
 
 import { expandTemplate } from "./template";
 
@@ -9,10 +9,6 @@ type Grammar = Ruledef[];
 interface Ruledef {
     name: string;
     rule: Rule;
-}
-
-function getAtom(expr: POSTOP): ATOM {
-    return expr.pre.at;
 }
 
 function hasAttrs(alt: ALT): boolean {
@@ -32,8 +28,12 @@ export class Generator {
         const rules = [{name, rule}];
         for (const alt of rule) {
             for (const match of alt.matches) {
-                const at: ATOM = getAtom(match.rule);
-                if (at.kind !== ASTKinds.ATOM_3) {
+                // Check if special rule
+                if(match.rule.kind === ASTKinds.POSTOP_2)
+                    continue;
+                // Check if not a subrule
+                const at = match.rule.pre.at;
+                if (at === null || at.kind !== ASTKinds.ATOM_3) {
                     continue;
                 }
                 const subrule = at.sub;
@@ -65,6 +65,9 @@ export class Generator {
     }
 
     public postType(expr: POSTOP): string {
+        // Check if special rule
+        if (expr.kind === ASTKinds.POSTOP_2)
+            return "PosInfo";
         if (expr.op) {
             if (expr.op === "?") {
                 return `Nullable<${this.preType(expr.pre)}>`;
@@ -75,6 +78,10 @@ export class Generator {
     }
 
     public postRule(expr: POSTOP): string {
+        // Check if special rule
+        if (expr.kind === ASTKinds.POSTOP_2) {
+            return "this.mark()";
+        }
         if (expr.op && expr.op !== "?") {
                 return `this.loop<${this.preType(expr.pre)}>(() => ${this.preRule(expr.pre)}, ${expr.op === "+" ? "false" : "true"})`;
         }
@@ -87,13 +94,14 @@ export class Generator {
         }
         if (at.kind === ASTKinds.ATOM_2) {
             // Regex match
+            const mtch = at.match;
             try {
                 // Ensure the regex is valid
-                new RegExp(at.match.val);
+                new RegExp(mtch.val);
             } catch (err) {
-                throw new Error(`Couldnt' compile regex ${at.match.val}: ${err}`);
+                throw new Error(`Couldnt' compile regex ${mtch.val} at line ${mtch.start.line}:${mtch.start.offset} : ${err}`);
             }
-            return `this.regexAccept(String.raw\`${at.match.val}\`, $$dpth + 1, cr)`;
+            return `this.regexAccept(String.raw\`${mtch.val}\`, $$dpth + 1, cr)`;
         }
         const subname = this.subRules.get(at);
         if (subname) {
@@ -201,16 +209,18 @@ export class Generator {
             const expr = match.rule;
             const rn = this.postRule(expr);
             if (match.named) {
-                if (expr.optional) {
+                // Optional match
+                if (expr.kind !== ASTKinds.POSTOP_2 && expr.optional) {
                     checks.push(`&& ((${match.named.name} = ${rn}) || true)`);
                 } else {
                     checks.push(`&& (${match.named.name} = ${rn}) !== null`);
                 }
             } else {
-                if (expr.optional) {
+                // Optional match
+                if (expr.kind !== ASTKinds.POSTOP_2 && expr.optional) {
                     checks.push(`&& ((${rn}) || true)`);
                 } else {
-                checks.push(`&& ${rn} !== null`);
+                    checks.push(`&& ${rn} !== null`);
                 }
             }
         }
