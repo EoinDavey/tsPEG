@@ -67,13 +67,13 @@ test("Parser Test", () => {
     for(const tc of tcs) {
         const res = parse(tc.inp);
         if (res.err !== null) {
-            expect(tc.expmatches).not.toBeNull();
-            expect(tc.expmatches).toEqual(res.err.expmatches);
+            expect(tc.expmatches).not.toBeUndefined();
+            expect(tc.expmatches!.sort()).toEqual(res.err.expmatches.sort());
             continue;
         }
         if (tc.expmatches !== undefined) {
             expect(res.err).not.toBeNull();
-            expect(tc.expmatches).toEqual(res.err!.expmatches);
+            expect(tc.expmatches.sort()).toEqual(res.err!.expmatches.sort());
             continue;
         }
         expect(res.ast).not.toBeNull();
@@ -112,6 +112,6 @@ test("extractRule test", () => {
         const names : string[] = res.ast!.rules.map(x => gen.extractRules(x.rule.list, x.name))
             .reduce((x, y) => x.concat(y))
             .map(x => x.name);
-        expect(names).toEqual(tc.rulenames);
+        expect(names.sort()).toEqual(tc.rulenames.sort());
     }
 });
