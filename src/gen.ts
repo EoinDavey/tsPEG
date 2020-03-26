@@ -53,7 +53,7 @@ export class Generator {
 
     public preType(expr: PREOP): string {
         if (expr.op && expr.op === "!") { // Negation types return null if matched, true otherwise
-            return "Nullable<boolean>";
+            return "boolean";
         }
         return this.atomType(expr.at);
     }

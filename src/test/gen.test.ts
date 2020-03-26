@@ -1,4 +1,4 @@
-import { parse, SyntaxErr } from "../meta";
+import { ASTKinds, MATCH, parse, Parser, SyntaxErr } from "../meta";
 import { Generator } from "../gen";
 
 test("Parser Test", () => {
@@ -115,3 +115,67 @@ test("extractRule test", () => {
         expect(names.sort()).toEqual(tc.rulenames.sort());
     }
 });
+
+test("match type test", () => {
+    interface TestCase { match: string, expType: string;  }
+    const tcs : TestCase[] = [
+        {
+            match: "ruleReference",
+            expType: "ruleReference"
+        },
+        {
+            match: "ruleReference*",
+            expType: "ruleReference[]"
+        },
+        {
+            match: "ruleReference+",
+            expType: "ruleReference[]"
+        },
+        {
+            match: "ruleReference?",
+            expType: "Nullable<ruleReference>"
+        },
+        {
+            match: "!ruleReference",
+            expType: "boolean"
+        },
+        {
+            match: "'regex'",
+            expType: "string"
+        },
+        {
+            match: "'regex'+",
+            expType: "string[]"
+        },
+        {
+            match: "&'regex'",
+            expType: "string"
+        },
+        {
+            match: "@",
+            expType: "PosInfo"
+        }
+    ];
+    for(const tc of tcs) {
+        const p = new Parser(tc.match);
+        const res = p.matchMATCH(0);
+        expect(res).not.toBeNull();
+        const m : MATCH = res!;
+        const gen = new Generator();
+        const gotType = gen.matchType(m);
+        expect(gotType).toEqual(tc.expType);
+    }
+});
+
+test("subrule type test", () => {
+    const inp = "rule := 'has' { subrule }";
+    const expectedType = "rule_$0";
+    const res = parse(inp);
+    expect(res.err).toBeNull();
+    expect(res.ast).not.toBeNull();
+    const ast = res.ast!;
+    const gen = new Generator();
+    gen.AST2Gram(ast);
+    const subRef = ast.rules[0].rule.list[0].matches[1].rule;
+    expect(gen.matchType(subRef)).toEqual(expectedType);
+})
