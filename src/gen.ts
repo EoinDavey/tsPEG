@@ -81,7 +81,7 @@ export class Generator {
         return this.preType(expr.pre);
     }
 
-    public postRule(expr: MATCH): string {
+    public matchRule(expr: MATCH): string {
         // Check if special rule
         if (expr.kind === ASTKinds.SPECIAL) {
             return "this.mark()";
@@ -211,7 +211,7 @@ export class Generator {
         const checks: string[] = [];
         for (const match of alt.matches) {
             const expr = match.rule;
-            const rn = this.postRule(expr);
+            const rn = this.matchRule(expr);
             if (match.named) {
                 // Optional match
                 if (expr.kind !== ASTKinds.SPECIAL && expr.optional) {
@@ -234,7 +234,7 @@ export class Generator {
     public writeRuleAliasFn(name: string, expr: MATCH): Block {
         return [`public match${name}($$dpth: number, cr?: ContextRecorder): Nullable<${name}> {`,
             [
-                `return ${this.postRule(expr)};`,
+                `return ${this.matchRule(expr)};`,
             ],
             "}",
         ];

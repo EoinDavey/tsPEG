@@ -116,44 +116,53 @@ test("extractRule test", () => {
     }
 });
 
-test("match type test", () => {
-    interface TestCase { match: string, expType: string;  }
+test("match type/rule test", () => {
+    interface TestCase { match: string, expType: string, expRule?: string }
     const tcs : TestCase[] = [
         {
             match: "ruleReference",
-            expType: "ruleReference"
+            expType: "ruleReference",
+            expRule: "this.matchruleReference($$dpth + 1, cr)"
         },
         {
             match: "ruleReference*",
-            expType: "ruleReference[]"
+            expType: "ruleReference[]",
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, cr), true)"
         },
         {
             match: "ruleReference+",
-            expType: "ruleReference[]"
+            expType: "ruleReference[]",
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, cr), false)"
         },
         {
             match: "ruleReference?",
-            expType: "Nullable<ruleReference>"
+            expType: "Nullable<ruleReference>",
+            expRule: "this.matchruleReference($$dpth + 1, cr)"
         },
         {
             match: "!ruleReference",
-            expType: "boolean"
+            expType: "boolean",
+            expRule: "this.negate(() => this.matchruleReference($$dpth + 1, cr))"
         },
         {
             match: "'regex'",
-            expType: "string"
+            expType: "string",
+            expRule: "this.regexAccept(String.raw`regex`, $$dpth + 1, cr)"
         },
         {
             match: "'regex'+",
-            expType: "string[]"
+            expType: "string[]",
+            expRule: "this.loop<string>(() => this.regexAccept(String.raw`regex`, $$dpth + 1, cr), false)"
         },
         {
             match: "&'regex'",
-            expType: "string"
+            expType: "string",
+            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw`regex`, $$dpth + 1, cr))"
         },
         {
             match: "@",
-            expType: "PosInfo"
+            expType: "PosInfo",
+            expRule: "this.mark()"
         }
     ];
     for(const tc of tcs) {
@@ -164,18 +173,26 @@ test("match type test", () => {
         const gen = new Generator();
         const gotType = gen.matchType(m);
         expect(gotType).toEqual(tc.expType);
+        if(tc.expRule) {
+            const gotRule = gen.matchRule(m);
+            expect(gotRule).toEqual(tc.expRule);
+        }
     }
 });
 
-test("subrule type test", () => {
+test("subrule type/rule test", () => {
     const inp = "rule := 'has' { subrule }";
     const expectedType = "rule_$0";
+    const expectedRule = "this.matchrule_$0($$dpth + 1, cr)";
+
     const res = parse(inp);
     expect(res.err).toBeNull();
     expect(res.ast).not.toBeNull();
+
     const ast = res.ast!;
     const gen = new Generator();
     gen.AST2Gram(ast);
     const subRef = ast.rules[0].rule.list[0].matches[1].rule;
     expect(gen.matchType(subRef)).toEqual(expectedType);
+    expect(gen.matchRule(subRef)).toEqual(expectedRule);
 })
