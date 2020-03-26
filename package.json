@@ -10,7 +10,7 @@
     },
     "main": "index.js",
     "scripts": {
-        "build": "tsc",
+        "build": "./build.sh",
         "lint": "tslint --force",
         "gen": "cp src/meta.ts /tmp/meta.ts && tspeg src/metagrammar.gram src/meta.ts",
         "lint-all": "tslint --force \"src/**/*.ts\"",

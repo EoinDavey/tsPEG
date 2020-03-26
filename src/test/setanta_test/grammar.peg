@@ -1,0 +1,72 @@
+Program     := stmts=AsgnStmt* _
+AsgnStmt    := IfStmt
+             | BlockStmt
+             | NuairStmt
+             | LeStmt
+             | CCStmt
+             | BrisStmt
+             | CtlchStmt
+             | GniomhStmt
+             | ToradhStmt
+             | AssgnStmt
+             | DefnStmt
+             | Expr
+NonAsgnStmt := IfStmt
+             | NuairStmt
+             | LeStmt
+             | CCStmt
+             | BrisStmt
+             | ToradhStmt
+             | BlockStmt
+             | AssgnStmt
+             | Expr
+IfStmt      := _ 'm[áa]' &gap expr=Expr &gap stmt=NonAsgnStmt elsebranch={_ 'n[oó]' &gap stmt=NonAsgnStmt}?
+BlockStmt   := _ '{' blk=AsgnStmt* _ '}'
+NuairStmt   := _ 'nuair-a' expr=Expr &gap stmt=NonAsgnStmt
+LeStmt      := _ 'le' &gap id=ID _ 'idir' _ '\('strt=Expr _ ',' end=Expr step={_ ',' step=Expr}? _ '\)' stmt=NonAsgnStmt
+DefnStmt    := _ id=ID _ ':=' _ expr=Expr
+AssgnStmt   := _ lhs=Postfix _ op=AsgnOp _ expr=Expr
+GniomhStmt  := _ 'gn[íi]omh' &gap id=ID _ '\(' args=CSIDs? _ '\)' _ '{'
+    stmts=AsgnStmt*
+_ '}'
+CtlchStmt   := _ 'creatlach' &gap id=ID tuis={_ 'ó' &gap id=ID}? _ '{'
+    gniomhs=GniomhStmt*
+_ '}'
+BrisStmt    := _ 'bris'
+CCStmt      := _ 'chun-cinn'
+ToradhStmt  := _ 'toradh' &gap exp=Expr?
+Expr        := And
+And         := head=Or tail={_ '\&' trm=Or}*
+Or          := head=Eq tail={_ '\|' trm=Eq}*
+Eq          := head=Comp tail={_ op='[!=]=' trm=Comp}*
+Comp        := head=Sum tail={_ op=Compare trm=Sum}*
+Sum         := head=Product tail={_ op=PlusMinus trm=Product}*
+Product     := head=Prefix tail={_ op=MulDiv trm=Prefix}*
+Prefix      := _ op='-|!'? pf=Postfix
+Postfix     := at=ObjLookups ops=PostOp*
+ObjLookups  := attrs={id=ID '@' !wspace}* root=Atom
+PostOp      := '\(' args=CSArgs? _ '\)' | '\[' expr=Expr _ '\]'
+Atom        :=  _ '\(' trm=Expr '\)'
+             | ID
+             | Litreacha
+             | Int
+             | Bool
+             | Neamhni
+             | ListLit
+ListLit     := _ '\[' els=CSArgs? _ '\]'
+CSArgs      := head=Expr tail={_ ',' exp=Expr}*
+CSIDs       := head=ID tail={_ ',' id=ID}*
+ID          := _ !{Keyword gap} id='[a-zA-Z_áéíóúÁÉÍÓÚ]+'
+Bool        := _ bool='f[ií]or|br[eé]ag'
+Neamhni     := _ 'neamhn[ií]'
+Int         := _ int='-?[0-9]+(?:\.[0-9]+)?'
+Litreacha   := _ '\'' val='([^\'\\]|\\.)*' '\''
+_           := wspace*
+wspace      := '(?:\s|>--(?:(?!--<).)*(--<|\n|$))'
+gap         := { wspace | '[^a-zA-Z0-9áéíóúÁÉÍÓÚ]' }+ | '$'
+PlusMinus   := '\+|-'
+AsgnOp      := '=|\+=|\*=|-=|%=|\/='
+MulDiv      := '\*|\/\/|%|\/'
+Compare     := '<=|>=|<|>'
+Keyword     := 'm[áa]' | 'n[oó]' | 'nuair-a' | 'f[ií]or|br[eé]ag'
+    | 'gn[ií]omh' | 'chun-cinn' | 'neamhn[ií]' | 'toradh' | 'creatlach'

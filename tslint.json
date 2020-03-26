@@ -6,7 +6,8 @@
     "jsRules": {},
     "linterOptions": {
         "exclude": [
-            "src/meta.ts"
+            "src/meta.ts",
+            "src/test/**/parser.ts"
         ]
     },
     "rules": {
