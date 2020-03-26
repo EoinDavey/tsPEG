@@ -1,4 +1,4 @@
-import { ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, POSTOP, POSTOP_1, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
+import { ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, MATCH, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
 
 import { expandTemplate } from "./template";
 
@@ -33,7 +33,7 @@ export class Generator {
         for (const alt of rule) {
             for (const match of alt.matches) {
                 // Check if special rule
-                if(match.rule.kind === ASTKinds.POSTOP_2)
+                if(match.rule.kind === ASTKinds.SPECIAL)
                     continue;
                 // Check if not a subrule
                 const at = match.rule.pre.at;
@@ -68,9 +68,9 @@ export class Generator {
         return this.atomRule(expr.at);
     }
 
-    public postType(expr: POSTOP): string {
+    public matchType(expr: MATCH): string {
         // Check if special rule
-        if (expr.kind === ASTKinds.POSTOP_2)
+        if (expr.kind === ASTKinds.SPECIAL)
             return "PosInfo";
         if (expr.op) {
             if (expr.op === "?") {
@@ -81,9 +81,9 @@ export class Generator {
         return this.preType(expr.pre);
     }
 
-    public postRule(expr: POSTOP): string {
+    public postRule(expr: MATCH): string {
         // Check if special rule
-        if (expr.kind === ASTKinds.POSTOP_2) {
+        if (expr.kind === ASTKinds.SPECIAL) {
             return "this.mark()";
         }
         if (expr.op && expr.op !== "?") {
@@ -149,13 +149,13 @@ export class Generator {
         for (const match of alt.matches) {
             if (match.named) {
                 const at = match.rule;
-                namedTypes.push([match.named.name, this.postType(at)]);
+                namedTypes.push([match.named.name, this.matchType(at)]);
             }
         }
         // Rules with no named matches, no attrs and only one match are rule aliases
         if (namedTypes.length === 0 && alt.matches.length === 1 && !hasAttrs(alt)) {
             const at = alt.matches[0].rule;
-            return [`export type ${name} = ${this.postType(at)};`];
+            return [`export type ${name} = ${this.matchType(at)};`];
         }
         if (hasAttrs(alt)) {
             return [
@@ -214,14 +214,14 @@ export class Generator {
             const rn = this.postRule(expr);
             if (match.named) {
                 // Optional match
-                if (expr.kind !== ASTKinds.POSTOP_2 && expr.optional) {
+                if (expr.kind !== ASTKinds.SPECIAL && expr.optional) {
                     checks.push(`&& ((${match.named.name} = ${rn}) || true)`);
                 } else {
                     checks.push(`&& (${match.named.name} = ${rn}) !== null`);
                 }
             } else {
                 // Optional match
-                if (expr.kind !== ASTKinds.POSTOP_2 && expr.optional) {
+                if (expr.kind !== ASTKinds.SPECIAL && expr.optional) {
                     checks.push(`&& ((${rn}) || true)`);
                 } else {
                     checks.push(`&& ${rn} !== null`);
@@ -231,7 +231,7 @@ export class Generator {
         return checks;
     }
 
-    public writeRuleAliasFn(name: string, expr: POSTOP): Block {
+    public writeRuleAliasFn(name: string, expr: MATCH): Block {
         return [`public match${name}($$dpth: number, cr?: ContextRecorder): Nullable<${name}> {`,
             [
                 `return ${this.postRule(expr)};`,
@@ -245,7 +245,7 @@ export class Generator {
         const unnamedTypes: string[] = [];
         for (const match of alt.matches) {
             const expr = match.rule;
-            const rn = this.postType(expr);
+            const rn = this.matchType(expr);
             if (match.named) {
                 namedTypes.push([match.named.name, rn]);
             } else {

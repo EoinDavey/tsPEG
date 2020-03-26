@@ -9,10 +9,11 @@
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
 *           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
 * ALT       := matches=MATCHSPEC+ attrs=ATTR*
-* MATCHSPEC := _ named={name=NAME _ '=' _}? rule=POSTOP
+* MATCHSPEC := _ named={name=NAME _ '=' _}? rule=MATCH
+* MATCH     := SPECIAL | POSTOP
+* SPECIAL   := op='@'
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
 *             .optional = boolean { return this.op !== null && this.op === '?'}
-*             | op='@'
 * PREOP     := op='\&|!'? at=ATOM
 * ATOM      := name=NAME !'\s*:='
 *            | match=STRLIT
@@ -44,8 +45,10 @@ export enum ASTKinds {
     ALT,
     MATCHSPEC,
     MATCHSPEC_$0,
-    POSTOP_1,
-    POSTOP_2,
+    MATCH_1,
+    MATCH_2,
+    SPECIAL,
+    POSTOP,
     PREOP,
     ATOM_1,
     ATOM_2,
@@ -94,15 +97,21 @@ export interface ALT {
 export interface MATCHSPEC {
     kind: ASTKinds.MATCHSPEC;
     named: Nullable<MATCHSPEC_$0>;
-    rule: POSTOP;
+    rule: MATCH;
 }
 export interface MATCHSPEC_$0 {
     kind: ASTKinds.MATCHSPEC_$0;
     name: NAME;
 }
-export type POSTOP = POSTOP_1 | POSTOP_2;
-export class POSTOP_1 {
-    public kind: ASTKinds.POSTOP_1 = ASTKinds.POSTOP_1
+export type MATCH = MATCH_1 | MATCH_2;
+export type MATCH_1 = SPECIAL;
+export type MATCH_2 = POSTOP;
+export interface SPECIAL {
+    kind: ASTKinds.SPECIAL;
+    op: string;
+}
+export class POSTOP {
+    public kind: ASTKinds.POSTOP = ASTKinds.POSTOP
     public pre: PREOP;
     public op: Nullable<string>;
     public optional: boolean
@@ -113,10 +122,6 @@ export class POSTOP_1 {
         return this.op !== null && this.op === '?'
         })()
     }
-}
-export interface POSTOP_2 {
-    kind: ASTKinds.POSTOP_2;
-    op: string;
 }
 export interface PREOP {
     kind: ASTKinds.PREOP;
@@ -284,12 +289,12 @@ export class Parser {
                     log("MATCHSPEC");
                 }
                 let named: Nullable<Nullable<MATCHSPEC_$0>>;
-                let rule: Nullable<POSTOP>;
+                let rule: Nullable<MATCH>;
                 let res: Nullable<MATCHSPEC> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
                     && ((named = this.matchMATCHSPEC_$0($$dpth + 1, cr)) || true)
-                    && (rule = this.matchPOSTOP($$dpth + 1, cr)) !== null
+                    && (rule = this.matchMATCH($$dpth + 1, cr)) !== null
                 ) {
                     res = {kind: ASTKinds.MATCHSPEC, named, rule};
                 }
@@ -315,42 +320,48 @@ export class Parser {
                 return res;
             }, cr)();
     }
-    public matchPOSTOP($$dpth: number, cr?: ContextRecorder): Nullable<POSTOP> {
-        return this.choice<POSTOP>([
-            () => this.matchPOSTOP_1($$dpth + 1, cr),
-            () => this.matchPOSTOP_2($$dpth + 1, cr),
+    public matchMATCH($$dpth: number, cr?: ContextRecorder): Nullable<MATCH> {
+        return this.choice<MATCH>([
+            () => this.matchMATCH_1($$dpth + 1, cr),
+            () => this.matchMATCH_2($$dpth + 1, cr),
         ]);
     }
-    public matchPOSTOP_1($$dpth: number, cr?: ContextRecorder): Nullable<POSTOP_1> {
-        return this.runner<POSTOP_1>($$dpth,
+    public matchMATCH_1($$dpth: number, cr?: ContextRecorder): Nullable<MATCH_1> {
+        return this.matchSPECIAL($$dpth + 1, cr);
+    }
+    public matchMATCH_2($$dpth: number, cr?: ContextRecorder): Nullable<MATCH_2> {
+        return this.matchPOSTOP($$dpth + 1, cr);
+    }
+    public matchSPECIAL($$dpth: number, cr?: ContextRecorder): Nullable<SPECIAL> {
+        return this.runner<SPECIAL>($$dpth,
             (log) => {
                 if (log) {
-                    log("POSTOP_1");
+                    log("SPECIAL");
                 }
-                let pre: Nullable<PREOP>;
-                let op: Nullable<Nullable<string>>;
-                let res: Nullable<POSTOP_1> = null;
+                let op: Nullable<string>;
+                let res: Nullable<SPECIAL> = null;
                 if (true
-                    && (pre = this.matchPREOP($$dpth + 1, cr)) !== null
-                    && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth + 1, cr)) || true)
+                    && (op = this.regexAccept(String.raw`@`, $$dpth + 1, cr)) !== null
                 ) {
-                    res = new POSTOP_1(pre, op);
+                    res = {kind: ASTKinds.SPECIAL, op};
                 }
                 return res;
             }, cr)();
     }
-    public matchPOSTOP_2($$dpth: number, cr?: ContextRecorder): Nullable<POSTOP_2> {
-        return this.runner<POSTOP_2>($$dpth,
+    public matchPOSTOP($$dpth: number, cr?: ContextRecorder): Nullable<POSTOP> {
+        return this.runner<POSTOP>($$dpth,
             (log) => {
                 if (log) {
-                    log("POSTOP_2");
+                    log("POSTOP");
                 }
-                let op: Nullable<string>;
-                let res: Nullable<POSTOP_2> = null;
+                let pre: Nullable<PREOP>;
+                let op: Nullable<Nullable<string>>;
+                let res: Nullable<POSTOP> = null;
                 if (true
-                    && (op = this.regexAccept(String.raw`@`, $$dpth + 1, cr)) !== null
+                    && (pre = this.matchPREOP($$dpth + 1, cr)) !== null
+                    && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth + 1, cr)) || true)
                 ) {
-                    res = {kind: ASTKinds.POSTOP_2, op};
+                    res = new POSTOP(pre, op);
                 }
                 return res;
             }, cr)();

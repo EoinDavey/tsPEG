@@ -7,10 +7,11 @@ RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _
 RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
 ALT       := matches=MATCHSPEC+ attrs=ATTR*
-MATCHSPEC := _ named={name=NAME _ '=' _}? rule=POSTOP
+MATCHSPEC := _ named={name=NAME _ '=' _}? rule=MATCH
+MATCH     := SPECIAL | POSTOP
+SPECIAL   := op='@'
 POSTOP    := pre=PREOP op='\+|\*|\?'?
             .optional = boolean { return this.op !== null && this.op === '?'}
-            | op='@'
 PREOP     := op='\&|!'? at=ATOM
 ATOM      := name=NAME !'\s*:='
            | match=STRLIT
