@@ -1,4 +1,5 @@
 import { parse, SyntaxErr } from "../meta";
+import { Generator } from "../gen";
 
 test("Parser Test", () => {
     interface TestCase { inp: string, expmatches?: string[];  }
@@ -76,5 +77,41 @@ test("Parser Test", () => {
             continue;
         }
         expect(res.ast).not.toBeNull();
+    }
+});
+
+test("extractRule test", () => {
+    interface TestCase { inp: string, rulenames: string[];  }
+    const tcs : TestCase[] = [
+        {
+            inp: "rule := 'a'",
+            rulenames: ["rule"]
+        },
+        {
+            inp: "rule_one := 'a' ruletwo := 'b' rule_____three := 'c'",
+            rulenames: ["rule_one", "ruletwo", "rule_____three"]
+        },
+        {
+            inp: "rule := { 'subrule' }?",
+            rulenames: ["rule", "rule_$0"]
+        },
+        {
+            inp: "rule := { 'subrule1' }? { 'subrule' | 'two' }+",
+            rulenames: ["rule", "rule_$0", "rule_$1"]
+        },
+        {
+            inp: "rule := { sub rule { subsub rule 'zero' } { subsubrule_one }? } { sub rule 'two' @ { sub sub rule } }",
+            rulenames: ["rule", "rule_$0", "rule_$0_$0", "rule_$0_$1", "rule_$1", "rule_$1_$0"]
+        }
+    ];
+    for(const tc of tcs) {
+        const res = parse(tc.inp);
+        expect(res.err).toBeNull();
+        expect(res.ast).not.toBeNull();
+        const gen = new Generator();
+        const names : string[] = res.ast!.rules.map(x => gen.extractRules(x.rule.list, x.name))
+            .reduce((x, y) => x.concat(y))
+            .map(x => x.name);
+        expect(names).toEqual(tc.rulenames);
     }
 });

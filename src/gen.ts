@@ -23,6 +23,10 @@ export class Generator {
         return gram.reduce((x, y) => x.concat(y));
     }
 
+    // extractRule does a traversal of the AST assigning names to
+    // subrules and storing them in this.subRules. It takes subrules and assigns
+    // them their own Ruledef in the grammar, effectively flattening the
+    // structure of the grammar.
     public extractRules(rule: Rule, name: string): Ruledef[] {
         let cnt = 0;
         const rules = [{name, rule}];
