@@ -1,0 +1,35 @@
+Program    := Melody* _
+Melody     := _ 'melody' _ KID {_ KID}* _ 'start'
+                Stmt*
+            _ 'end'
+Stmt       := KeyStmt | AssignStmt | ForStmt | IfStmt
+KeyStmt    := _ Funcs _ Expr
+AssignStmt := _ KID _ '=' _ Expr
+ForStmt    := _ 'for' _ KID _ 'from' _ Expr _ 'to' _ Expr
+                 Stmt*
+            _ 'end'
+IfStmt     := _ 'if' _ Expr _ 'then'
+                 Stmt*
+               { _ 'end' | _ 'else' Stmt* _ 'end' }
+FuncExpr   := Expr { _ Expr ' '* !'\n' }*
+Expr       := Eq
+Eq         := _ Comp { _ '==' Comp }*
+Comp       := _ Sum { _ Compare _ Sum }*
+Sum        := _ Product { _ PlusMinus _ Product }*
+Product    := _ Atom { _ MulDiv _ Atom }*
+Atom       := NoteLit | KID | INT | '\('  FuncExpr _ '\)'
+PlusMinus  := '\+' | '-'
+MulDiv     := '\*' | '\/' | '%'
+Compare    := '<=' | '>=' | '<' | '>'
+NoteLit    := '[A-G][#b]?\d'
+
+INT := '[0-9]+'
+
+Keyword := 'start' | 'end' | 'for' | 'else' | 'if' | 'then'
+Funcs   := 'play' | 'wait'
+
+KID := !Keyword ID
+
+ID := '[a-zA-Z_]+'
+
+_ := '\s'*

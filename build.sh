@@ -5,7 +5,6 @@ set -e
 tsc
 
 for dir in src/test/*; do
-    echo $dir
     if ! [[ -d $dir ]]; then
         continue
     fi
