@@ -125,7 +125,7 @@ export class Generator {
         if (subname) {
             return subname;
         }
-        return "ERR";
+        throw new Error("Unknown subrule");
     }
 
     public writeKinds(gram: Grammar): Block {

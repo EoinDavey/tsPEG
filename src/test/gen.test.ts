@@ -1,5 +1,6 @@
 import { ASTKinds, MATCH, parse, Parser, SyntaxErr } from "../meta";
 import { Generator } from "../gen";
+import { writeBlock } from "../util";
 
 test("Parser Test", () => {
     interface TestCase { inp: string, expmatches?: string[];  }
@@ -195,4 +196,37 @@ test("subrule type/rule test", () => {
     const subRef = ast.rules[0].rule.list[0].matches[1].rule;
     expect(gen.matchType(subRef)).toEqual(expectedType);
     expect(gen.matchRule(subRef)).toEqual(expectedRule);
-})
+});
+
+test("writeKinds test", () => {
+    interface TestCase { inp: string, writeKinds: string };
+    const tcs: TestCase[] = [
+        {
+            inp: "rule := 'regex'",
+            writeKinds: `export enum ASTKinds {
+    rule,
+}`
+        },
+        {
+            inp: `rule := 'regex' | rule reference
+            rule_two := more | rule | { subrule }`,
+            writeKinds: `export enum ASTKinds {
+    rule_1,
+    rule_2,
+    rule_two_1,
+    rule_two_2,
+    rule_two_3,
+    rule_two_$0,
+}`
+        }
+    ];
+    for(const tc of tcs) {
+        const res = parse(tc.inp);
+        expect(res.err).toBeNull();
+        expect(res.ast).not.toBeNull();
+        const g = new Generator();
+        const gram = g.AST2Gram(res.ast!);
+        const got = writeBlock(g.writeKinds(gram)).join("\n");
+        expect(got).toEqual(tc.writeKinds);
+    }
+});
