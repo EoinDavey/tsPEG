@@ -230,3 +230,43 @@ test("writeKinds test", () => {
         expect(got).toEqual(tc.writeKinds);
     }
 });
+
+test("writeRuleClasses Test", () => {
+    interface TestCase { inp: string, ruleClasses: string };
+    const tcs: TestCase[] = [
+        {
+            inp: "rule := 'regex'",
+            ruleClasses: "export type rule = string;"
+        },
+        {
+            inp: "rule := name='named regex'",
+            ruleClasses: `export interface rule {
+    kind: ASTKinds.rule;
+    name: string;
+}`
+        },
+        {
+            inp: "rule := name='named regex' .computed = number { return 0; }",
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public name: string;
+    public computed: number;
+    constructor(name: string){
+        this.name = name;
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        }
+    ];
+    for(const tc of tcs) {
+        const res = parse(tc.inp);
+        expect(res.err).toBeNull();
+        expect(res.ast).not.toBeNull();
+        const g = new Generator();
+        const gram = g.AST2Gram(res.ast!);
+        const got = writeBlock(g.writeRuleClasses(gram)).join("\n");
+        expect(got).toEqual(tc.ruleClasses);
+    }
+});

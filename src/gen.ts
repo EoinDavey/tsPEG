@@ -157,18 +157,19 @@ export class Generator {
             const at = alt.matches[0].rule;
             return [`export type ${name} = ${this.matchType(at)};`];
         }
+        // If we have computed properties, then we need a class, not an interface.
         if (hasAttrs(alt)) {
             return [
                 `export class ${name} {`,
                 [
-                    `public kind: ASTKinds.${name} = ASTKinds.${name}`,
+                    `public kind: ASTKinds.${name} = ASTKinds.${name};`,
                     ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
-                    ...alt.attrs.map((x) => `public ${x.name}: ${x.type}`),
-                     `constructor(${namedTypes.map((x) => `${x[0]} : ${x[1]}`).join(", ")}){`,
+                    ...alt.attrs.map((x) => `public ${x.name}: ${x.type};`),
+                     `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
                     namedTypes.map((x) => `this.${x[0]} = ${x[0]};`),
                     ...alt.attrs.map((x) => [`this.${x.name} = (() => {`,
                             unescapeSeqs(x.action).trim(),
-                        "})()"]),
+                        "})();"]),
                     "}",
                 ],
                 "}",
