@@ -1,0 +1,5 @@
+---
+// This grammar matches balanced parentheses
+---
+
+EXPR := strt=@ '\(' left=EXPR? '\)' end=@ right=EXPR?
