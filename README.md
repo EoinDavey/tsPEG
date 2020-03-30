@@ -243,3 +243,33 @@ The names of the ASTKinds enum entries vary.
 - Rules that directly reference a different rule like `rule := otherrule` don't get their own AST type, so inherit the `kind` from the other rule.
 - Sub-rules are given the kind `ASTKinds.<ParentRule>_$N` for the `N`th subrule of rule `ParentRule`. For example in the rule `Rule := sub={ name='regex' }` the `kind` for the sub-rule is `ASTKinds.Rule_$0`.
 - If in doubt it's simple to inspect the generated parser file to find what the correct kind name is. The compiler will also be sure to tell you when you're wrong.
+
+## Position tracking
+
+tsPEG supports a special match expression "`@`" for storing the positions of matches. Using `@` you can store the current position of the parser.
+
+### Example
+
+Returning to our addition of two numbers from earlier, which matches "12+56", "123+456" etc.
+
+```
+sum := left=num '\+' right=num
+num := '[0-9]+'
+```
+
+If we want to store the location of the "+" operator we can use the @ match like this:
+
+```
+sum := left=num pluspos=@ '\+' right=num
+num := '[0-9]+'
+```
+
+This stores the position of the parser into the AST before the '+' symbol, the generated interface for the AST looks like:
+
+```TypeScript
+interface sum {
+    left: string
+    pluspos: PosInfo
+    right: string
+}
+```
