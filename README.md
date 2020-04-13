@@ -164,7 +164,7 @@ class PosInfo {
 
 As well as assigning parsing results to variables and storing them on the AST, *tsPEG* also allows you to create **computed properties**, which are fields on the AST that are computed when the parser is run.
 
-Computer properties are added to a rule by appending a new expression after the rule description like
+Computed properties are added to a rule by appending a new expression after the rule description like
 ```
 .<propertyname> = <type> { <code to calculate property> }
 ```
