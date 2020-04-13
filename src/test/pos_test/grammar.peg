@@ -1,5 +1,7 @@
 ---
 // This grammar matches balanced parentheses
+// Allowing for whitespace
 ---
 
-EXPR := strt=@ '\(' left=EXPR? '\)' end=@ right=EXPR?
+EXPR := _ strt=@ '\(' left=EXPR? '\)' end=@ right=EXPR? _
+_ := '\s*'

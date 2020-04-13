@@ -73,16 +73,16 @@ export interface RULEDEF {
     rule: RULE;
 }
 export class RULE {
-    public kind: ASTKinds.RULE = ASTKinds.RULE
+    public kind: ASTKinds.RULE = ASTKinds.RULE;
     public head: ALT;
     public tail: RULE_$0[];
-    public list: ALT[]
-    constructor(head : ALT, tail : RULE_$0[]){
+    public list: ALT[];
+    constructor(head: ALT, tail: RULE_$0[]){
         this.head = head;
         this.tail = tail;
         this.list = (() => {
         return [this.head, ...this.tail.map((x) => x.alt)];
-        })()
+        })();
     }
 }
 export interface RULE_$0 {
@@ -111,16 +111,16 @@ export interface SPECIAL {
     op: string;
 }
 export class POSTOP {
-    public kind: ASTKinds.POSTOP = ASTKinds.POSTOP
+    public kind: ASTKinds.POSTOP = ASTKinds.POSTOP;
     public pre: PREOP;
     public op: Nullable<string>;
-    public optional: boolean
-    constructor(pre : PREOP, op : Nullable<string>){
+    public optional: boolean;
+    constructor(pre: PREOP, op: Nullable<string>){
         this.pre = pre;
         this.op = op;
         this.optional = (() => {
         return this.op !== null && this.op === '?'
-        })()
+        })();
     }
 }
 export interface PREOP {

@@ -2,11 +2,14 @@
 * INPUT GRAMMAR:
 * ---
 * // This grammar matches balanced parentheses
+* // Allowing for whitespace
 * ---
-* EXPR := strt=@ '\(' left=EXPR? '\)' end=@ right=EXPR?
+* EXPR := _ strt=@ '\(' left=EXPR? '\)' end=@ right=EXPR? _
+* _ := '\s*'
 */
 
 // This grammar matches balanced parentheses
+// Allowing for whitespace
 
 type Nullable<T> = T | null;
 type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
@@ -18,6 +21,7 @@ interface ASTNodeIntf {
 }
 export enum ASTKinds {
     EXPR,
+    _,
 }
 export interface EXPR {
     kind: ASTKinds.EXPR;
@@ -26,6 +30,7 @@ export interface EXPR {
     end: PosInfo;
     right: Nullable<EXPR>;
 }
+export type _ = string;
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;
@@ -52,17 +57,22 @@ export class Parser {
                 let right: Nullable<Nullable<EXPR>>;
                 let res: Nullable<EXPR> = null;
                 if (true
+                    && this.match_($$dpth + 1, cr) !== null
                     && (strt = this.mark()) !== null
                     && this.regexAccept(String.raw`\(`, $$dpth + 1, cr) !== null
                     && ((left = this.matchEXPR($$dpth + 1, cr)) || true)
                     && this.regexAccept(String.raw`\)`, $$dpth + 1, cr) !== null
                     && (end = this.mark()) !== null
                     && ((right = this.matchEXPR($$dpth + 1, cr)) || true)
+                    && this.match_($$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.EXPR, strt, left, end, right};
                 }
                 return res;
             }, cr)();
+    }
+    public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
+        return this.regexAccept(String.raw`\s*`, $$dpth + 1, cr);
     }
     public test(): boolean {
         const mrk = this.mark();
@@ -152,7 +162,7 @@ export class Parser {
                     this.pos = {
                         overallPos: reg.lastIndex,
                         line: this.pos.line + lineJmp,
-                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind)
+                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
                     };
                     return res[0];
                 }

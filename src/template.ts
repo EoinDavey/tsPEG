@@ -153,7 +153,7 @@ export function expandTemplate(input: string, header: Block, kinds: Block,
                         [
                             "overallPos: reg.lastIndex,",
                             "line: this.pos.line + lineJmp,",
-                            "offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind)",
+                            "offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)",
                         ],
                         "};",
                         "return res[0];",

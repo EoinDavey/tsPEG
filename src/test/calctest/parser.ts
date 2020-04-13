@@ -39,18 +39,18 @@ export enum ASTKinds {
     _,
 }
 export class SUM {
-    public kind: ASTKinds.SUM = ASTKinds.SUM
+    public kind: ASTKinds.SUM = ASTKinds.SUM;
     public head: FAC;
     public tail: SUM_$0[];
-    public value: number
-    constructor(head : FAC, tail : SUM_$0[]){
+    public value: number;
+    constructor(head: FAC, tail: SUM_$0[]){
         this.head = head;
         this.tail = tail;
         this.value = (() => {
         return this.tail.reduce((x, y) => {
                 return y.op === "+" ? x + y.sm.value : x - y.sm.value;
             }, this.head.value);
-        })()
+        })();
     }
 }
 export interface SUM_$0 {
@@ -59,18 +59,18 @@ export interface SUM_$0 {
     sm: FAC;
 }
 export class FAC {
-    public kind: ASTKinds.FAC = ASTKinds.FAC
+    public kind: ASTKinds.FAC = ASTKinds.FAC;
     public head: ATOM;
     public tail: FAC_$0[];
-    public value: number
-    constructor(head : ATOM, tail : FAC_$0[]){
+    public value: number;
+    constructor(head: ATOM, tail: FAC_$0[]){
         this.head = head;
         this.tail = tail;
         this.value = (() => {
         return this.tail.reduce((x, y) => {
                 return y.op === "*" ? x * y.sm.value : x / y.sm.value;
             }, this.head.value);
-        })()
+        })();
     }
 }
 export interface FAC_$0 {
@@ -80,36 +80,36 @@ export interface FAC_$0 {
 }
 export type ATOM = ATOM_1 | ATOM_2;
 export class ATOM_1 {
-    public kind: ASTKinds.ATOM_1 = ASTKinds.ATOM_1
+    public kind: ASTKinds.ATOM_1 = ASTKinds.ATOM_1;
     public val: INT;
-    public value: number
-    constructor(val : INT){
+    public value: number;
+    constructor(val: INT){
         this.val = val;
         this.value = (() => {
         return this.val.value;
-        })()
+        })();
     }
 }
 export class ATOM_2 {
-    public kind: ASTKinds.ATOM_2 = ASTKinds.ATOM_2
+    public kind: ASTKinds.ATOM_2 = ASTKinds.ATOM_2;
     public val: SUM;
-    public value: number
-    constructor(val : SUM){
+    public value: number;
+    constructor(val: SUM){
         this.val = val;
         this.value = (() => {
         return this.val.value;
-        })()
+        })();
     }
 }
 export class INT {
-    public kind: ASTKinds.INT = ASTKinds.INT
+    public kind: ASTKinds.INT = ASTKinds.INT;
     public val: string;
-    public value: number
-    constructor(val : string){
+    public value: number;
+    constructor(val: string){
         this.val = val;
         this.value = (() => {
         return parseInt(this.val);
-        })()
+        })();
     }
 }
 export type _ = string;
@@ -350,7 +350,7 @@ export class Parser {
                     this.pos = {
                         overallPos: reg.lastIndex,
                         line: this.pos.line + lineJmp,
-                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind)
+                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
                     };
                     return res[0];
                 }
