@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.1 - 2020/04/13
+
+### Fixed
+
+- Update typo in README
+- Fix off-by-one error in position tracking
+
 ## 1.3.0 - 2020/03/30
 
 ### Added
