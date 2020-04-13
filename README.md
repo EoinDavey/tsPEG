@@ -131,7 +131,7 @@ We can also use [computed properties](#computed-properties) to calculate the res
 - The `*` operator is the same as the `+` operator but it allows zero matches.
 - The `!` is called the "*negative lookahead*" operator, and it does exactly what it says on the tin. This operator inverts the result of the match, meaning you can specify a rule by what it should not match. For example the rule
    ```
-   rule := 'The banned word is ' !'Macbeth'
+   rule := 'The banned word is ' !'Macbeth' '[a-zA-Z]+'
    ```
    This will match the phrase "The banned word is X" for any value of X, except when X is 'Macbeth'
 - The `&` operator is called the "*postitive lookahead*" operator, this operator will change a match so that it will test for the match, and fail if it doesn't work, but it will not consume the input. This allows you to lookahead at what comes next in the string, but not to consume it.
