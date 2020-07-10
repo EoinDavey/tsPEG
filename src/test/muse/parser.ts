@@ -230,15 +230,15 @@ export class Parser {
                 let res: Nullable<Melody> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`melody`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:melody)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && this.matchKID($$dpth + 1, cr) !== null
                     && this.loop<Melody_$0>(() => this.matchMelody_$0($$dpth + 1, cr), true) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`start`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:start)`, $$dpth + 1, cr) !== null
                     && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, cr), true) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`end`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:end)`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.Melody, };
                 }
@@ -310,7 +310,7 @@ export class Parser {
                     && this.match_($$dpth + 1, cr) !== null
                     && this.matchKID($$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`=`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:=)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && this.matchExpr($$dpth + 1, cr) !== null
                 ) {
@@ -328,20 +328,20 @@ export class Parser {
                 let res: Nullable<ForStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`for`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:for)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && this.matchKID($$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`from`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:from)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && this.matchExpr($$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`to`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:to)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && this.matchExpr($$dpth + 1, cr) !== null
                     && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, cr), true) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`end`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:end)`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.ForStmt, };
                 }
@@ -357,11 +357,11 @@ export class Parser {
                 let res: Nullable<IfStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`if`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:if)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && this.matchExpr($$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`then`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:then)`, $$dpth + 1, cr) !== null
                     && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, cr), true) !== null
                     && this.matchIfStmt_$0($$dpth + 1, cr) !== null
                 ) {
@@ -385,7 +385,7 @@ export class Parser {
                 let res: Nullable<IfStmt_$0_1> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`end`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:end)`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.IfStmt_$0_1, };
                 }
@@ -401,10 +401,10 @@ export class Parser {
                 let res: Nullable<IfStmt_$0_2> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`else`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:else)`, $$dpth + 1, cr) !== null
                     && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, cr), true) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`end`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:end)`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.IfStmt_$0_2, };
                 }
@@ -437,8 +437,8 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
                     && this.matchExpr($$dpth + 1, cr) !== null
-                    && this.loop<string>(() => this.regexAccept(String.raw` `, $$dpth + 1, cr), true) !== null
-                    && this.negate(() => this.regexAccept(String.raw`\n`, $$dpth + 1, cr)) !== null
+                    && this.loop<string>(() => this.regexAccept(String.raw`(?: )`, $$dpth + 1, cr), true) !== null
+                    && this.negate(() => this.regexAccept(String.raw`(?:\n)`, $$dpth + 1, cr)) !== null
                 ) {
                     res = {kind: ASTKinds.FuncExpr_$0, };
                 }
@@ -474,7 +474,7 @@ export class Parser {
                 let res: Nullable<Eq_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`==`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:==)`, $$dpth + 1, cr) !== null
                     && this.matchComp($$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.Eq_$0, };
@@ -612,10 +612,10 @@ export class Parser {
                 }
                 let res: Nullable<Atom_4> = null;
                 if (true
-                    && this.regexAccept(String.raw`\(`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
                     && this.matchFuncExpr($$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`\)`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.Atom_4, };
                 }
@@ -629,10 +629,10 @@ export class Parser {
         ]);
     }
     public matchPlusMinus_1($$dpth: number, cr?: ContextRecorder): Nullable<PlusMinus_1> {
-        return this.regexAccept(String.raw`\+`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:\+)`, $$dpth + 1, cr);
     }
     public matchPlusMinus_2($$dpth: number, cr?: ContextRecorder): Nullable<PlusMinus_2> {
-        return this.regexAccept(String.raw`-`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:-)`, $$dpth + 1, cr);
     }
     public matchMulDiv($$dpth: number, cr?: ContextRecorder): Nullable<MulDiv> {
         return this.choice<MulDiv>([
@@ -642,13 +642,13 @@ export class Parser {
         ]);
     }
     public matchMulDiv_1($$dpth: number, cr?: ContextRecorder): Nullable<MulDiv_1> {
-        return this.regexAccept(String.raw`\*`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:\*)`, $$dpth + 1, cr);
     }
     public matchMulDiv_2($$dpth: number, cr?: ContextRecorder): Nullable<MulDiv_2> {
-        return this.regexAccept(String.raw`\/`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:\/)`, $$dpth + 1, cr);
     }
     public matchMulDiv_3($$dpth: number, cr?: ContextRecorder): Nullable<MulDiv_3> {
-        return this.regexAccept(String.raw`%`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:%)`, $$dpth + 1, cr);
     }
     public matchCompare($$dpth: number, cr?: ContextRecorder): Nullable<Compare> {
         return this.choice<Compare>([
@@ -659,22 +659,22 @@ export class Parser {
         ]);
     }
     public matchCompare_1($$dpth: number, cr?: ContextRecorder): Nullable<Compare_1> {
-        return this.regexAccept(String.raw`<=`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:<=)`, $$dpth + 1, cr);
     }
     public matchCompare_2($$dpth: number, cr?: ContextRecorder): Nullable<Compare_2> {
-        return this.regexAccept(String.raw`>=`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:>=)`, $$dpth + 1, cr);
     }
     public matchCompare_3($$dpth: number, cr?: ContextRecorder): Nullable<Compare_3> {
-        return this.regexAccept(String.raw`<`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:<)`, $$dpth + 1, cr);
     }
     public matchCompare_4($$dpth: number, cr?: ContextRecorder): Nullable<Compare_4> {
-        return this.regexAccept(String.raw`>`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:>)`, $$dpth + 1, cr);
     }
     public matchNoteLit($$dpth: number, cr?: ContextRecorder): Nullable<NoteLit> {
-        return this.regexAccept(String.raw`[A-G][#b]?\d`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:[A-G][#b]?\d)`, $$dpth + 1, cr);
     }
     public matchINT($$dpth: number, cr?: ContextRecorder): Nullable<INT> {
-        return this.regexAccept(String.raw`[0-9]+`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:[0-9]+)`, $$dpth + 1, cr);
     }
     public matchKeyword($$dpth: number, cr?: ContextRecorder): Nullable<Keyword> {
         return this.choice<Keyword>([
@@ -687,22 +687,22 @@ export class Parser {
         ]);
     }
     public matchKeyword_1($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_1> {
-        return this.regexAccept(String.raw`start`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:start)`, $$dpth + 1, cr);
     }
     public matchKeyword_2($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_2> {
-        return this.regexAccept(String.raw`end`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:end)`, $$dpth + 1, cr);
     }
     public matchKeyword_3($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_3> {
-        return this.regexAccept(String.raw`for`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:for)`, $$dpth + 1, cr);
     }
     public matchKeyword_4($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_4> {
-        return this.regexAccept(String.raw`else`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:else)`, $$dpth + 1, cr);
     }
     public matchKeyword_5($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_5> {
-        return this.regexAccept(String.raw`if`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:if)`, $$dpth + 1, cr);
     }
     public matchKeyword_6($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_6> {
-        return this.regexAccept(String.raw`then`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:then)`, $$dpth + 1, cr);
     }
     public matchFuncs($$dpth: number, cr?: ContextRecorder): Nullable<Funcs> {
         return this.choice<Funcs>([
@@ -711,10 +711,10 @@ export class Parser {
         ]);
     }
     public matchFuncs_1($$dpth: number, cr?: ContextRecorder): Nullable<Funcs_1> {
-        return this.regexAccept(String.raw`play`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:play)`, $$dpth + 1, cr);
     }
     public matchFuncs_2($$dpth: number, cr?: ContextRecorder): Nullable<Funcs_2> {
-        return this.regexAccept(String.raw`wait`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:wait)`, $$dpth + 1, cr);
     }
     public matchKID($$dpth: number, cr?: ContextRecorder): Nullable<KID> {
         return this.runner<KID>($$dpth,
@@ -733,10 +733,10 @@ export class Parser {
             }, cr)();
     }
     public matchID($$dpth: number, cr?: ContextRecorder): Nullable<ID> {
-        return this.regexAccept(String.raw`[a-zA-Z_]+`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:[a-zA-Z_]+)`, $$dpth + 1, cr);
     }
     public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
-        return this.loop<string>(() => this.regexAccept(String.raw`\s`, $$dpth + 1, cr), true);
+        return this.loop<string>(() => this.regexAccept(String.raw`(?:\s)`, $$dpth + 1, cr), true);
     }
     public test(): boolean {
         const mrk = this.mark();

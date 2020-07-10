@@ -99,13 +99,16 @@ export class Generator {
         if (at.kind === ASTKinds.ATOM_2) {
             // Regex match
             const mtch = at.match;
+            const reg = "(?:" + mtch.val + ")";
             try {
-                // Ensure the regex is valid
-                const _  = new RegExp(mtch.val);
+                // Ensure the original regex is valid
+                let _ = new RegExp(mtch.val);
+                // Ensure the RegExp wrapped in brackets is valid
+                _  = new RegExp(reg);
             } catch (err) {
                 throw new Error(`Couldnt' compile regex ${mtch.val} at line ${mtch.start.line}:${mtch.start.offset} : ${err}`);
             }
-            return `this.regexAccept(String.raw\`${mtch.val}\`, $$dpth + 1, cr)`;
+            return `this.regexAccept(String.raw\`${reg}\`, $$dpth + 1, cr)`;
         }
         const subname = this.subRules.get(at);
         if (subname) {

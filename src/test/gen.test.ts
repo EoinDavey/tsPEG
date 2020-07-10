@@ -148,17 +148,17 @@ test("match type/rule test", () => {
         {
             match: "'regex'",
             expType: "string",
-            expRule: "this.regexAccept(String.raw`regex`, $$dpth + 1, cr)"
+            expRule: "this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, cr)"
         },
         {
             match: "'regex'+",
             expType: "string[]",
-            expRule: "this.loop<string>(() => this.regexAccept(String.raw`regex`, $$dpth + 1, cr), false)"
+            expRule: "this.loop<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, cr), false)"
         },
         {
             match: "&'regex'",
             expType: "string",
-            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw`regex`, $$dpth + 1, cr))"
+            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, cr))"
         },
         {
             match: "@",
