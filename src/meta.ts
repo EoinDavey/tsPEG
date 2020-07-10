@@ -569,7 +569,9 @@ export class Parser {
                     } else {
                         log("$$StrMatch");
                     }
-                    log(match);
+                    // We substring from 3 to len - 1 to strip off the
+                    // non-capture group syntax added as a WebKit workaround
+                    log(match.substring(3, match.length - 1));
                 }
                 const reg = new RegExp(match, "y");
                 reg.lastIndex = this.mark().overallPos;
