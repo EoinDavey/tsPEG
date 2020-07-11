@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.2 - 2020/07/11
+
+### Fixed
+
+- Add workaround for Safari/iOS/WebKit issues. See https://bugs.webkit.org/show_bug.cgi?id=214181
+  for details on bug. 
+
 ## 1.3.1 - 2020/04/13
 
 ### Fixed
