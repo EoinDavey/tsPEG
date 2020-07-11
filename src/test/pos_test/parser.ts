@@ -59,9 +59,9 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
                     && (strt = this.mark()) !== null
-                    && this.regexAccept(String.raw`\(`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
                     && ((left = this.matchEXPR($$dpth + 1, cr)) || true)
-                    && this.regexAccept(String.raw`\)`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
                     && (end = this.mark()) !== null
                     && ((right = this.matchEXPR($$dpth + 1, cr)) || true)
                     && this.match_($$dpth + 1, cr) !== null
@@ -72,7 +72,7 @@ export class Parser {
             }, cr)();
     }
     public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
-        return this.regexAccept(String.raw`\s*`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, cr);
     }
     public test(): boolean {
         const mrk = this.mark();

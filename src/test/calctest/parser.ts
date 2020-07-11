@@ -155,7 +155,7 @@ export class Parser {
                 let sm: Nullable<FAC>;
                 let res: Nullable<SUM_$0> = null;
                 if (true
-                    && (op = this.regexAccept(String.raw`\+|-`, $$dpth + 1, cr)) !== null
+                    && (op = this.regexAccept(String.raw`(?:\+|-)`, $$dpth + 1, cr)) !== null
                     && (sm = this.matchFAC($$dpth + 1, cr)) !== null
                 ) {
                     res = {kind: ASTKinds.SUM_$0, op, sm};
@@ -191,7 +191,7 @@ export class Parser {
                 let sm: Nullable<ATOM>;
                 let res: Nullable<FAC_$0> = null;
                 if (true
-                    && (op = this.regexAccept(String.raw`\*|/`, $$dpth + 1, cr)) !== null
+                    && (op = this.regexAccept(String.raw`(?:\*|/)`, $$dpth + 1, cr)) !== null
                     && (sm = this.matchATOM($$dpth + 1, cr)) !== null
                 ) {
                     res = {kind: ASTKinds.FAC_$0, op, sm};
@@ -233,9 +233,9 @@ export class Parser {
                 let res: Nullable<ATOM_2> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`\(`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
                     && (val = this.matchSUM($$dpth + 1, cr)) !== null
-                    && this.regexAccept(String.raw`\)`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                 ) {
                     res = new ATOM_2(val);
@@ -252,7 +252,7 @@ export class Parser {
                 let val: Nullable<string>;
                 let res: Nullable<INT> = null;
                 if (true
-                    && (val = this.regexAccept(String.raw`[0-9]+`, $$dpth + 1, cr)) !== null
+                    && (val = this.regexAccept(String.raw`(?:[0-9]+)`, $$dpth + 1, cr)) !== null
                 ) {
                     res = new INT(val);
                 }
@@ -260,7 +260,7 @@ export class Parser {
             }, cr)();
     }
     public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
-        return this.regexAccept(String.raw`\s*`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, cr);
     }
     public test(): boolean {
         const mrk = this.mark();

@@ -195,9 +195,9 @@ export class Parser {
                 let content: Nullable<string>;
                 let res: Nullable<HDR> = null;
                 if (true
-                    && this.regexAccept(String.raw`---`, $$dpth + 1, cr) !== null
-                    && (content = this.regexAccept(String.raw`((?!---)(.|\n))*`, $$dpth + 1, cr)) !== null
-                    && this.regexAccept(String.raw`---`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:---)`, $$dpth + 1, cr) !== null
+                    && (content = this.regexAccept(String.raw`(?:((?!---)(.|\n))*)`, $$dpth + 1, cr)) !== null
+                    && this.regexAccept(String.raw`(?:---)`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.HDR, content};
                 }
@@ -217,7 +217,7 @@ export class Parser {
                     && this.match_($$dpth + 1, cr) !== null
                     && (name = this.matchNAME($$dpth + 1, cr)) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`:=`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?::=)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && (rule = this.matchRULE($$dpth + 1, cr)) !== null
                     && this.match_($$dpth + 1, cr) !== null
@@ -255,7 +255,7 @@ export class Parser {
                 let res: Nullable<RULE_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`\|`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\|)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && (alt = this.matchALT($$dpth + 1, cr)) !== null
                 ) {
@@ -312,7 +312,7 @@ export class Parser {
                 if (true
                     && (name = this.matchNAME($$dpth + 1, cr)) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`=`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:=)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.MATCHSPEC_$0, name};
@@ -341,7 +341,7 @@ export class Parser {
                 let op: Nullable<string>;
                 let res: Nullable<SPECIAL> = null;
                 if (true
-                    && (op = this.regexAccept(String.raw`@`, $$dpth + 1, cr)) !== null
+                    && (op = this.regexAccept(String.raw`(?:@)`, $$dpth + 1, cr)) !== null
                 ) {
                     res = {kind: ASTKinds.SPECIAL, op};
                 }
@@ -359,7 +359,7 @@ export class Parser {
                 let res: Nullable<POSTOP> = null;
                 if (true
                     && (pre = this.matchPREOP($$dpth + 1, cr)) !== null
-                    && ((op = this.regexAccept(String.raw`\+|\*|\?`, $$dpth + 1, cr)) || true)
+                    && ((op = this.regexAccept(String.raw`(?:\+|\*|\?)`, $$dpth + 1, cr)) || true)
                 ) {
                     res = new POSTOP(pre, op);
                 }
@@ -376,7 +376,7 @@ export class Parser {
                 let at: Nullable<ATOM>;
                 let res: Nullable<PREOP> = null;
                 if (true
-                    && ((op = this.regexAccept(String.raw`\&|!`, $$dpth + 1, cr)) || true)
+                    && ((op = this.regexAccept(String.raw`(?:\&|!)`, $$dpth + 1, cr)) || true)
                     && (at = this.matchATOM($$dpth + 1, cr)) !== null
                 ) {
                     res = {kind: ASTKinds.PREOP, op, at};
@@ -401,7 +401,7 @@ export class Parser {
                 let res: Nullable<ATOM_1> = null;
                 if (true
                     && (name = this.matchNAME($$dpth + 1, cr)) !== null
-                    && this.negate(() => this.regexAccept(String.raw`\s*:=`, $$dpth + 1, cr)) !== null
+                    && this.negate(() => this.regexAccept(String.raw`(?:\s*:=)`, $$dpth + 1, cr)) !== null
                 ) {
                     res = {kind: ASTKinds.ATOM_1, name};
                 }
@@ -433,11 +433,11 @@ export class Parser {
                 let sub: Nullable<RULE>;
                 let res: Nullable<ATOM_3> = null;
                 if (true
-                    && this.regexAccept(String.raw`{`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:{)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
                     && (sub = this.matchRULE($$dpth + 1, cr)) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`}`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:})`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.ATOM_3, sub};
                 }
@@ -456,16 +456,16 @@ export class Parser {
                 let res: Nullable<ATTR> = null;
                 if (true
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`\.`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\.)`, $$dpth + 1, cr) !== null
                     && (name = this.matchNAME($$dpth + 1, cr)) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`=`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:=)`, $$dpth + 1, cr) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && (type = this.regexAccept(String.raw`[^\s\{]+`, $$dpth + 1, cr)) !== null
+                    && (type = this.regexAccept(String.raw`(?:[^\s\{]+)`, $$dpth + 1, cr)) !== null
                     && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`\{`, $$dpth + 1, cr) !== null
-                    && (action = this.regexAccept(String.raw`([^\{\}\\]|(\\.))*`, $$dpth + 1, cr)) !== null
-                    && this.regexAccept(String.raw`\}`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\{)`, $$dpth + 1, cr) !== null
+                    && (action = this.regexAccept(String.raw`(?:([^\{\}\\]|(\\.))*)`, $$dpth + 1, cr)) !== null
+                    && this.regexAccept(String.raw`(?:\})`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.ATTR, name, type, action};
                 }
@@ -473,7 +473,7 @@ export class Parser {
             }, cr)();
     }
     public matchNAME($$dpth: number, cr?: ContextRecorder): Nullable<NAME> {
-        return this.regexAccept(String.raw`[a-zA-Z_]+`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:[a-zA-Z_]+)`, $$dpth + 1, cr);
     }
     public matchSTRLIT($$dpth: number, cr?: ContextRecorder): Nullable<STRLIT> {
         return this.runner<STRLIT>($$dpth,
@@ -486,9 +486,9 @@ export class Parser {
                 let res: Nullable<STRLIT> = null;
                 if (true
                     && (start = this.mark()) !== null
-                    && this.regexAccept(String.raw`\'`, $$dpth + 1, cr) !== null
-                    && (val = this.regexAccept(String.raw`([^\'\\]|(\\.))*`, $$dpth + 1, cr)) !== null
-                    && this.regexAccept(String.raw`\'`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, cr) !== null
+                    && (val = this.regexAccept(String.raw`(?:([^\'\\]|(\\.))*)`, $$dpth + 1, cr)) !== null
+                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, cr) !== null
                 ) {
                     res = {kind: ASTKinds.STRLIT, start, val};
                 }
@@ -496,7 +496,7 @@ export class Parser {
             }, cr)();
     }
     public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
-        return this.regexAccept(String.raw`\s*`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, cr);
     }
     public test(): boolean {
         const mrk = this.mark();
@@ -569,7 +569,9 @@ export class Parser {
                     } else {
                         log("$$StrMatch");
                     }
-                    log(match);
+                    // We substring from 3 to len - 1 to strip off the
+                    // non-capture group syntax added as a WebKit workaround
+                    log(match.substring(3, match.length - 1));
                 }
                 const reg = new RegExp(match, "y");
                 reg.lastIndex = this.mark().overallPos;
@@ -586,7 +588,7 @@ export class Parser {
                     this.pos = {
                         overallPos: reg.lastIndex,
                         line: this.pos.line + lineJmp,
-                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind)
+                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
                     };
                     return res[0];
                 }
