@@ -2,8 +2,6 @@
 
 set -e
 
-tsc
-
 for dir in src/test/*; do
     if ! [[ -d $dir ]]; then
         continue

@@ -10,11 +10,13 @@
     },
     "main": "index.js",
     "scripts": {
-        "build": "./build.sh",
+        "gen-tests": "./gen-tests.sh",
+        "build": "tsc && npm run gen && tsc",
         "lint": "tslint --force",
-        "gen": "cp src/meta.ts /tmp/meta.ts && tspeg src/metagrammar.gram src/meta.ts",
+        "gen": "cp src/meta.ts /tmp/meta.ts && node ./tsbuild/cli.js src/metagrammar.peg src/meta.ts",
         "lint-all": "tslint --force \"src/**/*.ts\"",
-        "test": "jest && tslint --project . -c tslint.json"
+        "test": "./gen-tests.sh && jest && tslint --project . -c tslint.json",
+        "clean": "rm -rf tsbuild"
     },
     "license": "ISC",
     "devDependencies": {
