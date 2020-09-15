@@ -511,7 +511,8 @@ export class Parser {
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.matchGRAM(0, rec);
-        return new ParseResult(res, rec.getErr());
+        return new ParseResult(res,
+            rec.getErr() ?? new SyntaxErr(this.mark(), new Set(["$EOF"]), new Set([])));
     }
     private mark(): PosInfo {
         return this.pos;

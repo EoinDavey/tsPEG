@@ -338,7 +338,12 @@ export class Generator {
                 "this.reset(mrk);",
                 "const rec = new ErrorTracker();",
                 `this.match${S}(0, rec);`,
-                "return new ParseResult(res, rec.getErr());",
+                "return new ParseResult(res,",
+                [
+                    // If no parser error, but not finished, then we must have not consumed all input.
+                    // In this case return special error rule $EOF
+                    "rec.getErr() ?? new SyntaxErr(this.mark(), new Set([\"$EOF\"]), new Set([])));",
+                ],
             ],
             "}",
         ];

@@ -1,0 +1,6 @@
+---
+// This grammar matches balanced parentheses
+// Allowing for whitespace
+---
+
+RULE := 'abcde'

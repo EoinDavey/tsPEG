@@ -4,8 +4,7 @@
 * // This grammar matches balanced parentheses
 * // Allowing for whitespace
 * ---
-* EXPR := _ strt=@ '\(' left=EXPR? '\)' end=@ right=EXPR? _
-* _ := '\s*'
+* RULE := 'abcde'
 */
 
 // This grammar matches balanced parentheses
@@ -20,17 +19,9 @@ interface ASTNodeIntf {
     kind: ASTKinds;
 }
 export enum ASTKinds {
-    EXPR,
-    _,
+    RULE,
 }
-export interface EXPR {
-    kind: ASTKinds.EXPR;
-    strt: PosInfo;
-    left: Nullable<EXPR>;
-    end: PosInfo;
-    right: Nullable<EXPR>;
-}
-export type _ = string;
+export type RULE = string;
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;
@@ -45,51 +36,25 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    public matchEXPR($$dpth: number, cr?: ContextRecorder): Nullable<EXPR> {
-        return this.runner<EXPR>($$dpth,
-            (log) => {
-                if (log) {
-                    log("EXPR");
-                }
-                let strt: Nullable<PosInfo>;
-                let left: Nullable<Nullable<EXPR>>;
-                let end: Nullable<PosInfo>;
-                let right: Nullable<Nullable<EXPR>>;
-                let res: Nullable<EXPR> = null;
-                if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (strt = this.mark()) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
-                    && ((left = this.matchEXPR($$dpth + 1, cr)) || true)
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
-                    && (end = this.mark()) !== null
-                    && ((right = this.matchEXPR($$dpth + 1, cr)) || true)
-                    && this.match_($$dpth + 1, cr) !== null
-                ) {
-                    res = {kind: ASTKinds.EXPR, strt, left, end, right};
-                }
-                return res;
-            }, cr)();
-    }
-    public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
-        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, cr);
+    public matchRULE($$dpth: number, cr?: ContextRecorder): Nullable<RULE> {
+        return this.regexAccept(String.raw`(?:abcde)`, $$dpth + 1, cr);
     }
     public test(): boolean {
         const mrk = this.mark();
-        const res = this.matchEXPR(0);
+        const res = this.matchRULE(0);
         const ans = res !== null && this.finished();
         this.reset(mrk);
         return ans;
     }
     public parse(): ParseResult {
         const mrk = this.mark();
-        const res = this.matchEXPR(0);
+        const res = this.matchRULE(0);
         if (res && this.finished()) {
             return new ParseResult(res, null);
         }
         this.reset(mrk);
         const rec = new ErrorTracker();
-        this.matchEXPR(0, rec);
+        this.matchRULE(0, rec);
         return new ParseResult(res,
             rec.getErr() ?? new SyntaxErr(this.mark(), new Set(["$EOF"]), new Set([])));
     }
@@ -193,9 +158,9 @@ export function parse(s: string): ParseResult {
     return p.parse();
 }
 export class ParseResult {
-    public ast: Nullable<EXPR>;
+    public ast: Nullable<RULE>;
     public err: Nullable<SyntaxErr>;
-    constructor(ast: Nullable<EXPR>, err: Nullable<SyntaxErr>) {
+    constructor(ast: Nullable<RULE>, err: Nullable<SyntaxErr>) {
         this.ast = ast;
         this.err = err;
     }
