@@ -49,6 +49,21 @@ test("Parser Test", () => {
             rule_three := rule_one | capture=rule_two`
         },
         {
+            inp: `// Comment here
+            // Comment here
+            rule_one := named=rule_ref
+            // Comment here
+                      .property = type { return function(); } // Comment here too
+            // Comment here
+                      | unnamed
+            // Comment here
+                      .prop = boolean { return true; }
+            // Comment here
+            rule_two := 'regex1'
+            // Comment here
+            rule_three := rule_one | capture=rule_two`
+        },
+        {
             inp: "rule :=",
             expmatches: ["[a-zA-Z_]+", "\\&|!", "\\'", "{", "@"]
         },
