@@ -29,8 +29,8 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    public matchRULE($$dpth: number, cr?: ContextRecorder): Nullable<RULE> {
-        return this.regexAccept(String.raw`(?:abcde)`, $$dpth + 1, cr);
+    public matchRULE($$dpth: number, $$cr?: ContextRecorder): Nullable<RULE> {
+        return this.regexAccept(String.raw`(?:abcde)`, $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();

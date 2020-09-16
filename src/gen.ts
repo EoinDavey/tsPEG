@@ -15,6 +15,12 @@ function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
 }
 
+// addScope adds a prefix that uses illegal characters to
+// ensure namespace separation wrt generated vs user supplied IDs
+function addScope(id: string): string {
+    return "$scope$" + id;
+}
+
 export class Generator {
     private subRules: Map<ATOM, string> = new Map();
 
@@ -94,7 +100,7 @@ export class Generator {
 
     public atomRule(at: ATOM): string {
         if (at.kind === ASTKinds.ATOM_1) {
-            return `this.match${at.name}($$dpth + 1, cr)`;
+            return `this.match${at.name}($$dpth + 1, $$cr)`;
         }
         if (at.kind === ASTKinds.ATOM_2) {
             // Regex match
@@ -108,11 +114,11 @@ export class Generator {
             } catch (err) {
                 throw new Error(`Couldnt' compile regex ${mtch.val} at line ${mtch.start.line}:${mtch.start.offset} : ${err}`);
             }
-            return `this.regexAccept(String.raw\`${reg}\`, $$dpth + 1, cr)`;
+            return `this.regexAccept(String.raw\`${reg}\`, $$dpth + 1, $$cr)`;
         }
         const subname = this.subRules.get(at);
         if (subname) {
-            return `this.match${subname}($$dpth + 1, cr)`;
+            return `this.match${subname}($$dpth + 1, $$cr)`;
         }
         return "ERR";
     }
@@ -219,9 +225,9 @@ export class Generator {
             if (match.named) {
                 // Optional match
                 if (expr.kind !== ASTKinds.SPECIAL && expr.optional) {
-                    checks.push(`&& ((${match.named.name} = ${rn}) || true)`);
+                    checks.push(`&& ((${addScope(match.named.name)} = ${rn}) || true)`);
                 } else {
-                    checks.push(`&& (${match.named.name} = ${rn}) !== null`);
+                    checks.push(`&& (${addScope(match.named.name)} = ${rn}) !== null`);
                 }
             } else {
                 // Optional match
@@ -236,7 +242,7 @@ export class Generator {
     }
 
     public writeRuleAliasFn(name: string, expr: MATCH): Block {
-        return [`public match${name}($$dpth: number, cr?: ContextRecorder): Nullable<${name}> {`,
+        return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
             [
                 `return ${this.matchRule(expr)};`,
             ],
@@ -259,7 +265,7 @@ export class Generator {
         if (namedTypes.length === 0 && alt.matches.length === 1) {
             return this.writeRuleAliasFn(name, alt.matches[0].rule);
         }
-        return [`public match${name}($$dpth: number, cr?: ContextRecorder): Nullable<${name}> {`,
+        return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
             [
                 `return this.runner<${name}>($$dpth,`,
                 [
@@ -270,20 +276,20 @@ export class Generator {
                             `log("${name}");`,
                         ],
                         "}",
-                        ...namedTypes.map((x) => `let ${x[0]}: Nullable<${x[1]}>;`),
-                        `let res: Nullable<${name}> = null;`,
+                        ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
+                        `let $$res: Nullable<${name}> = null;`,
                         "if (true",
                         this.writeParseIfStmt(alt),
                         ") {",
                         [
                             hasAttrs(alt)
-                            ? `res = new ${name}(${namedTypes.map((x) => x[0]).join(", ")});`
-                            : `res = {kind: ASTKinds.${name}, ${namedTypes.map((x) => x[0]).join(", ")}};`,
+                            ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
+                            : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
                         ],
                         "}",
-                        "return res;",
+                        "return $$res;",
                     ],
-                    "}, cr)();",
+                    "}, $$cr)();",
                 ],
             ],
             "}",
@@ -300,10 +306,10 @@ export class Generator {
             choices.push(...this.writeChoiceParseFn(md, ruledef.rule[i]));
         }
         const union = ruledef.rule.length <= 1 ? []
-            : [`public match${nm}($$dpth: number, cr?: ContextRecorder): Nullable<${nm}> {`,
+            : [`public match${nm}($$dpth: number, $$cr?: ContextRecorder): Nullable<${nm}> {`,
                 [
                     `return this.choice<${nm}>([`,
-                    nms.map((x) => `() => this.match${x}($$dpth + 1, cr),`),
+                    nms.map((x) => `() => this.match${x}($$dpth + 1, $$cr),`),
                     `]);`,
                 ],
                 `}`];

@@ -143,42 +143,42 @@ test("match type/rule test", () => {
         {
             match: "ruleReference",
             expType: "ruleReference",
-            expRule: "this.matchruleReference($$dpth + 1, cr)"
+            expRule: "this.matchruleReference($$dpth + 1, $$cr)"
         },
         {
             match: "ruleReference*",
             expType: "ruleReference[]",
-            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, cr), true)"
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), true)"
         },
         {
             match: "ruleReference+",
             expType: "ruleReference[]",
-            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, cr), false)"
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), false)"
         },
         {
             match: "ruleReference?",
             expType: "Nullable<ruleReference>",
-            expRule: "this.matchruleReference($$dpth + 1, cr)"
+            expRule: "this.matchruleReference($$dpth + 1, $$cr)"
         },
         {
             match: "!ruleReference",
             expType: "boolean",
-            expRule: "this.negate(() => this.matchruleReference($$dpth + 1, cr))"
+            expRule: "this.negate(() => this.matchruleReference($$dpth + 1, $$cr))"
         },
         {
             match: "'regex'",
             expType: "string",
-            expRule: "this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, cr)"
+            expRule: "this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr)"
         },
         {
             match: "'regex'+",
             expType: "string[]",
-            expRule: "this.loop<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, cr), false)"
+            expRule: "this.loop<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr), false)"
         },
         {
             match: "&'regex'",
             expType: "string",
-            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, cr))"
+            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr))"
         },
         {
             match: "@",
@@ -204,7 +204,7 @@ test("match type/rule test", () => {
 test("subrule type/rule test", () => {
     const inp = "rule := 'has' { subrule }";
     const expectedType = "rule_$0";
-    const expectedRule = "this.matchrule_$0($$dpth + 1, cr)";
+    const expectedRule = "this.matchrule_$0($$dpth + 1, $$cr)";
 
     const res = parse(inp);
     expect(res.err).toBeNull();

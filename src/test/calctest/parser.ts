@@ -127,140 +127,140 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    public matchSUM($$dpth: number, cr?: ContextRecorder): Nullable<SUM> {
+    public matchSUM($$dpth: number, $$cr?: ContextRecorder): Nullable<SUM> {
         return this.runner<SUM>($$dpth,
             (log) => {
                 if (log) {
                     log("SUM");
                 }
-                let head: Nullable<FAC>;
-                let tail: Nullable<SUM_$0[]>;
-                let res: Nullable<SUM> = null;
+                let $scope$head: Nullable<FAC>;
+                let $scope$tail: Nullable<SUM_$0[]>;
+                let $$res: Nullable<SUM> = null;
                 if (true
-                    && (head = this.matchFAC($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<SUM_$0>(() => this.matchSUM_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchFAC($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<SUM_$0>(() => this.matchSUM_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = new SUM(head, tail);
+                    $$res = new SUM($scope$head, $scope$tail);
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchSUM_$0($$dpth: number, cr?: ContextRecorder): Nullable<SUM_$0> {
+    public matchSUM_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<SUM_$0> {
         return this.runner<SUM_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("SUM_$0");
                 }
-                let op: Nullable<string>;
-                let sm: Nullable<FAC>;
-                let res: Nullable<SUM_$0> = null;
+                let $scope$op: Nullable<string>;
+                let $scope$sm: Nullable<FAC>;
+                let $$res: Nullable<SUM_$0> = null;
                 if (true
-                    && (op = this.regexAccept(String.raw`(?:\+|-)`, $$dpth + 1, cr)) !== null
-                    && (sm = this.matchFAC($$dpth + 1, cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw`(?:\+|-)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$sm = this.matchFAC($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.SUM_$0, op, sm};
+                    $$res = {kind: ASTKinds.SUM_$0, op: $scope$op, sm: $scope$sm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchFAC($$dpth: number, cr?: ContextRecorder): Nullable<FAC> {
+    public matchFAC($$dpth: number, $$cr?: ContextRecorder): Nullable<FAC> {
         return this.runner<FAC>($$dpth,
             (log) => {
                 if (log) {
                     log("FAC");
                 }
-                let head: Nullable<ATOM>;
-                let tail: Nullable<FAC_$0[]>;
-                let res: Nullable<FAC> = null;
+                let $scope$head: Nullable<ATOM>;
+                let $scope$tail: Nullable<FAC_$0[]>;
+                let $$res: Nullable<FAC> = null;
                 if (true
-                    && (head = this.matchATOM($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<FAC_$0>(() => this.matchFAC_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchATOM($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<FAC_$0>(() => this.matchFAC_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = new FAC(head, tail);
+                    $$res = new FAC($scope$head, $scope$tail);
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchFAC_$0($$dpth: number, cr?: ContextRecorder): Nullable<FAC_$0> {
+    public matchFAC_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<FAC_$0> {
         return this.runner<FAC_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("FAC_$0");
                 }
-                let op: Nullable<string>;
-                let sm: Nullable<ATOM>;
-                let res: Nullable<FAC_$0> = null;
+                let $scope$op: Nullable<string>;
+                let $scope$sm: Nullable<ATOM>;
+                let $$res: Nullable<FAC_$0> = null;
                 if (true
-                    && (op = this.regexAccept(String.raw`(?:\*|/)`, $$dpth + 1, cr)) !== null
-                    && (sm = this.matchATOM($$dpth + 1, cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw`(?:\*|/)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$sm = this.matchATOM($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.FAC_$0, op, sm};
+                    $$res = {kind: ASTKinds.FAC_$0, op: $scope$op, sm: $scope$sm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchATOM($$dpth: number, cr?: ContextRecorder): Nullable<ATOM> {
+    public matchATOM($$dpth: number, $$cr?: ContextRecorder): Nullable<ATOM> {
         return this.choice<ATOM>([
-            () => this.matchATOM_1($$dpth + 1, cr),
-            () => this.matchATOM_2($$dpth + 1, cr),
+            () => this.matchATOM_1($$dpth + 1, $$cr),
+            () => this.matchATOM_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchATOM_1($$dpth: number, cr?: ContextRecorder): Nullable<ATOM_1> {
+    public matchATOM_1($$dpth: number, $$cr?: ContextRecorder): Nullable<ATOM_1> {
         return this.runner<ATOM_1>($$dpth,
             (log) => {
                 if (log) {
                     log("ATOM_1");
                 }
-                let val: Nullable<INT>;
-                let res: Nullable<ATOM_1> = null;
+                let $scope$val: Nullable<INT>;
+                let $$res: Nullable<ATOM_1> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (val = this.matchINT($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.matchINT($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
                 ) {
-                    res = new ATOM_1(val);
+                    $$res = new ATOM_1($scope$val);
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchATOM_2($$dpth: number, cr?: ContextRecorder): Nullable<ATOM_2> {
+    public matchATOM_2($$dpth: number, $$cr?: ContextRecorder): Nullable<ATOM_2> {
         return this.runner<ATOM_2>($$dpth,
             (log) => {
                 if (log) {
                     log("ATOM_2");
                 }
-                let val: Nullable<SUM>;
-                let res: Nullable<ATOM_2> = null;
+                let $scope$val: Nullable<SUM>;
+                let $$res: Nullable<ATOM_2> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
-                    && (val = this.matchSUM($$dpth + 1, cr)) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
-                    && this.match_($$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.matchSUM($$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
                 ) {
-                    res = new ATOM_2(val);
+                    $$res = new ATOM_2($scope$val);
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchINT($$dpth: number, cr?: ContextRecorder): Nullable<INT> {
+    public matchINT($$dpth: number, $$cr?: ContextRecorder): Nullable<INT> {
         return this.runner<INT>($$dpth,
             (log) => {
                 if (log) {
                     log("INT");
                 }
-                let val: Nullable<string>;
-                let res: Nullable<INT> = null;
+                let $scope$val: Nullable<string>;
+                let $$res: Nullable<INT> = null;
                 if (true
-                    && (val = this.regexAccept(String.raw`(?:[0-9]+)`, $$dpth + 1, cr)) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:[0-9]+)`, $$dpth + 1, $$cr)) !== null
                 ) {
-                    res = new INT(val);
+                    $$res = new INT($scope$val);
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
-        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, cr);
+    public match_($$dpth: number, $$cr?: ContextRecorder): Nullable<_> {
+        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();
