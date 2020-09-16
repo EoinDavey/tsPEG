@@ -19,7 +19,7 @@
 * ATTR      := _ '\.' name=NAME _ '=' _ type='[^\s\{]+' _ '\{'
 *     action='([^\{\}\\]|(\\.))*'
 * '\}'
-* NAME      := '[a-zA-Z_]+'
+* NAME      := '[a-zA-Z_][a-zA-Z0-9_]*'
 * STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
 * // Whitespace definition includes traditional whitespace
 * // and // comments.
@@ -470,7 +470,7 @@ export class Parser {
             }, cr)();
     }
     public matchNAME($$dpth: number, cr?: ContextRecorder): Nullable<NAME> {
-        return this.regexAccept(String.raw`(?:[a-zA-Z_]+)`, $$dpth + 1, cr);
+        return this.regexAccept(String.raw`(?:[a-zA-Z_][a-zA-Z0-9_]*)`, $$dpth + 1, cr);
     }
     public matchSTRLIT($$dpth: number, cr?: ContextRecorder): Nullable<STRLIT> {
         return this.runner<STRLIT>($$dpth,

@@ -33,6 +33,11 @@ test("Parser Test", () => {
             rule_three := rule_one | capture=rule_two`
         },
         {
+            inp: `rule1_:= named=rule_ref
+            rule1 := 'regex1'
+            rule3 := rule_one | capture=rule_two`
+        },
+        {
             inp: `---
             HEADER SECTION ANYTHING HERE
             ---
@@ -65,7 +70,7 @@ test("Parser Test", () => {
         },
         {
             inp: "rule :=",
-            expmatches: ["[a-zA-Z_]+", "\\&|!", "\\'", "{", "@"]
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@"]
         },
         {
             inp: "rule := 'unterminated",
@@ -73,11 +78,11 @@ test("Parser Test", () => {
         },
         {
             inp: "rule := 'unmatched-op' | ",
-            expmatches: ["[a-zA-Z_]+", "\\&|!", "\\'", "{", "@"]
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@"]
         },
         {
             inp: "rule := 'can\\'t repeat @ special rule' @*",
-            expmatches: ["[a-zA-Z_]+", "\\&|!", "\\'", "{", "@", "\\.", "\\|"]
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\.", "\\|"]
         }
     ];
     for(const tc of tcs) {

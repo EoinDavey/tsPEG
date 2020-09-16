@@ -1,0 +1,6 @@
+// Test for allowable id names
+
+lowercase := 'a'
+UPPERCASE := 'b'
+_start_hypen_ := 'c'
+numbers1ab234 := 'd'
