@@ -4,3 +4,9 @@ lowercase := 'a'
 UPPERCASE := 'b'
 _start_hypen_ := 'c'
 numbers1ab234 := 'd'
+
+// Check for namespace collision
+
+rule := rule=rule .a = number { return 0; }
+rule2 := res='a'
+rule3 := cr='b'

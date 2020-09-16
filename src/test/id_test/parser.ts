@@ -5,6 +5,10 @@
 * UPPERCASE := 'b'
 * _start_hypen_ := 'c'
 * numbers1ab234 := 'd'
+* // Check for namespace collision
+* rule := rule=rule .a = number { return 0; }
+* rule2 := res='a'
+* rule3 := cr='b'
 */
 type Nullable<T> = T | null;
 type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
@@ -19,11 +23,33 @@ export enum ASTKinds {
     UPPERCASE,
     _start_hypen_,
     numbers1ab234,
+    rule,
+    rule2,
+    rule3,
 }
 export type lowercase = string;
 export type UPPERCASE = string;
 export type _start_hypen_ = string;
 export type numbers1ab234 = string;
+export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public rule: rule;
+    public a: number;
+    constructor(rule: rule){
+        this.rule = rule;
+        this.a = (() => {
+        return 0;
+        })();
+    }
+}
+export interface rule2 {
+    kind: ASTKinds.rule2;
+    res: string;
+}
+export interface rule3 {
+    kind: ASTKinds.rule3;
+    cr: string;
+}
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;
@@ -38,17 +64,65 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    public matchlowercase($$dpth: number, cr?: ContextRecorder): Nullable<lowercase> {
-        return this.regexAccept(String.raw`(?:a)`, $$dpth + 1, cr);
+    public matchlowercase($$dpth: number, $$cr?: ContextRecorder): Nullable<lowercase> {
+        return this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr);
     }
-    public matchUPPERCASE($$dpth: number, cr?: ContextRecorder): Nullable<UPPERCASE> {
-        return this.regexAccept(String.raw`(?:b)`, $$dpth + 1, cr);
+    public matchUPPERCASE($$dpth: number, $$cr?: ContextRecorder): Nullable<UPPERCASE> {
+        return this.regexAccept(String.raw`(?:b)`, $$dpth + 1, $$cr);
     }
-    public match_start_hypen_($$dpth: number, cr?: ContextRecorder): Nullable<_start_hypen_> {
-        return this.regexAccept(String.raw`(?:c)`, $$dpth + 1, cr);
+    public match_start_hypen_($$dpth: number, $$cr?: ContextRecorder): Nullable<_start_hypen_> {
+        return this.regexAccept(String.raw`(?:c)`, $$dpth + 1, $$cr);
     }
-    public matchnumbers1ab234($$dpth: number, cr?: ContextRecorder): Nullable<numbers1ab234> {
-        return this.regexAccept(String.raw`(?:d)`, $$dpth + 1, cr);
+    public matchnumbers1ab234($$dpth: number, $$cr?: ContextRecorder): Nullable<numbers1ab234> {
+        return this.regexAccept(String.raw`(?:d)`, $$dpth + 1, $$cr);
+    }
+    public matchrule($$dpth: number, $$cr?: ContextRecorder): Nullable<rule> {
+        return this.runner<rule>($$dpth,
+            (log) => {
+                if (log) {
+                    log("rule");
+                }
+                let $scope$rule: Nullable<rule>;
+                let $$res: Nullable<rule> = null;
+                if (true
+                    && ($scope$rule = this.matchrule($$dpth + 1, $$cr)) !== null
+                ) {
+                    $$res = new rule($scope$rule);
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchrule2($$dpth: number, $$cr?: ContextRecorder): Nullable<rule2> {
+        return this.runner<rule2>($$dpth,
+            (log) => {
+                if (log) {
+                    log("rule2");
+                }
+                let $scope$res: Nullable<string>;
+                let $$res: Nullable<rule2> = null;
+                if (true
+                    && ($scope$res = this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr)) !== null
+                ) {
+                    $$res = {kind: ASTKinds.rule2, res: $scope$res};
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchrule3($$dpth: number, $$cr?: ContextRecorder): Nullable<rule3> {
+        return this.runner<rule3>($$dpth,
+            (log) => {
+                if (log) {
+                    log("rule3");
+                }
+                let $scope$cr: Nullable<string>;
+                let $$res: Nullable<rule3> = null;
+                if (true
+                    && ($scope$cr = this.regexAccept(String.raw`(?:b)`, $$dpth + 1, $$cr)) !== null
+                ) {
+                    $$res = {kind: ASTKinds.rule3, cr: $scope$cr};
+                }
+                return $$res;
+            }, $$cr)();
     }
     public test(): boolean {
         const mrk = this.mark();

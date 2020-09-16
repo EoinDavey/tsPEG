@@ -45,34 +45,34 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    public matchEXPR($$dpth: number, cr?: ContextRecorder): Nullable<EXPR> {
+    public matchEXPR($$dpth: number, $$cr?: ContextRecorder): Nullable<EXPR> {
         return this.runner<EXPR>($$dpth,
             (log) => {
                 if (log) {
                     log("EXPR");
                 }
-                let strt: Nullable<PosInfo>;
-                let left: Nullable<Nullable<EXPR>>;
-                let end: Nullable<PosInfo>;
-                let right: Nullable<Nullable<EXPR>>;
-                let res: Nullable<EXPR> = null;
+                let $scope$strt: Nullable<PosInfo>;
+                let $scope$left: Nullable<Nullable<EXPR>>;
+                let $scope$end: Nullable<PosInfo>;
+                let $scope$right: Nullable<Nullable<EXPR>>;
+                let $$res: Nullable<EXPR> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (strt = this.mark()) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
-                    && ((left = this.matchEXPR($$dpth + 1, cr)) || true)
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
-                    && (end = this.mark()) !== null
-                    && ((right = this.matchEXPR($$dpth + 1, cr)) || true)
-                    && this.match_($$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$strt = this.mark()) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && (($scope$left = this.matchEXPR($$dpth + 1, $$cr)) || true)
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && ($scope$end = this.mark()) !== null
+                    && (($scope$right = this.matchEXPR($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.EXPR, strt, left, end, right};
+                    $$res = {kind: ASTKinds.EXPR, strt: $scope$strt, left: $scope$left, end: $scope$end, right: $scope$right};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
-        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, cr);
+    public match_($$dpth: number, $$cr?: ContextRecorder): Nullable<_> {
+        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();

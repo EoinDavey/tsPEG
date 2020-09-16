@@ -448,1089 +448,1089 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    public matchProgram($$dpth: number, cr?: ContextRecorder): Nullable<Program> {
+    public matchProgram($$dpth: number, $$cr?: ContextRecorder): Nullable<Program> {
         return this.runner<Program>($$dpth,
             (log) => {
                 if (log) {
                     log("Program");
                 }
-                let stmts: Nullable<AsgnStmt[]>;
-                let res: Nullable<Program> = null;
+                let $scope$stmts: Nullable<AsgnStmt[]>;
+                let $$res: Nullable<Program> = null;
                 if (true
-                    && (stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, cr), true)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
+                    && ($scope$stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), true)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.Program, stmts};
+                    $$res = {kind: ASTKinds.Program, stmts: $scope$stmts};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchAsgnStmt($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt> {
+    public matchAsgnStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt> {
         return this.choice<AsgnStmt>([
-            () => this.matchAsgnStmt_1($$dpth + 1, cr),
-            () => this.matchAsgnStmt_2($$dpth + 1, cr),
-            () => this.matchAsgnStmt_3($$dpth + 1, cr),
-            () => this.matchAsgnStmt_4($$dpth + 1, cr),
-            () => this.matchAsgnStmt_5($$dpth + 1, cr),
-            () => this.matchAsgnStmt_6($$dpth + 1, cr),
-            () => this.matchAsgnStmt_7($$dpth + 1, cr),
-            () => this.matchAsgnStmt_8($$dpth + 1, cr),
-            () => this.matchAsgnStmt_9($$dpth + 1, cr),
-            () => this.matchAsgnStmt_10($$dpth + 1, cr),
-            () => this.matchAsgnStmt_11($$dpth + 1, cr),
-            () => this.matchAsgnStmt_12($$dpth + 1, cr),
+            () => this.matchAsgnStmt_1($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_2($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_3($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_4($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_5($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_6($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_7($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_8($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_9($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_10($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_11($$dpth + 1, $$cr),
+            () => this.matchAsgnStmt_12($$dpth + 1, $$cr),
         ]);
     }
-    public matchAsgnStmt_1($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_1> {
-        return this.matchIfStmt($$dpth + 1, cr);
+    public matchAsgnStmt_1($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_1> {
+        return this.matchIfStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_2($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_2> {
-        return this.matchBlockStmt($$dpth + 1, cr);
+    public matchAsgnStmt_2($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_2> {
+        return this.matchBlockStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_3($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_3> {
-        return this.matchNuairStmt($$dpth + 1, cr);
+    public matchAsgnStmt_3($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_3> {
+        return this.matchNuairStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_4($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_4> {
-        return this.matchLeStmt($$dpth + 1, cr);
+    public matchAsgnStmt_4($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_4> {
+        return this.matchLeStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_5($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_5> {
-        return this.matchCCStmt($$dpth + 1, cr);
+    public matchAsgnStmt_5($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_5> {
+        return this.matchCCStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_6($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_6> {
-        return this.matchBrisStmt($$dpth + 1, cr);
+    public matchAsgnStmt_6($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_6> {
+        return this.matchBrisStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_7($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_7> {
-        return this.matchCtlchStmt($$dpth + 1, cr);
+    public matchAsgnStmt_7($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_7> {
+        return this.matchCtlchStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_8($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_8> {
-        return this.matchGniomhStmt($$dpth + 1, cr);
+    public matchAsgnStmt_8($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_8> {
+        return this.matchGniomhStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_9($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_9> {
-        return this.matchToradhStmt($$dpth + 1, cr);
+    public matchAsgnStmt_9($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_9> {
+        return this.matchToradhStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_10($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_10> {
-        return this.matchAssgnStmt($$dpth + 1, cr);
+    public matchAsgnStmt_10($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_10> {
+        return this.matchAssgnStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_11($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_11> {
-        return this.matchDefnStmt($$dpth + 1, cr);
+    public matchAsgnStmt_11($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_11> {
+        return this.matchDefnStmt($$dpth + 1, $$cr);
     }
-    public matchAsgnStmt_12($$dpth: number, cr?: ContextRecorder): Nullable<AsgnStmt_12> {
-        return this.matchExpr($$dpth + 1, cr);
+    public matchAsgnStmt_12($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnStmt_12> {
+        return this.matchExpr($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt> {
+    public matchNonAsgnStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt> {
         return this.choice<NonAsgnStmt>([
-            () => this.matchNonAsgnStmt_1($$dpth + 1, cr),
-            () => this.matchNonAsgnStmt_2($$dpth + 1, cr),
-            () => this.matchNonAsgnStmt_3($$dpth + 1, cr),
-            () => this.matchNonAsgnStmt_4($$dpth + 1, cr),
-            () => this.matchNonAsgnStmt_5($$dpth + 1, cr),
-            () => this.matchNonAsgnStmt_6($$dpth + 1, cr),
-            () => this.matchNonAsgnStmt_7($$dpth + 1, cr),
-            () => this.matchNonAsgnStmt_8($$dpth + 1, cr),
-            () => this.matchNonAsgnStmt_9($$dpth + 1, cr),
+            () => this.matchNonAsgnStmt_1($$dpth + 1, $$cr),
+            () => this.matchNonAsgnStmt_2($$dpth + 1, $$cr),
+            () => this.matchNonAsgnStmt_3($$dpth + 1, $$cr),
+            () => this.matchNonAsgnStmt_4($$dpth + 1, $$cr),
+            () => this.matchNonAsgnStmt_5($$dpth + 1, $$cr),
+            () => this.matchNonAsgnStmt_6($$dpth + 1, $$cr),
+            () => this.matchNonAsgnStmt_7($$dpth + 1, $$cr),
+            () => this.matchNonAsgnStmt_8($$dpth + 1, $$cr),
+            () => this.matchNonAsgnStmt_9($$dpth + 1, $$cr),
         ]);
     }
-    public matchNonAsgnStmt_1($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_1> {
-        return this.matchIfStmt($$dpth + 1, cr);
+    public matchNonAsgnStmt_1($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_1> {
+        return this.matchIfStmt($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt_2($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_2> {
-        return this.matchNuairStmt($$dpth + 1, cr);
+    public matchNonAsgnStmt_2($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_2> {
+        return this.matchNuairStmt($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt_3($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_3> {
-        return this.matchLeStmt($$dpth + 1, cr);
+    public matchNonAsgnStmt_3($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_3> {
+        return this.matchLeStmt($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt_4($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_4> {
-        return this.matchCCStmt($$dpth + 1, cr);
+    public matchNonAsgnStmt_4($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_4> {
+        return this.matchCCStmt($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt_5($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_5> {
-        return this.matchBrisStmt($$dpth + 1, cr);
+    public matchNonAsgnStmt_5($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_5> {
+        return this.matchBrisStmt($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt_6($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_6> {
-        return this.matchToradhStmt($$dpth + 1, cr);
+    public matchNonAsgnStmt_6($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_6> {
+        return this.matchToradhStmt($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt_7($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_7> {
-        return this.matchBlockStmt($$dpth + 1, cr);
+    public matchNonAsgnStmt_7($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_7> {
+        return this.matchBlockStmt($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt_8($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_8> {
-        return this.matchAssgnStmt($$dpth + 1, cr);
+    public matchNonAsgnStmt_8($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_8> {
+        return this.matchAssgnStmt($$dpth + 1, $$cr);
     }
-    public matchNonAsgnStmt_9($$dpth: number, cr?: ContextRecorder): Nullable<NonAsgnStmt_9> {
-        return this.matchExpr($$dpth + 1, cr);
+    public matchNonAsgnStmt_9($$dpth: number, $$cr?: ContextRecorder): Nullable<NonAsgnStmt_9> {
+        return this.matchExpr($$dpth + 1, $$cr);
     }
-    public matchIfStmt($$dpth: number, cr?: ContextRecorder): Nullable<IfStmt> {
+    public matchIfStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt> {
         return this.runner<IfStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("IfStmt");
                 }
-                let expr: Nullable<Expr>;
-                let stmt: Nullable<NonAsgnStmt>;
-                let elsebranch: Nullable<Nullable<IfStmt_$0>>;
-                let res: Nullable<IfStmt> = null;
+                let $scope$expr: Nullable<Expr>;
+                let $scope$stmt: Nullable<NonAsgnStmt>;
+                let $scope$elsebranch: Nullable<Nullable<IfStmt_$0>>;
+                let $$res: Nullable<IfStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:m[áa])`, $$dpth + 1, cr) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && (expr = this.matchExpr($$dpth + 1, cr)) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && (stmt = this.matchNonAsgnStmt($$dpth + 1, cr)) !== null
-                    && ((elsebranch = this.matchIfStmt_$0($$dpth + 1, cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:m[áa])`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && ($scope$expr = this.matchExpr($$dpth + 1, $$cr)) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && ($scope$stmt = this.matchNonAsgnStmt($$dpth + 1, $$cr)) !== null
+                    && (($scope$elsebranch = this.matchIfStmt_$0($$dpth + 1, $$cr)) || true)
                 ) {
-                    res = {kind: ASTKinds.IfStmt, expr, stmt, elsebranch};
+                    $$res = {kind: ASTKinds.IfStmt, expr: $scope$expr, stmt: $scope$stmt, elsebranch: $scope$elsebranch};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchIfStmt_$0($$dpth: number, cr?: ContextRecorder): Nullable<IfStmt_$0> {
+    public matchIfStmt_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt_$0> {
         return this.runner<IfStmt_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("IfStmt_$0");
                 }
-                let stmt: Nullable<NonAsgnStmt>;
-                let res: Nullable<IfStmt_$0> = null;
+                let $scope$stmt: Nullable<NonAsgnStmt>;
+                let $$res: Nullable<IfStmt_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:n[oó])`, $$dpth + 1, cr) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && (stmt = this.matchNonAsgnStmt($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:n[oó])`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && ($scope$stmt = this.matchNonAsgnStmt($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.IfStmt_$0, stmt};
+                    $$res = {kind: ASTKinds.IfStmt_$0, stmt: $scope$stmt};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchBlockStmt($$dpth: number, cr?: ContextRecorder): Nullable<BlockStmt> {
+    public matchBlockStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<BlockStmt> {
         return this.runner<BlockStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("BlockStmt");
                 }
-                let blk: Nullable<AsgnStmt[]>;
-                let res: Nullable<BlockStmt> = null;
+                let $scope$blk: Nullable<AsgnStmt[]>;
+                let $$res: Nullable<BlockStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:{)`, $$dpth + 1, cr) !== null
-                    && (blk = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, cr), true)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:})`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:{)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$blk = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), true)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:})`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.BlockStmt, blk};
+                    $$res = {kind: ASTKinds.BlockStmt, blk: $scope$blk};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchNuairStmt($$dpth: number, cr?: ContextRecorder): Nullable<NuairStmt> {
+    public matchNuairStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<NuairStmt> {
         return this.runner<NuairStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("NuairStmt");
                 }
-                let expr: Nullable<Expr>;
-                let stmt: Nullable<NonAsgnStmt>;
-                let res: Nullable<NuairStmt> = null;
+                let $scope$expr: Nullable<Expr>;
+                let $scope$stmt: Nullable<NonAsgnStmt>;
+                let $$res: Nullable<NuairStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:nuair-a)`, $$dpth + 1, cr) !== null
-                    && (expr = this.matchExpr($$dpth + 1, cr)) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && (stmt = this.matchNonAsgnStmt($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:nuair-a)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$expr = this.matchExpr($$dpth + 1, $$cr)) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && ($scope$stmt = this.matchNonAsgnStmt($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.NuairStmt, expr, stmt};
+                    $$res = {kind: ASTKinds.NuairStmt, expr: $scope$expr, stmt: $scope$stmt};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchLeStmt($$dpth: number, cr?: ContextRecorder): Nullable<LeStmt> {
+    public matchLeStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<LeStmt> {
         return this.runner<LeStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("LeStmt");
                 }
-                let id: Nullable<ID>;
-                let strt: Nullable<Expr>;
-                let end: Nullable<Expr>;
-                let step: Nullable<Nullable<LeStmt_$0>>;
-                let stmt: Nullable<NonAsgnStmt>;
-                let res: Nullable<LeStmt> = null;
+                let $scope$id: Nullable<ID>;
+                let $scope$strt: Nullable<Expr>;
+                let $scope$end: Nullable<Expr>;
+                let $scope$step: Nullable<Nullable<LeStmt_$0>>;
+                let $scope$stmt: Nullable<NonAsgnStmt>;
+                let $$res: Nullable<LeStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:le)`, $$dpth + 1, cr) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && (id = this.matchID($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:idir)`, $$dpth + 1, cr) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
-                    && (strt = this.matchExpr($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, cr) !== null
-                    && (end = this.matchExpr($$dpth + 1, cr)) !== null
-                    && ((step = this.matchLeStmt_$0($$dpth + 1, cr)) || true)
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
-                    && (stmt = this.matchNonAsgnStmt($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:le)`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && ($scope$id = this.matchID($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:idir)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && ($scope$strt = this.matchExpr($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$end = this.matchExpr($$dpth + 1, $$cr)) !== null
+                    && (($scope$step = this.matchLeStmt_$0($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && ($scope$stmt = this.matchNonAsgnStmt($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.LeStmt, id, strt, end, step, stmt};
+                    $$res = {kind: ASTKinds.LeStmt, id: $scope$id, strt: $scope$strt, end: $scope$end, step: $scope$step, stmt: $scope$stmt};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchLeStmt_$0($$dpth: number, cr?: ContextRecorder): Nullable<LeStmt_$0> {
+    public matchLeStmt_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<LeStmt_$0> {
         return this.runner<LeStmt_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("LeStmt_$0");
                 }
-                let step: Nullable<Expr>;
-                let res: Nullable<LeStmt_$0> = null;
+                let $scope$step: Nullable<Expr>;
+                let $$res: Nullable<LeStmt_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, cr) !== null
-                    && (step = this.matchExpr($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$step = this.matchExpr($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.LeStmt_$0, step};
+                    $$res = {kind: ASTKinds.LeStmt_$0, step: $scope$step};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchDefnStmt($$dpth: number, cr?: ContextRecorder): Nullable<DefnStmt> {
+    public matchDefnStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<DefnStmt> {
         return this.runner<DefnStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("DefnStmt");
                 }
-                let id: Nullable<ID>;
-                let expr: Nullable<Expr>;
-                let res: Nullable<DefnStmt> = null;
+                let $scope$id: Nullable<ID>;
+                let $scope$expr: Nullable<Expr>;
+                let $$res: Nullable<DefnStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (id = this.matchID($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?::=)`, $$dpth + 1, cr) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (expr = this.matchExpr($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$id = this.matchID($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::=)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$expr = this.matchExpr($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.DefnStmt, id, expr};
+                    $$res = {kind: ASTKinds.DefnStmt, id: $scope$id, expr: $scope$expr};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchAssgnStmt($$dpth: number, cr?: ContextRecorder): Nullable<AssgnStmt> {
+    public matchAssgnStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<AssgnStmt> {
         return this.runner<AssgnStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("AssgnStmt");
                 }
-                let lhs: Nullable<Postfix>;
-                let op: Nullable<AsgnOp>;
-                let expr: Nullable<Expr>;
-                let res: Nullable<AssgnStmt> = null;
+                let $scope$lhs: Nullable<Postfix>;
+                let $scope$op: Nullable<AsgnOp>;
+                let $scope$expr: Nullable<Expr>;
+                let $$res: Nullable<AssgnStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (lhs = this.matchPostfix($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (op = this.matchAsgnOp($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (expr = this.matchExpr($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$lhs = this.matchPostfix($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$op = this.matchAsgnOp($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$expr = this.matchExpr($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.AssgnStmt, lhs, op, expr};
+                    $$res = {kind: ASTKinds.AssgnStmt, lhs: $scope$lhs, op: $scope$op, expr: $scope$expr};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchGniomhStmt($$dpth: number, cr?: ContextRecorder): Nullable<GniomhStmt> {
+    public matchGniomhStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<GniomhStmt> {
         return this.runner<GniomhStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("GniomhStmt");
                 }
-                let id: Nullable<ID>;
-                let args: Nullable<Nullable<CSIDs>>;
-                let stmts: Nullable<AsgnStmt[]>;
-                let res: Nullable<GniomhStmt> = null;
+                let $scope$id: Nullable<ID>;
+                let $scope$args: Nullable<Nullable<CSIDs>>;
+                let $scope$stmts: Nullable<AsgnStmt[]>;
+                let $$res: Nullable<GniomhStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:gn[íi]omh)`, $$dpth + 1, cr) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && (id = this.matchID($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
-                    && ((args = this.matchCSIDs($$dpth + 1, cr)) || true)
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:{)`, $$dpth + 1, cr) !== null
-                    && (stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, cr), true)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:})`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:gn[íi]omh)`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && ($scope$id = this.matchID($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && (($scope$args = this.matchCSIDs($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:{)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), true)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:})`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.GniomhStmt, id, args, stmts};
+                    $$res = {kind: ASTKinds.GniomhStmt, id: $scope$id, args: $scope$args, stmts: $scope$stmts};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchCtlchStmt($$dpth: number, cr?: ContextRecorder): Nullable<CtlchStmt> {
+    public matchCtlchStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<CtlchStmt> {
         return this.runner<CtlchStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("CtlchStmt");
                 }
-                let id: Nullable<ID>;
-                let tuis: Nullable<Nullable<CtlchStmt_$0>>;
-                let gniomhs: Nullable<GniomhStmt[]>;
-                let res: Nullable<CtlchStmt> = null;
+                let $scope$id: Nullable<ID>;
+                let $scope$tuis: Nullable<Nullable<CtlchStmt_$0>>;
+                let $scope$gniomhs: Nullable<GniomhStmt[]>;
+                let $$res: Nullable<CtlchStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:creatlach)`, $$dpth + 1, cr) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && (id = this.matchID($$dpth + 1, cr)) !== null
-                    && ((tuis = this.matchCtlchStmt_$0($$dpth + 1, cr)) || true)
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:{)`, $$dpth + 1, cr) !== null
-                    && (gniomhs = this.loop<GniomhStmt>(() => this.matchGniomhStmt($$dpth + 1, cr), true)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:})`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:creatlach)`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && ($scope$id = this.matchID($$dpth + 1, $$cr)) !== null
+                    && (($scope$tuis = this.matchCtlchStmt_$0($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:{)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$gniomhs = this.loop<GniomhStmt>(() => this.matchGniomhStmt($$dpth + 1, $$cr), true)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:})`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.CtlchStmt, id, tuis, gniomhs};
+                    $$res = {kind: ASTKinds.CtlchStmt, id: $scope$id, tuis: $scope$tuis, gniomhs: $scope$gniomhs};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchCtlchStmt_$0($$dpth: number, cr?: ContextRecorder): Nullable<CtlchStmt_$0> {
+    public matchCtlchStmt_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<CtlchStmt_$0> {
         return this.runner<CtlchStmt_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("CtlchStmt_$0");
                 }
-                let id: Nullable<ID>;
-                let res: Nullable<CtlchStmt_$0> = null;
+                let $scope$id: Nullable<ID>;
+                let $$res: Nullable<CtlchStmt_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:ó)`, $$dpth + 1, cr) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && (id = this.matchID($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:ó)`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && ($scope$id = this.matchID($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.CtlchStmt_$0, id};
+                    $$res = {kind: ASTKinds.CtlchStmt_$0, id: $scope$id};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchBrisStmt($$dpth: number, cr?: ContextRecorder): Nullable<BrisStmt> {
+    public matchBrisStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<BrisStmt> {
         return this.runner<BrisStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("BrisStmt");
                 }
-                let res: Nullable<BrisStmt> = null;
+                let $$res: Nullable<BrisStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:bris)`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:bris)`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.BrisStmt, };
+                    $$res = {kind: ASTKinds.BrisStmt, };
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchCCStmt($$dpth: number, cr?: ContextRecorder): Nullable<CCStmt> {
+    public matchCCStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<CCStmt> {
         return this.runner<CCStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("CCStmt");
                 }
-                let res: Nullable<CCStmt> = null;
+                let $$res: Nullable<CCStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:chun-cinn)`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:chun-cinn)`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.CCStmt, };
+                    $$res = {kind: ASTKinds.CCStmt, };
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchToradhStmt($$dpth: number, cr?: ContextRecorder): Nullable<ToradhStmt> {
+    public matchToradhStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<ToradhStmt> {
         return this.runner<ToradhStmt>($$dpth,
             (log) => {
                 if (log) {
                     log("ToradhStmt");
                 }
-                let exp: Nullable<Nullable<Expr>>;
-                let res: Nullable<ToradhStmt> = null;
+                let $scope$exp: Nullable<Nullable<Expr>>;
+                let $$res: Nullable<ToradhStmt> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:toradh)`, $$dpth + 1, cr) !== null
-                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, cr)) !== null
-                    && ((exp = this.matchExpr($$dpth + 1, cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:toradh)`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
+                    && (($scope$exp = this.matchExpr($$dpth + 1, $$cr)) || true)
                 ) {
-                    res = {kind: ASTKinds.ToradhStmt, exp};
+                    $$res = {kind: ASTKinds.ToradhStmt, exp: $scope$exp};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchExpr($$dpth: number, cr?: ContextRecorder): Nullable<Expr> {
-        return this.matchAnd($$dpth + 1, cr);
+    public matchExpr($$dpth: number, $$cr?: ContextRecorder): Nullable<Expr> {
+        return this.matchAnd($$dpth + 1, $$cr);
     }
-    public matchAnd($$dpth: number, cr?: ContextRecorder): Nullable<And> {
+    public matchAnd($$dpth: number, $$cr?: ContextRecorder): Nullable<And> {
         return this.runner<And>($$dpth,
             (log) => {
                 if (log) {
                     log("And");
                 }
-                let head: Nullable<Or>;
-                let tail: Nullable<And_$0[]>;
-                let res: Nullable<And> = null;
+                let $scope$head: Nullable<Or>;
+                let $scope$tail: Nullable<And_$0[]>;
+                let $$res: Nullable<And> = null;
                 if (true
-                    && (head = this.matchOr($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<And_$0>(() => this.matchAnd_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchOr($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<And_$0>(() => this.matchAnd_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.And, head, tail};
+                    $$res = {kind: ASTKinds.And, head: $scope$head, tail: $scope$tail};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchAnd_$0($$dpth: number, cr?: ContextRecorder): Nullable<And_$0> {
+    public matchAnd_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<And_$0> {
         return this.runner<And_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("And_$0");
                 }
-                let trm: Nullable<Or>;
-                let res: Nullable<And_$0> = null;
+                let $scope$trm: Nullable<Or>;
+                let $$res: Nullable<And_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\&)`, $$dpth + 1, cr) !== null
-                    && (trm = this.matchOr($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\&)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$trm = this.matchOr($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.And_$0, trm};
+                    $$res = {kind: ASTKinds.And_$0, trm: $scope$trm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchOr($$dpth: number, cr?: ContextRecorder): Nullable<Or> {
+    public matchOr($$dpth: number, $$cr?: ContextRecorder): Nullable<Or> {
         return this.runner<Or>($$dpth,
             (log) => {
                 if (log) {
                     log("Or");
                 }
-                let head: Nullable<Eq>;
-                let tail: Nullable<Or_$0[]>;
-                let res: Nullable<Or> = null;
+                let $scope$head: Nullable<Eq>;
+                let $scope$tail: Nullable<Or_$0[]>;
+                let $$res: Nullable<Or> = null;
                 if (true
-                    && (head = this.matchEq($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<Or_$0>(() => this.matchOr_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchEq($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<Or_$0>(() => this.matchOr_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.Or, head, tail};
+                    $$res = {kind: ASTKinds.Or, head: $scope$head, tail: $scope$tail};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchOr_$0($$dpth: number, cr?: ContextRecorder): Nullable<Or_$0> {
+    public matchOr_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Or_$0> {
         return this.runner<Or_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("Or_$0");
                 }
-                let trm: Nullable<Eq>;
-                let res: Nullable<Or_$0> = null;
+                let $scope$trm: Nullable<Eq>;
+                let $$res: Nullable<Or_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\|)`, $$dpth + 1, cr) !== null
-                    && (trm = this.matchEq($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\|)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$trm = this.matchEq($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.Or_$0, trm};
+                    $$res = {kind: ASTKinds.Or_$0, trm: $scope$trm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchEq($$dpth: number, cr?: ContextRecorder): Nullable<Eq> {
+    public matchEq($$dpth: number, $$cr?: ContextRecorder): Nullable<Eq> {
         return this.runner<Eq>($$dpth,
             (log) => {
                 if (log) {
                     log("Eq");
                 }
-                let head: Nullable<Comp>;
-                let tail: Nullable<Eq_$0[]>;
-                let res: Nullable<Eq> = null;
+                let $scope$head: Nullable<Comp>;
+                let $scope$tail: Nullable<Eq_$0[]>;
+                let $$res: Nullable<Eq> = null;
                 if (true
-                    && (head = this.matchComp($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<Eq_$0>(() => this.matchEq_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchComp($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<Eq_$0>(() => this.matchEq_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.Eq, head, tail};
+                    $$res = {kind: ASTKinds.Eq, head: $scope$head, tail: $scope$tail};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchEq_$0($$dpth: number, cr?: ContextRecorder): Nullable<Eq_$0> {
+    public matchEq_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Eq_$0> {
         return this.runner<Eq_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("Eq_$0");
                 }
-                let op: Nullable<string>;
-                let trm: Nullable<Comp>;
-                let res: Nullable<Eq_$0> = null;
+                let $scope$op: Nullable<string>;
+                let $scope$trm: Nullable<Comp>;
+                let $$res: Nullable<Eq_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (op = this.regexAccept(String.raw`(?:[!=]=)`, $$dpth + 1, cr)) !== null
-                    && (trm = this.matchComp($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$op = this.regexAccept(String.raw`(?:[!=]=)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$trm = this.matchComp($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.Eq_$0, op, trm};
+                    $$res = {kind: ASTKinds.Eq_$0, op: $scope$op, trm: $scope$trm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchComp($$dpth: number, cr?: ContextRecorder): Nullable<Comp> {
+    public matchComp($$dpth: number, $$cr?: ContextRecorder): Nullable<Comp> {
         return this.runner<Comp>($$dpth,
             (log) => {
                 if (log) {
                     log("Comp");
                 }
-                let head: Nullable<Sum>;
-                let tail: Nullable<Comp_$0[]>;
-                let res: Nullable<Comp> = null;
+                let $scope$head: Nullable<Sum>;
+                let $scope$tail: Nullable<Comp_$0[]>;
+                let $$res: Nullable<Comp> = null;
                 if (true
-                    && (head = this.matchSum($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<Comp_$0>(() => this.matchComp_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchSum($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<Comp_$0>(() => this.matchComp_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.Comp, head, tail};
+                    $$res = {kind: ASTKinds.Comp, head: $scope$head, tail: $scope$tail};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchComp_$0($$dpth: number, cr?: ContextRecorder): Nullable<Comp_$0> {
+    public matchComp_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Comp_$0> {
         return this.runner<Comp_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("Comp_$0");
                 }
-                let op: Nullable<Compare>;
-                let trm: Nullable<Sum>;
-                let res: Nullable<Comp_$0> = null;
+                let $scope$op: Nullable<Compare>;
+                let $scope$trm: Nullable<Sum>;
+                let $$res: Nullable<Comp_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (op = this.matchCompare($$dpth + 1, cr)) !== null
-                    && (trm = this.matchSum($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$op = this.matchCompare($$dpth + 1, $$cr)) !== null
+                    && ($scope$trm = this.matchSum($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.Comp_$0, op, trm};
+                    $$res = {kind: ASTKinds.Comp_$0, op: $scope$op, trm: $scope$trm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchSum($$dpth: number, cr?: ContextRecorder): Nullable<Sum> {
+    public matchSum($$dpth: number, $$cr?: ContextRecorder): Nullable<Sum> {
         return this.runner<Sum>($$dpth,
             (log) => {
                 if (log) {
                     log("Sum");
                 }
-                let head: Nullable<Product>;
-                let tail: Nullable<Sum_$0[]>;
-                let res: Nullable<Sum> = null;
+                let $scope$head: Nullable<Product>;
+                let $scope$tail: Nullable<Sum_$0[]>;
+                let $$res: Nullable<Sum> = null;
                 if (true
-                    && (head = this.matchProduct($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<Sum_$0>(() => this.matchSum_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchProduct($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<Sum_$0>(() => this.matchSum_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.Sum, head, tail};
+                    $$res = {kind: ASTKinds.Sum, head: $scope$head, tail: $scope$tail};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchSum_$0($$dpth: number, cr?: ContextRecorder): Nullable<Sum_$0> {
+    public matchSum_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Sum_$0> {
         return this.runner<Sum_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("Sum_$0");
                 }
-                let op: Nullable<PlusMinus>;
-                let trm: Nullable<Product>;
-                let res: Nullable<Sum_$0> = null;
+                let $scope$op: Nullable<PlusMinus>;
+                let $scope$trm: Nullable<Product>;
+                let $$res: Nullable<Sum_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (op = this.matchPlusMinus($$dpth + 1, cr)) !== null
-                    && (trm = this.matchProduct($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$op = this.matchPlusMinus($$dpth + 1, $$cr)) !== null
+                    && ($scope$trm = this.matchProduct($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.Sum_$0, op, trm};
+                    $$res = {kind: ASTKinds.Sum_$0, op: $scope$op, trm: $scope$trm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchProduct($$dpth: number, cr?: ContextRecorder): Nullable<Product> {
+    public matchProduct($$dpth: number, $$cr?: ContextRecorder): Nullable<Product> {
         return this.runner<Product>($$dpth,
             (log) => {
                 if (log) {
                     log("Product");
                 }
-                let head: Nullable<Prefix>;
-                let tail: Nullable<Product_$0[]>;
-                let res: Nullable<Product> = null;
+                let $scope$head: Nullable<Prefix>;
+                let $scope$tail: Nullable<Product_$0[]>;
+                let $$res: Nullable<Product> = null;
                 if (true
-                    && (head = this.matchPrefix($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<Product_$0>(() => this.matchProduct_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchPrefix($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<Product_$0>(() => this.matchProduct_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.Product, head, tail};
+                    $$res = {kind: ASTKinds.Product, head: $scope$head, tail: $scope$tail};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchProduct_$0($$dpth: number, cr?: ContextRecorder): Nullable<Product_$0> {
+    public matchProduct_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Product_$0> {
         return this.runner<Product_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("Product_$0");
                 }
-                let op: Nullable<MulDiv>;
-                let trm: Nullable<Prefix>;
-                let res: Nullable<Product_$0> = null;
+                let $scope$op: Nullable<MulDiv>;
+                let $scope$trm: Nullable<Prefix>;
+                let $$res: Nullable<Product_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (op = this.matchMulDiv($$dpth + 1, cr)) !== null
-                    && (trm = this.matchPrefix($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$op = this.matchMulDiv($$dpth + 1, $$cr)) !== null
+                    && ($scope$trm = this.matchPrefix($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.Product_$0, op, trm};
+                    $$res = {kind: ASTKinds.Product_$0, op: $scope$op, trm: $scope$trm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchPrefix($$dpth: number, cr?: ContextRecorder): Nullable<Prefix> {
+    public matchPrefix($$dpth: number, $$cr?: ContextRecorder): Nullable<Prefix> {
         return this.runner<Prefix>($$dpth,
             (log) => {
                 if (log) {
                     log("Prefix");
                 }
-                let op: Nullable<Nullable<string>>;
-                let pf: Nullable<Postfix>;
-                let res: Nullable<Prefix> = null;
+                let $scope$op: Nullable<Nullable<string>>;
+                let $scope$pf: Nullable<Postfix>;
+                let $$res: Nullable<Prefix> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && ((op = this.regexAccept(String.raw`(?:-|!)`, $$dpth + 1, cr)) || true)
-                    && (pf = this.matchPostfix($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && (($scope$op = this.regexAccept(String.raw`(?:-|!)`, $$dpth + 1, $$cr)) || true)
+                    && ($scope$pf = this.matchPostfix($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.Prefix, op, pf};
+                    $$res = {kind: ASTKinds.Prefix, op: $scope$op, pf: $scope$pf};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchPostfix($$dpth: number, cr?: ContextRecorder): Nullable<Postfix> {
+    public matchPostfix($$dpth: number, $$cr?: ContextRecorder): Nullable<Postfix> {
         return this.runner<Postfix>($$dpth,
             (log) => {
                 if (log) {
                     log("Postfix");
                 }
-                let at: Nullable<ObjLookups>;
-                let ops: Nullable<PostOp[]>;
-                let res: Nullable<Postfix> = null;
+                let $scope$at: Nullable<ObjLookups>;
+                let $scope$ops: Nullable<PostOp[]>;
+                let $$res: Nullable<Postfix> = null;
                 if (true
-                    && (at = this.matchObjLookups($$dpth + 1, cr)) !== null
-                    && (ops = this.loop<PostOp>(() => this.matchPostOp($$dpth + 1, cr), true)) !== null
+                    && ($scope$at = this.matchObjLookups($$dpth + 1, $$cr)) !== null
+                    && ($scope$ops = this.loop<PostOp>(() => this.matchPostOp($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.Postfix, at, ops};
+                    $$res = {kind: ASTKinds.Postfix, at: $scope$at, ops: $scope$ops};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchObjLookups($$dpth: number, cr?: ContextRecorder): Nullable<ObjLookups> {
+    public matchObjLookups($$dpth: number, $$cr?: ContextRecorder): Nullable<ObjLookups> {
         return this.runner<ObjLookups>($$dpth,
             (log) => {
                 if (log) {
                     log("ObjLookups");
                 }
-                let attrs: Nullable<ObjLookups_$0[]>;
-                let root: Nullable<Atom>;
-                let res: Nullable<ObjLookups> = null;
+                let $scope$attrs: Nullable<ObjLookups_$0[]>;
+                let $scope$root: Nullable<Atom>;
+                let $$res: Nullable<ObjLookups> = null;
                 if (true
-                    && (attrs = this.loop<ObjLookups_$0>(() => this.matchObjLookups_$0($$dpth + 1, cr), true)) !== null
-                    && (root = this.matchAtom($$dpth + 1, cr)) !== null
+                    && ($scope$attrs = this.loop<ObjLookups_$0>(() => this.matchObjLookups_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$root = this.matchAtom($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.ObjLookups, attrs, root};
+                    $$res = {kind: ASTKinds.ObjLookups, attrs: $scope$attrs, root: $scope$root};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchObjLookups_$0($$dpth: number, cr?: ContextRecorder): Nullable<ObjLookups_$0> {
+    public matchObjLookups_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<ObjLookups_$0> {
         return this.runner<ObjLookups_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("ObjLookups_$0");
                 }
-                let id: Nullable<ID>;
-                let res: Nullable<ObjLookups_$0> = null;
+                let $scope$id: Nullable<ID>;
+                let $$res: Nullable<ObjLookups_$0> = null;
                 if (true
-                    && (id = this.matchID($$dpth + 1, cr)) !== null
-                    && this.regexAccept(String.raw`(?:@)`, $$dpth + 1, cr) !== null
-                    && this.negate(() => this.matchwspace($$dpth + 1, cr)) !== null
+                    && ($scope$id = this.matchID($$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:@)`, $$dpth + 1, $$cr) !== null
+                    && this.negate(() => this.matchwspace($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.ObjLookups_$0, id};
+                    $$res = {kind: ASTKinds.ObjLookups_$0, id: $scope$id};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchPostOp($$dpth: number, cr?: ContextRecorder): Nullable<PostOp> {
+    public matchPostOp($$dpth: number, $$cr?: ContextRecorder): Nullable<PostOp> {
         return this.choice<PostOp>([
-            () => this.matchPostOp_1($$dpth + 1, cr),
-            () => this.matchPostOp_2($$dpth + 1, cr),
+            () => this.matchPostOp_1($$dpth + 1, $$cr),
+            () => this.matchPostOp_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchPostOp_1($$dpth: number, cr?: ContextRecorder): Nullable<PostOp_1> {
+    public matchPostOp_1($$dpth: number, $$cr?: ContextRecorder): Nullable<PostOp_1> {
         return this.runner<PostOp_1>($$dpth,
             (log) => {
                 if (log) {
                     log("PostOp_1");
                 }
-                let args: Nullable<Nullable<CSArgs>>;
-                let res: Nullable<PostOp_1> = null;
+                let $scope$args: Nullable<Nullable<CSArgs>>;
+                let $$res: Nullable<PostOp_1> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
-                    && ((args = this.matchCSArgs($$dpth + 1, cr)) || true)
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && (($scope$args = this.matchCSArgs($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.PostOp_1, args};
+                    $$res = {kind: ASTKinds.PostOp_1, args: $scope$args};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchPostOp_2($$dpth: number, cr?: ContextRecorder): Nullable<PostOp_2> {
+    public matchPostOp_2($$dpth: number, $$cr?: ContextRecorder): Nullable<PostOp_2> {
         return this.runner<PostOp_2>($$dpth,
             (log) => {
                 if (log) {
                     log("PostOp_2");
                 }
-                let expr: Nullable<Expr>;
-                let res: Nullable<PostOp_2> = null;
+                let $scope$expr: Nullable<Expr>;
+                let $$res: Nullable<PostOp_2> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\[)`, $$dpth + 1, cr) !== null
-                    && (expr = this.matchExpr($$dpth + 1, cr)) !== null
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\])`, $$dpth + 1, cr) !== null
+                    && this.regexAccept(String.raw`(?:\[)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$expr = this.matchExpr($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\])`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.PostOp_2, expr};
+                    $$res = {kind: ASTKinds.PostOp_2, expr: $scope$expr};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchAtom($$dpth: number, cr?: ContextRecorder): Nullable<Atom> {
+    public matchAtom($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom> {
         return this.choice<Atom>([
-            () => this.matchAtom_1($$dpth + 1, cr),
-            () => this.matchAtom_2($$dpth + 1, cr),
-            () => this.matchAtom_3($$dpth + 1, cr),
-            () => this.matchAtom_4($$dpth + 1, cr),
-            () => this.matchAtom_5($$dpth + 1, cr),
-            () => this.matchAtom_6($$dpth + 1, cr),
-            () => this.matchAtom_7($$dpth + 1, cr),
+            () => this.matchAtom_1($$dpth + 1, $$cr),
+            () => this.matchAtom_2($$dpth + 1, $$cr),
+            () => this.matchAtom_3($$dpth + 1, $$cr),
+            () => this.matchAtom_4($$dpth + 1, $$cr),
+            () => this.matchAtom_5($$dpth + 1, $$cr),
+            () => this.matchAtom_6($$dpth + 1, $$cr),
+            () => this.matchAtom_7($$dpth + 1, $$cr),
         ]);
     }
-    public matchAtom_1($$dpth: number, cr?: ContextRecorder): Nullable<Atom_1> {
+    public matchAtom_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_1> {
         return this.runner<Atom_1>($$dpth,
             (log) => {
                 if (log) {
                     log("Atom_1");
                 }
-                let trm: Nullable<Expr>;
-                let res: Nullable<Atom_1> = null;
+                let $scope$trm: Nullable<Expr>;
+                let $$res: Nullable<Atom_1> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, cr) !== null
-                    && (trm = this.matchExpr($$dpth + 1, cr)) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && ($scope$trm = this.matchExpr($$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.Atom_1, trm};
+                    $$res = {kind: ASTKinds.Atom_1, trm: $scope$trm};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchAtom_2($$dpth: number, cr?: ContextRecorder): Nullable<Atom_2> {
-        return this.matchID($$dpth + 1, cr);
+    public matchAtom_2($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_2> {
+        return this.matchID($$dpth + 1, $$cr);
     }
-    public matchAtom_3($$dpth: number, cr?: ContextRecorder): Nullable<Atom_3> {
-        return this.matchLitreacha($$dpth + 1, cr);
+    public matchAtom_3($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_3> {
+        return this.matchLitreacha($$dpth + 1, $$cr);
     }
-    public matchAtom_4($$dpth: number, cr?: ContextRecorder): Nullable<Atom_4> {
-        return this.matchInt($$dpth + 1, cr);
+    public matchAtom_4($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_4> {
+        return this.matchInt($$dpth + 1, $$cr);
     }
-    public matchAtom_5($$dpth: number, cr?: ContextRecorder): Nullable<Atom_5> {
-        return this.matchBool($$dpth + 1, cr);
+    public matchAtom_5($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_5> {
+        return this.matchBool($$dpth + 1, $$cr);
     }
-    public matchAtom_6($$dpth: number, cr?: ContextRecorder): Nullable<Atom_6> {
-        return this.matchNeamhni($$dpth + 1, cr);
+    public matchAtom_6($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_6> {
+        return this.matchNeamhni($$dpth + 1, $$cr);
     }
-    public matchAtom_7($$dpth: number, cr?: ContextRecorder): Nullable<Atom_7> {
-        return this.matchListLit($$dpth + 1, cr);
+    public matchAtom_7($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_7> {
+        return this.matchListLit($$dpth + 1, $$cr);
     }
-    public matchListLit($$dpth: number, cr?: ContextRecorder): Nullable<ListLit> {
+    public matchListLit($$dpth: number, $$cr?: ContextRecorder): Nullable<ListLit> {
         return this.runner<ListLit>($$dpth,
             (log) => {
                 if (log) {
                     log("ListLit");
                 }
-                let els: Nullable<Nullable<CSArgs>>;
-                let res: Nullable<ListLit> = null;
+                let $scope$els: Nullable<Nullable<CSArgs>>;
+                let $$res: Nullable<ListLit> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\[)`, $$dpth + 1, cr) !== null
-                    && ((els = this.matchCSArgs($$dpth + 1, cr)) || true)
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\])`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\[)`, $$dpth + 1, $$cr) !== null
+                    && (($scope$els = this.matchCSArgs($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\])`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.ListLit, els};
+                    $$res = {kind: ASTKinds.ListLit, els: $scope$els};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchCSArgs($$dpth: number, cr?: ContextRecorder): Nullable<CSArgs> {
+    public matchCSArgs($$dpth: number, $$cr?: ContextRecorder): Nullable<CSArgs> {
         return this.runner<CSArgs>($$dpth,
             (log) => {
                 if (log) {
                     log("CSArgs");
                 }
-                let head: Nullable<Expr>;
-                let tail: Nullable<CSArgs_$0[]>;
-                let res: Nullable<CSArgs> = null;
+                let $scope$head: Nullable<Expr>;
+                let $scope$tail: Nullable<CSArgs_$0[]>;
+                let $$res: Nullable<CSArgs> = null;
                 if (true
-                    && (head = this.matchExpr($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<CSArgs_$0>(() => this.matchCSArgs_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchExpr($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<CSArgs_$0>(() => this.matchCSArgs_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.CSArgs, head, tail};
+                    $$res = {kind: ASTKinds.CSArgs, head: $scope$head, tail: $scope$tail};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchCSArgs_$0($$dpth: number, cr?: ContextRecorder): Nullable<CSArgs_$0> {
+    public matchCSArgs_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<CSArgs_$0> {
         return this.runner<CSArgs_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("CSArgs_$0");
                 }
-                let exp: Nullable<Expr>;
-                let res: Nullable<CSArgs_$0> = null;
+                let $scope$exp: Nullable<Expr>;
+                let $$res: Nullable<CSArgs_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, cr) !== null
-                    && (exp = this.matchExpr($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$exp = this.matchExpr($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.CSArgs_$0, exp};
+                    $$res = {kind: ASTKinds.CSArgs_$0, exp: $scope$exp};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchCSIDs($$dpth: number, cr?: ContextRecorder): Nullable<CSIDs> {
+    public matchCSIDs($$dpth: number, $$cr?: ContextRecorder): Nullable<CSIDs> {
         return this.runner<CSIDs>($$dpth,
             (log) => {
                 if (log) {
                     log("CSIDs");
                 }
-                let head: Nullable<ID>;
-                let tail: Nullable<CSIDs_$0[]>;
-                let res: Nullable<CSIDs> = null;
+                let $scope$head: Nullable<ID>;
+                let $scope$tail: Nullable<CSIDs_$0[]>;
+                let $$res: Nullable<CSIDs> = null;
                 if (true
-                    && (head = this.matchID($$dpth + 1, cr)) !== null
-                    && (tail = this.loop<CSIDs_$0>(() => this.matchCSIDs_$0($$dpth + 1, cr), true)) !== null
+                    && ($scope$head = this.matchID($$dpth + 1, $$cr)) !== null
+                    && ($scope$tail = this.loop<CSIDs_$0>(() => this.matchCSIDs_$0($$dpth + 1, $$cr), true)) !== null
                 ) {
-                    res = {kind: ASTKinds.CSIDs, head, tail};
+                    $$res = {kind: ASTKinds.CSIDs, head: $scope$head, tail: $scope$tail};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchCSIDs_$0($$dpth: number, cr?: ContextRecorder): Nullable<CSIDs_$0> {
+    public matchCSIDs_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<CSIDs_$0> {
         return this.runner<CSIDs_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("CSIDs_$0");
                 }
-                let id: Nullable<ID>;
-                let res: Nullable<CSIDs_$0> = null;
+                let $scope$id: Nullable<ID>;
+                let $$res: Nullable<CSIDs_$0> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, cr) !== null
-                    && (id = this.matchID($$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$id = this.matchID($$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.CSIDs_$0, id};
+                    $$res = {kind: ASTKinds.CSIDs_$0, id: $scope$id};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchID($$dpth: number, cr?: ContextRecorder): Nullable<ID> {
+    public matchID($$dpth: number, $$cr?: ContextRecorder): Nullable<ID> {
         return this.runner<ID>($$dpth,
             (log) => {
                 if (log) {
                     log("ID");
                 }
-                let id: Nullable<string>;
-                let res: Nullable<ID> = null;
+                let $scope$id: Nullable<string>;
+                let $$res: Nullable<ID> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.negate(() => this.matchID_$0($$dpth + 1, cr)) !== null
-                    && (id = this.regexAccept(String.raw`(?:[a-zA-Z_áéíóúÁÉÍÓÚ]+)`, $$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.negate(() => this.matchID_$0($$dpth + 1, $$cr)) !== null
+                    && ($scope$id = this.regexAccept(String.raw`(?:[a-zA-Z_áéíóúÁÉÍÓÚ]+)`, $$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.ID, id};
+                    $$res = {kind: ASTKinds.ID, id: $scope$id};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchID_$0($$dpth: number, cr?: ContextRecorder): Nullable<ID_$0> {
+    public matchID_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<ID_$0> {
         return this.runner<ID_$0>($$dpth,
             (log) => {
                 if (log) {
                     log("ID_$0");
                 }
-                let res: Nullable<ID_$0> = null;
+                let $$res: Nullable<ID_$0> = null;
                 if (true
-                    && this.matchKeyword($$dpth + 1, cr) !== null
-                    && this.matchgap($$dpth + 1, cr) !== null
+                    && this.matchKeyword($$dpth + 1, $$cr) !== null
+                    && this.matchgap($$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.ID_$0, };
+                    $$res = {kind: ASTKinds.ID_$0, };
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchBool($$dpth: number, cr?: ContextRecorder): Nullable<Bool> {
+    public matchBool($$dpth: number, $$cr?: ContextRecorder): Nullable<Bool> {
         return this.runner<Bool>($$dpth,
             (log) => {
                 if (log) {
                     log("Bool");
                 }
-                let bool: Nullable<string>;
-                let res: Nullable<Bool> = null;
+                let $scope$bool: Nullable<string>;
+                let $$res: Nullable<Bool> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (bool = this.regexAccept(String.raw`(?:f[ií]or|br[eé]ag)`, $$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$bool = this.regexAccept(String.raw`(?:f[ií]or|br[eé]ag)`, $$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.Bool, bool};
+                    $$res = {kind: ASTKinds.Bool, bool: $scope$bool};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchNeamhni($$dpth: number, cr?: ContextRecorder): Nullable<Neamhni> {
+    public matchNeamhni($$dpth: number, $$cr?: ContextRecorder): Nullable<Neamhni> {
         return this.runner<Neamhni>($$dpth,
             (log) => {
                 if (log) {
                     log("Neamhni");
                 }
-                let res: Nullable<Neamhni> = null;
+                let $$res: Nullable<Neamhni> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:neamhn[ií])`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:neamhn[ií])`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.Neamhni, };
+                    $$res = {kind: ASTKinds.Neamhni, };
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchInt($$dpth: number, cr?: ContextRecorder): Nullable<Int> {
+    public matchInt($$dpth: number, $$cr?: ContextRecorder): Nullable<Int> {
         return this.runner<Int>($$dpth,
             (log) => {
                 if (log) {
                     log("Int");
                 }
-                let int: Nullable<string>;
-                let res: Nullable<Int> = null;
+                let $scope$int: Nullable<string>;
+                let $$res: Nullable<Int> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && (int = this.regexAccept(String.raw`(?:-?[0-9]+(?:\.[0-9]+)?)`, $$dpth + 1, cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$int = this.regexAccept(String.raw`(?:-?[0-9]+(?:\.[0-9]+)?)`, $$dpth + 1, $$cr)) !== null
                 ) {
-                    res = {kind: ASTKinds.Int, int};
+                    $$res = {kind: ASTKinds.Int, int: $scope$int};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public matchLitreacha($$dpth: number, cr?: ContextRecorder): Nullable<Litreacha> {
+    public matchLitreacha($$dpth: number, $$cr?: ContextRecorder): Nullable<Litreacha> {
         return this.runner<Litreacha>($$dpth,
             (log) => {
                 if (log) {
                     log("Litreacha");
                 }
-                let val: Nullable<string>;
-                let res: Nullable<Litreacha> = null;
+                let $scope$val: Nullable<string>;
+                let $$res: Nullable<Litreacha> = null;
                 if (true
-                    && this.match_($$dpth + 1, cr) !== null
-                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, cr) !== null
-                    && (val = this.regexAccept(String.raw`(?:([^\'\\]|\\.)*)`, $$dpth + 1, cr)) !== null
-                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:([^\'\\]|\\.)*)`, $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
                 ) {
-                    res = {kind: ASTKinds.Litreacha, val};
+                    $$res = {kind: ASTKinds.Litreacha, val: $scope$val};
                 }
-                return res;
-            }, cr)();
+                return $$res;
+            }, $$cr)();
     }
-    public match_($$dpth: number, cr?: ContextRecorder): Nullable<_> {
-        return this.loop<wspace>(() => this.matchwspace($$dpth + 1, cr), true);
+    public match_($$dpth: number, $$cr?: ContextRecorder): Nullable<_> {
+        return this.loop<wspace>(() => this.matchwspace($$dpth + 1, $$cr), true);
     }
-    public matchwspace($$dpth: number, cr?: ContextRecorder): Nullable<wspace> {
-        return this.regexAccept(String.raw`(?:(?:\s|>--(?:(?!--<).)*(--<|\n|$)))`, $$dpth + 1, cr);
+    public matchwspace($$dpth: number, $$cr?: ContextRecorder): Nullable<wspace> {
+        return this.regexAccept(String.raw`(?:(?:\s|>--(?:(?!--<).)*(--<|\n|$)))`, $$dpth + 1, $$cr);
     }
-    public matchgap($$dpth: number, cr?: ContextRecorder): Nullable<gap> {
+    public matchgap($$dpth: number, $$cr?: ContextRecorder): Nullable<gap> {
         return this.choice<gap>([
-            () => this.matchgap_1($$dpth + 1, cr),
-            () => this.matchgap_2($$dpth + 1, cr),
+            () => this.matchgap_1($$dpth + 1, $$cr),
+            () => this.matchgap_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchgap_1($$dpth: number, cr?: ContextRecorder): Nullable<gap_1> {
-        return this.loop<gap_$0>(() => this.matchgap_$0($$dpth + 1, cr), false);
+    public matchgap_1($$dpth: number, $$cr?: ContextRecorder): Nullable<gap_1> {
+        return this.loop<gap_$0>(() => this.matchgap_$0($$dpth + 1, $$cr), false);
     }
-    public matchgap_2($$dpth: number, cr?: ContextRecorder): Nullable<gap_2> {
-        return this.regexAccept(String.raw`(?:$)`, $$dpth + 1, cr);
+    public matchgap_2($$dpth: number, $$cr?: ContextRecorder): Nullable<gap_2> {
+        return this.regexAccept(String.raw`(?:$)`, $$dpth + 1, $$cr);
     }
-    public matchgap_$0($$dpth: number, cr?: ContextRecorder): Nullable<gap_$0> {
+    public matchgap_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<gap_$0> {
         return this.choice<gap_$0>([
-            () => this.matchgap_$0_1($$dpth + 1, cr),
-            () => this.matchgap_$0_2($$dpth + 1, cr),
+            () => this.matchgap_$0_1($$dpth + 1, $$cr),
+            () => this.matchgap_$0_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchgap_$0_1($$dpth: number, cr?: ContextRecorder): Nullable<gap_$0_1> {
-        return this.matchwspace($$dpth + 1, cr);
+    public matchgap_$0_1($$dpth: number, $$cr?: ContextRecorder): Nullable<gap_$0_1> {
+        return this.matchwspace($$dpth + 1, $$cr);
     }
-    public matchgap_$0_2($$dpth: number, cr?: ContextRecorder): Nullable<gap_$0_2> {
-        return this.regexAccept(String.raw`(?:[^a-zA-Z0-9áéíóúÁÉÍÓÚ])`, $$dpth + 1, cr);
+    public matchgap_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<gap_$0_2> {
+        return this.regexAccept(String.raw`(?:[^a-zA-Z0-9áéíóúÁÉÍÓÚ])`, $$dpth + 1, $$cr);
     }
-    public matchPlusMinus($$dpth: number, cr?: ContextRecorder): Nullable<PlusMinus> {
-        return this.regexAccept(String.raw`(?:\+|-)`, $$dpth + 1, cr);
+    public matchPlusMinus($$dpth: number, $$cr?: ContextRecorder): Nullable<PlusMinus> {
+        return this.regexAccept(String.raw`(?:\+|-)`, $$dpth + 1, $$cr);
     }
-    public matchAsgnOp($$dpth: number, cr?: ContextRecorder): Nullable<AsgnOp> {
-        return this.regexAccept(String.raw`(?:=|\+=|\*=|-=|%=|\/=)`, $$dpth + 1, cr);
+    public matchAsgnOp($$dpth: number, $$cr?: ContextRecorder): Nullable<AsgnOp> {
+        return this.regexAccept(String.raw`(?:=|\+=|\*=|-=|%=|\/=)`, $$dpth + 1, $$cr);
     }
-    public matchMulDiv($$dpth: number, cr?: ContextRecorder): Nullable<MulDiv> {
-        return this.regexAccept(String.raw`(?:\*|\/\/|%|\/)`, $$dpth + 1, cr);
+    public matchMulDiv($$dpth: number, $$cr?: ContextRecorder): Nullable<MulDiv> {
+        return this.regexAccept(String.raw`(?:\*|\/\/|%|\/)`, $$dpth + 1, $$cr);
     }
-    public matchCompare($$dpth: number, cr?: ContextRecorder): Nullable<Compare> {
-        return this.regexAccept(String.raw`(?:<=|>=|<|>)`, $$dpth + 1, cr);
+    public matchCompare($$dpth: number, $$cr?: ContextRecorder): Nullable<Compare> {
+        return this.regexAccept(String.raw`(?:<=|>=|<|>)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword($$dpth: number, cr?: ContextRecorder): Nullable<Keyword> {
+    public matchKeyword($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword> {
         return this.choice<Keyword>([
-            () => this.matchKeyword_1($$dpth + 1, cr),
-            () => this.matchKeyword_2($$dpth + 1, cr),
-            () => this.matchKeyword_3($$dpth + 1, cr),
-            () => this.matchKeyword_4($$dpth + 1, cr),
-            () => this.matchKeyword_5($$dpth + 1, cr),
-            () => this.matchKeyword_6($$dpth + 1, cr),
-            () => this.matchKeyword_7($$dpth + 1, cr),
-            () => this.matchKeyword_8($$dpth + 1, cr),
-            () => this.matchKeyword_9($$dpth + 1, cr),
+            () => this.matchKeyword_1($$dpth + 1, $$cr),
+            () => this.matchKeyword_2($$dpth + 1, $$cr),
+            () => this.matchKeyword_3($$dpth + 1, $$cr),
+            () => this.matchKeyword_4($$dpth + 1, $$cr),
+            () => this.matchKeyword_5($$dpth + 1, $$cr),
+            () => this.matchKeyword_6($$dpth + 1, $$cr),
+            () => this.matchKeyword_7($$dpth + 1, $$cr),
+            () => this.matchKeyword_8($$dpth + 1, $$cr),
+            () => this.matchKeyword_9($$dpth + 1, $$cr),
         ]);
     }
-    public matchKeyword_1($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_1> {
-        return this.regexAccept(String.raw`(?:m[áa])`, $$dpth + 1, cr);
+    public matchKeyword_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_1> {
+        return this.regexAccept(String.raw`(?:m[áa])`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_2($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_2> {
-        return this.regexAccept(String.raw`(?:n[oó])`, $$dpth + 1, cr);
+    public matchKeyword_2($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_2> {
+        return this.regexAccept(String.raw`(?:n[oó])`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_3($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_3> {
-        return this.regexAccept(String.raw`(?:nuair-a)`, $$dpth + 1, cr);
+    public matchKeyword_3($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_3> {
+        return this.regexAccept(String.raw`(?:nuair-a)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_4($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_4> {
-        return this.regexAccept(String.raw`(?:f[ií]or|br[eé]ag)`, $$dpth + 1, cr);
+    public matchKeyword_4($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_4> {
+        return this.regexAccept(String.raw`(?:f[ií]or|br[eé]ag)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_5($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_5> {
-        return this.regexAccept(String.raw`(?:gn[ií]omh)`, $$dpth + 1, cr);
+    public matchKeyword_5($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_5> {
+        return this.regexAccept(String.raw`(?:gn[ií]omh)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_6($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_6> {
-        return this.regexAccept(String.raw`(?:chun-cinn)`, $$dpth + 1, cr);
+    public matchKeyword_6($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_6> {
+        return this.regexAccept(String.raw`(?:chun-cinn)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_7($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_7> {
-        return this.regexAccept(String.raw`(?:neamhn[ií])`, $$dpth + 1, cr);
+    public matchKeyword_7($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_7> {
+        return this.regexAccept(String.raw`(?:neamhn[ií])`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_8($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_8> {
-        return this.regexAccept(String.raw`(?:toradh)`, $$dpth + 1, cr);
+    public matchKeyword_8($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_8> {
+        return this.regexAccept(String.raw`(?:toradh)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_9($$dpth: number, cr?: ContextRecorder): Nullable<Keyword_9> {
-        return this.regexAccept(String.raw`(?:creatlach)`, $$dpth + 1, cr);
+    public matchKeyword_9($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_9> {
+        return this.regexAccept(String.raw`(?:creatlach)`, $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();
