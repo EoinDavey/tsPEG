@@ -514,7 +514,7 @@ export class Parser {
         return new ParseResult(res,
             rec.getErr() ?? new SyntaxErr(this.mark(), new Set(["$EOF"]), new Set([])));
     }
-    private mark(): PosInfo {
+    public mark(): PosInfo {
         return this.pos;
     }
     private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {

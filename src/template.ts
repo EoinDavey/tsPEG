@@ -43,7 +43,7 @@ export function expandTemplate(input: string, header: Block, kinds: Block,
         ],
         "}",
         ...ruleParseFns,
-        "private mark(): PosInfo {",
+        "public mark(): PosInfo {",
         [
             "return this.pos;",
         ],
