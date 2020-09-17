@@ -148,7 +148,7 @@ export class Generator {
         }
         return [
             "export enum ASTKinds {",
-            astKinds.map((x) => x + ","),
+            astKinds.map(x => `${x},`),
             "}",
         ];
     }

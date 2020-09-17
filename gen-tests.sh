@@ -9,5 +9,9 @@ for dir in src/test/*; do
     if ! [[ -f $dir/grammar.peg ]]; then
         continue
     fi
-    node ./tsbuild/cli.js $dir/grammar.peg $dir/parser.ts
+    if [[ -e $dir/flags.txt ]]; then
+        cat $dir/flags.txt | xargs -I {} node ./tsbuild/cli.js {} $dir/grammar.peg $dir/parser.ts
+    else
+        node ./tsbuild/cli.js $dir/grammar.peg $dir/parser.ts
+    fi
 done;
