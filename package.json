@@ -22,6 +22,7 @@
     "devDependencies": {
         "@types/jest": "^25.1.4",
         "@types/node": "^12.12.30",
+        "@types/yargs": "^15.0.5",
         "jest": "^26.4.2",
         "ts-jest": "^26.3.0",
         "tslint": "^6.1.0",
@@ -36,5 +37,8 @@
             "/node_modules/",
             "^.+\\.js$"
         ]
+    },
+    "dependencies": {
+        "yargs": "^16.0.3"
     }
 }

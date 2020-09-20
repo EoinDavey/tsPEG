@@ -20,8 +20,8 @@ interface ASTNodeIntf {
     kind: ASTKinds;
 }
 export enum ASTKinds {
-    EXPR,
-    _,
+    EXPR = "EXPR",
+    _ = "_",
 }
 export interface EXPR {
     kind: ASTKinds.EXPR;

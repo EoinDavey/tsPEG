@@ -23,6 +23,11 @@ function addScope(id: string): string {
 
 export class Generator {
     private subRules: Map<ATOM, string> = new Map();
+    private numEnums: boolean;
+
+    public constructor(numEnums: boolean = false) {
+        this.numEnums = numEnums;
+    }
 
     public AST2Gram(g: GRAM): Grammar {
         const gram = g.rules.map((def) => this.extractRules(def.rule.list, def.name));
@@ -148,7 +153,9 @@ export class Generator {
         }
         return [
             "export enum ASTKinds {",
-            astKinds.map((x) => x + ","),
+            this.numEnums
+                ? astKinds.map(x => `${x},`)
+                : astKinds.map(x => `${x} = "${x}",`),
             "}",
         ];
     }
@@ -390,7 +397,7 @@ export class Generator {
     }
 }
 
-export function buildParser(s: string): string {
-    const gen = new Generator();
+export function buildParser(s: string, numEnums: boolean): string {
+    const gen = new Generator(numEnums);
     return gen.generate(s);
 }
