@@ -19,13 +19,13 @@ interface ASTNodeIntf {
     kind: ASTKinds;
 }
 export enum ASTKinds {
-    lowercase,
-    UPPERCASE,
-    _start_hypen_,
-    numbers1ab234,
-    rule,
-    rule2,
-    rule3,
+    lowercase = "lowercase",
+    UPPERCASE = "UPPERCASE",
+    _start_hypen_ = "_start_hypen_",
+    numbers1ab234 = "numbers1ab234",
+    rule = "rule",
+    rule2 = "rule2",
+    rule3 = "rule3",
 }
 export type lowercase = string;
 export type UPPERCASE = string;

@@ -12,7 +12,7 @@ interface ASTNodeIntf {
     kind: ASTKinds;
 }
 export enum ASTKinds {
-    RULE,
+    RULE = "RULE",
 }
 export type RULE = string;
 export class Parser {

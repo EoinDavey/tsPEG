@@ -219,13 +219,14 @@ test("subrule type/rule test", () => {
 });
 
 test("writeKinds test", () => {
-    interface TestCase { inp: string, writeKinds: string };
+    interface TestCase { inp: string, writeKinds: string, numEnums: boolean };
     const tcs: TestCase[] = [
         {
             inp: "rule := 'regex'",
             writeKinds: `export enum ASTKinds {
     rule,
-}`
+}`,
+            numEnums: true,
         },
         {
             inp: `rule := 'regex' | rule reference
@@ -237,14 +238,35 @@ test("writeKinds test", () => {
     rule_two_2,
     rule_two_3,
     rule_two_$0,
-}`
-        }
+}`,
+            numEnums: true,
+        },
+        {
+            inp: "rule := 'regex'",
+            writeKinds: `export enum ASTKinds {
+    rule = "rule",
+}`,
+            numEnums: false,
+        },
+        {
+            inp: `rule := 'regex' | rule reference
+            rule_two := more | rule | { subrule }`,
+            writeKinds: `export enum ASTKinds {
+    rule_1 = "rule_1",
+    rule_2 = "rule_2",
+    rule_two_1 = "rule_two_1",
+    rule_two_2 = "rule_two_2",
+    rule_two_3 = "rule_two_3",
+    rule_two_$0 = "rule_two_$0",
+}`,
+            numEnums: false,
+        },
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
-        const g = new Generator();
+        const g = new Generator(tc.numEnums);
         const gram = g.AST2Gram(res.ast!);
         const got = writeBlock(g.writeKinds(gram)).join("\n");
         expect(got).toEqual(tc.writeKinds);
