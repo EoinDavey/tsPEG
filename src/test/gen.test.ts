@@ -341,6 +341,31 @@ test("writeRuleClasses Test", () => {
     }
 }`
         },
+        {
+            inp: `rule := 'a'
+                .computed = (req: number, opt?: boolean, ...rest: A.B<K>[]) => test { return 0; }`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: (req: number, opt?: boolean, ...rest: A.B<K>[]) => test;
+    constructor(){
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a'
+                .computed = [number, bool, new () => void] {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: [number, bool, new () => void];
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);

@@ -27,7 +27,7 @@ _         := '(?:\s|(?:\/\/.*(?:\n|$)))*'
 
 // Grammar to match TypeScript type defs
 
-TS_TYPE := _ start=@ { TS_EXPR | TS_FUNCTION | TS_CONSTRUCTOR } end=@
+TS_TYPE := _ start=@ { TS_FUNCTION | TS_CONSTRUCTOR | TS_EXPR } end=@
 
 TS_EXPR := _ TS_PRIM {_ '[&|]' TS_PRIM }*
 TS_PRIM := {

@@ -25,7 +25,7 @@
 * // and // comments.
 * _         := '(?:\s|(?:\/\/.*(?:\n|$)))*'
 * // Grammar to match TypeScript type defs
-* TS_TYPE := _ start=@ { TS_EXPR | TS_FUNCTION | TS_CONSTRUCTOR } end=@
+* TS_TYPE := _ start=@ { TS_FUNCTION | TS_CONSTRUCTOR | TS_EXPR } end=@
 * TS_EXPR := _ TS_PRIM {_ '[&|]' TS_PRIM }*
 * TS_PRIM := {
 *     '\(' _ TS_TYPE _ '\)'
@@ -213,9 +213,9 @@ export interface TS_TYPE {
     end: PosInfo;
 }
 export type TS_TYPE_$0 = TS_TYPE_$0_1 | TS_TYPE_$0_2 | TS_TYPE_$0_3;
-export type TS_TYPE_$0_1 = TS_EXPR;
-export type TS_TYPE_$0_2 = TS_FUNCTION;
-export type TS_TYPE_$0_3 = TS_CONSTRUCTOR;
+export type TS_TYPE_$0_1 = TS_FUNCTION;
+export type TS_TYPE_$0_2 = TS_CONSTRUCTOR;
+export type TS_TYPE_$0_3 = TS_EXPR;
 export interface TS_EXPR {
     kind: ASTKinds.TS_EXPR;
 }
@@ -681,13 +681,13 @@ export class Parser {
         ]);
     }
     public matchTS_TYPE_$0_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_$0_1> {
-        return this.matchTS_EXPR($$dpth + 1, $$cr);
-    }
-    public matchTS_TYPE_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_$0_2> {
         return this.matchTS_FUNCTION($$dpth + 1, $$cr);
     }
-    public matchTS_TYPE_$0_3($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_$0_3> {
+    public matchTS_TYPE_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_$0_2> {
         return this.matchTS_CONSTRUCTOR($$dpth + 1, $$cr);
+    }
+    public matchTS_TYPE_$0_3($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_$0_3> {
+        return this.matchTS_EXPR($$dpth + 1, $$cr);
     }
     public matchTS_EXPR($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_EXPR> {
         return this.runner<TS_EXPR>($$dpth,
