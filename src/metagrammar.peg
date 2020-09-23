@@ -10,12 +10,12 @@ MATCHSPEC := _ named={name=NAME _ '=' _}? rule=MATCH
 MATCH     := SPECIAL | POSTOP
 SPECIAL   := op='@'
 POSTOP    := pre=PREOP op='\+|\*|\?'?
-            .optional = boolean { return this.op !== null && this.op === '?'}
+            .optional = boolean { return this.op === '?';}
 PREOP     := op='\&|!'? at=ATOM
 ATOM      := name=NAME !'\s*:='
            | match=STRLIT
            | '{' _ sub=RULE _ '}'
-ATTR      := _ '\.' name=NAME _ '=' _ type='[^\s\{]+' _ '\{'
+ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ '\{'
     action='([^\{\}\\]|(\\.))*'
 '\}'
 NAME      := '[a-zA-Z_][a-zA-Z0-9_]*'
@@ -24,3 +24,49 @@ STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
 // Whitespace definition includes traditional whitespace
 // and // comments.
 _         := '(?:\s|(?:\/\/.*(?:\n|$)))*'
+
+// Grammar to match TypeScript type defs
+
+TS_TYPE := _ start=@ { TS_FUNCTION | TS_CONSTRUCTOR | TS_EXPR } end=@
+
+TS_EXPR := _ TS_PRIM {_ '[&|]' TS_PRIM }*
+TS_PRIM := {
+    '\(' _ TS_TYPE _ '\)'
+    | TS_TYPE_QUERY
+    | TS_TYPE_REF
+    | TS_PROPERTY_NAME
+    | '\{' {_ TS_TYPE_MEMBER {_ '[;,]' _ TS_TYPE_MEMBER }* _ '[;,]?' }? _ '\}'
+    | '\[' _ { _ TS_TYPE {_ ',' _ TS_TYPE}* }? _ '\]'
+    } '\[\]'* // Optional trailing []s for array type
+
+TS_TYPE_REF := _ NAME {'\.' NAME}* {_ TS_GENERIC_PARAMS}?
+TS_TYPE_QUERY := _ 'typeof' &_ _ NAME {'\.' NAME}*
+
+TS_FUNCTION := _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ '=>' _ TS_TYPE
+TS_CONSTRUCTOR := _ 'new' _ TS_FUNCTION
+
+TS_GENERIC_PARAMS := _ '<' _ {TS_GENERIC_PARAM {_ ',' _ TS_GENERIC_PARAM}* }? _ '>'
+TS_GENERIC_PARAM := _ NAME {_ 'extends' _ TS_TYPE}?
+
+TS_PARAM_LIST := _ TS_REQUIRED_PARAMS {_ ',' _ TS_OPTIONAL_PARAMS}? {_ ',' _ TS_REST_PARAM}?
+    | _ TS_OPTIONAL_PARAMS {_ ',' _ TS_REST_PARAM}?
+    | _ TS_REST_PARAM
+
+TS_REQUIRED_PARAMS := _ TS_REQUIRED_PARAM {_ ',' _ TS_REQUIRED_PARAM}*
+TS_REQUIRED_PARAM := _ NAME _ ':' _ TS_TYPE
+
+TS_OPTIONAL_PARAMS := _ TS_OPTIONAL_PARAM _ {',' _ TS_OPTIONAL_PARAM}*
+TS_OPTIONAL_PARAM := _ NAME '\?' _ ':' _ TS_TYPE
+
+TS_REST_PARAM := _ '\.\.\.' _ NAME _ ':' _ TS_TYPE
+
+TS_TYPE_MEMBER := TS_PROPERTY_NAME '\??' _ ':' _ TS_TYPE
+    | _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+    | _ 'new' &_ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+    | _ '\[' _ NAME _ ':' _ NAME _ '\]' _ ':' _ TS_TYPE
+    | _ NAME '\??' _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+
+TS_PROPERTY_NAME := NAME | TS_STRING | TS_NUM
+TS_STRING := '"' val='([^"\\]|(\\.))*' '"'
+    | '\'' val='([^\'\\]|(\\.))*' '\''
+TS_NUM := '-?[0-9]+(?:\.[0-9]+)?'

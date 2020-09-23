@@ -129,7 +129,7 @@ test("extractRule test", () => {
         const res = parse(tc.inp);
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
-        const gen = new Generator();
+        const gen = new Generator(tc.inp);
         const names : string[] = res.ast!.rules.map(x => gen.extractRules(x.rule.list, x.name))
             .reduce((x, y) => x.concat(y))
             .map(x => x.name);
@@ -191,7 +191,7 @@ test("match type/rule test", () => {
         const res = p.matchMATCH(0);
         expect(res).not.toBeNull();
         const m : MATCH = res!;
-        const gen = new Generator();
+        const gen = new Generator(tc.match);
         const gotType = gen.matchType(m);
         expect(gotType).toEqual(tc.expType);
         if(tc.expRule) {
@@ -211,7 +211,7 @@ test("subrule type/rule test", () => {
     expect(res.ast).not.toBeNull();
 
     const ast = res.ast!;
-    const gen = new Generator();
+    const gen = new Generator(inp);
     gen.AST2Gram(ast);
     const subRef = ast.rules[0].rule.list[0].matches[1].rule;
     expect(gen.matchType(subRef)).toEqual(expectedType);
@@ -266,7 +266,7 @@ test("writeKinds test", () => {
         const res = parse(tc.inp);
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
-        const g = new Generator(tc.numEnums);
+        const g = new Generator(tc.inp, tc.numEnums);
         const gram = g.AST2Gram(res.ast!);
         const got = writeBlock(g.writeKinds(gram)).join("\n");
         expect(got).toEqual(tc.writeKinds);
@@ -300,13 +300,139 @@ test("writeRuleClasses Test", () => {
         })();
     }
 }`
-        }
+        },
+        // Test complex type names
+        {
+            inp: `rule := 'a' .computed = (x: number, y: string) => number | boolean { return 0; }`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: (x: number, y: string) => number | boolean;
+    constructor(){
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = <Generic extends Something>(x: Array<Generic>) => number { return 0; }`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: <Generic extends Something>(x: Array<Generic>) => number;
+    constructor(){
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = A.B.C<Generic>[][] { return 0; }`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: A.B.C<Generic>[][];
+    constructor(){
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = (req: number, opt?: boolean, ...rest: A.B<K>[]) => test { return 0; }`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: (req: number, opt?: boolean, ...rest: A.B<K>[]) => test;
+    constructor(){
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = [number, bool, new () => void] {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: [number, bool, new () => void];
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = (a: (typeof a)[]) => (new () => void) {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: (a: (typeof a)[]) => (new () => void);
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = {a: number; b: boolean} {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: {a: number; b: boolean};
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = {a: number; b: {nested: () => void};}[] {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: {a: number; b: {nested: () => void};}[];
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = { a(x: number): void } {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: { a(x: number): void };
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = { [x: string]: void } {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: { [x: string]: void };
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = { "test": test } {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: { "test": test };
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
-        const g = new Generator();
+        const g = new Generator(tc.inp);
         const gram = g.AST2Gram(res.ast!);
         const got = writeBlock(g.writeRuleClasses(gram)).join("\n");
         expect(got).toEqual(tc.ruleClasses);
