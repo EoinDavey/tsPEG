@@ -14,13 +14,18 @@
         "build": "tsc && npm run gen && tsc",
         "gen": "cp src/meta.ts /tmp/meta.ts && node ./tsbuild/cli.js src/metagrammar.peg src/meta.ts",
         "test": "./gen-tests.sh && jest",
-        "clean": "rm -rf tsbuild"
+        "clean": "rm -rf tsbuild",
+        "lint": "eslint",
+        "lint-all": "eslint --ext .ts src/"
     },
     "license": "ISC",
     "devDependencies": {
         "@types/jest": "^26.0.14",
         "@types/node": "^14.11.2",
         "@types/yargs": "^15.0.7",
+        "@typescript-eslint/eslint-plugin": "^4.2.0",
+        "@typescript-eslint/parser": "^4.2.0",
+        "eslint": "^7.9.0",
         "jest": "^26.4.2",
         "setanta": "^0.8.0",
         "ts-jest": "^26.4.0",
