@@ -102,8 +102,8 @@
 *                }
 *                .qeval = Quick.MaybeEv { return Quick.qListLitEval(this); }
 * CSArgs      := start=@ head=Expr tail={_ ',' exp=Expr}* end=@
-*                .evalfn = (env:Context)=>Promise<Value[]> { return csArgsEval(this); }
-*                .qeval = ((env:Context)=>Value[])|null { return Quick.qCSArgsEval(this); }
+*                .evalfn = (env:Context) => Promise<Value[]> { return csArgsEval(this); }
+*                .qeval = ((env:Context) => Value[]) | null { return Quick.qCSArgsEval(this); }
 * CSIDs       := head=ID tail={_ ',' id=ID}*
 *                .ids = string[] { return [this.head.id].concat(this.tail.map((x) => x.id.id)); }
 * ID          := _ !{Keyword gap} start=@ id='[a-zA-Z_áéíóúÁÉÍÓÚ][a-zA-Z_áéíóúÁÉÍÓÚ0-9]*' end=@
@@ -643,17 +643,17 @@ export class CSArgs {
     public head: Expr;
     public tail: CSArgs_$0[];
     public end: PosInfo;
-    public evalfn: (env:Context)=>Promise<Value[]>;
-    public qeval: ((env:Context)=>Value[])|null;
+    public evalfn: (env:Context) => Promise<Value[]>;
+    public qeval: ((env:Context) => Value[]) | null;
     constructor(start: PosInfo, head: Expr, tail: CSArgs_$0[], end: PosInfo){
         this.start = start;
         this.head = head;
         this.tail = tail;
         this.end = end;
-        this.evalfn = ((): (env:Context)=>Promise<Value[]> => {
+        this.evalfn = ((): (env:Context) => Promise<Value[]> => {
         return csArgsEval(this);
         })();
-        this.qeval = ((): ((env:Context)=>Value[])|null => {
+        this.qeval = ((): ((env:Context) => Value[]) | null => {
         return Quick.qCSArgsEval(this);
         })();
     }
