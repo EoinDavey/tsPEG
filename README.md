@@ -27,6 +27,8 @@ The CLI invocation syntax is as follows
 
 This generates a TypeScript ES6 module that exports a parser class, as well as classes that represent your AST.
 
+Run `tspeg --help` to see usage and available flags.
+
 ## Parser Usage
 
 The parser exports a `parse` function that accepts an input string, and returns `ParseResult` object like this
