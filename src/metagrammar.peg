@@ -15,7 +15,7 @@ PREOP     := op='\&|!'? at=ATOM
 ATOM      := name=NAME !'\s*:='
            | match=STRLIT
            | '{' _ sub=RULE _ '}'
-ATTR      := _ '\.' name=NAME _ '=' _ type='[^\s\{]+' _ '\{'
+ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ '\{'
     action='([^\{\}\\]|(\\.))*'
 '\}'
 NAME      := '[a-zA-Z_][a-zA-Z0-9_]*'
@@ -27,11 +27,14 @@ _         := '(?:\s|(?:\/\/.*(?:\n|$)))*'
 
 // Grammar to match TypeScript type defs
 
-TS_TYPE := TS_EXPR | TS_FUNCTION | TS_CONSTRUCTOR
+TS_TYPE := _ start=@ { TS_EXPR | TS_FUNCTION | TS_CONSTRUCTOR } end=@
 
-TS_EXPR := TS_PRIM { '[&|]' TS_PRIM }*
-TS_PRIM := '\(' TS_TYPE '\)'
+TS_EXPR := _ TS_PRIM {_ '[&|]' TS_PRIM }*
+TS_PRIM := {
+    '\(' TS_TYPE '\)'
     | TS_TYPE_REF
+    | '\[' { TS_TYPE {',' TS_TYPE}* }? '\]'
+    } '\[\]'? // Optional trailing []s for array type
 
 TS_TYPE_REF := NAME {'\.' NAME}* TS_GENERIC_PARAMS?
 

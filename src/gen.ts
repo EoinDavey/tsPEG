@@ -1,4 +1,4 @@
-import { ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, MATCH, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
+import { TS_TYPE, ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, MATCH, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
 
 import { expandTemplate } from "./template";
 
@@ -21,11 +21,17 @@ function addScope(id: string): string {
     return "$scope$" + id;
 }
 
+export function printType(t: TS_TYPE, inputStr: string): string {
+    return inputStr.substring(t.start.overallPos, t.end.overallPos);
+}
+
 export class Generator {
     private subRules: Map<ATOM, string> = new Map();
     private numEnums: boolean;
+    private input: string;
 
-    public constructor(numEnums: boolean = false) {
+    public constructor(input: string, numEnums: boolean = false) {
+        this.input = input;
         this.numEnums = numEnums;
     }
 
@@ -180,7 +186,7 @@ export class Generator {
                 [
                     `public kind: ASTKinds.${name} = ASTKinds.${name};`,
                     ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
-                    ...alt.attrs.map((x) => `public ${x.name}: ${x.type};`),
+                    ...alt.attrs.map((x) => `public ${x.name}: ${printType(x.type, this.input)};`),
                      `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
                     namedTypes.map((x) => `this.${x[0]} = ${x[0]};`),
                     ...alt.attrs.map((x) => [`this.${x.name} = (() => {`,
@@ -380,8 +386,8 @@ export class Generator {
         ];
     }
 
-    public generate(s: string): string {
-        const p = new Parser(s);
+    public generate(): string {
+        const p = new Parser(this.input);
         const res = p.parse();
         if (res.err) {
             throw res.err;
@@ -391,13 +397,13 @@ export class Generator {
         }
         const gram = this.AST2Gram(res.ast);
         const hdr: Block = res.ast.header ? [res.ast.header.content] : [];
-        const parseBlock = expandTemplate(s, hdr, this.writeKinds(gram), this.writeRuleClasses(gram),
+        const parseBlock = expandTemplate(this.input, hdr, this.writeKinds(gram), this.writeRuleClasses(gram),
             this.writeRuleParseFns(gram), this.writeParseResultClass(gram));
         return writeBlock(parseBlock).join("\n");
     }
 }
 
 export function buildParser(s: string, numEnums: boolean): string {
-    const gen = new Generator(numEnums);
-    return gen.generate(s);
+    const gen = new Generator(s, numEnums);
+    return gen.generate();
 }
