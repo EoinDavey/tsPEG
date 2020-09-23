@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 2.0.0 - 2020/09/23
+
 ### Added
 
 - Special error is raised when EOF is not reached during parse.
