@@ -295,45 +295,67 @@ test("writeRuleClasses Test", () => {
     public computed: number;
     constructor(name: string){
         this.name = name;
-        this.computed = (() => {
+        this.computed = ((): number => {
         return 0;
         })();
     }
 }`
         },
-        // Test complex type names
+        // Test complex type names and code section
         {
-            inp: `rule := 'a' .computed = (x: number, y: string) => number | boolean { return 0; }`,
+            inp: `rule := 'a'
+            .computed = (x: number, y: string) => number | boolean {
+            if(true) {
+                return 0;
+            }
+            }`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: (x: number, y: string) => number | boolean;
     constructor(){
-        this.computed = (() => {
-        return 0;
+        this.computed = ((): (x: number, y: string) => number | boolean => {
+        if(true) {
+                return 0;
+            }
         })();
     }
 }`
         },
         {
-            inp: `rule := 'a' .computed = <Generic extends Something>(x: Array<Generic>) => number { return 0; }`,
+            inp: `rule := 'a'
+            .computed = <Generic extends Something>(x: Array<Generic>) => number {
+            if(nest) {
+                for(;;) {
+                }
+                for(;;) {
+                    if(nested) {}
+                }
+            }
+            }`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: <Generic extends Something>(x: Array<Generic>) => number;
     constructor(){
-        this.computed = (() => {
-        return 0;
+        this.computed = ((): <Generic extends Something>(x: Array<Generic>) => number => {
+        if(nest) {
+                for(;;) {
+                }
+                for(;;) {
+                    if(nested) {}
+                }
+            }
         })();
     }
 }`
         },
         {
-            inp: `rule := 'a' .computed = A.B.C<Generic>[][] { return 0; }`,
+            inp: `rule := 'a' .computed = A.B.C<Generic>[][] { return "string with {} }}}{{}}"; }`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: A.B.C<Generic>[][];
     constructor(){
-        this.computed = (() => {
-        return 0;
+        this.computed = ((): A.B.C<Generic>[][] => {
+        return "string with {} }}}{{}}";
         })();
     }
 }`
@@ -344,7 +366,7 @@ test("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: (req: number, opt?: boolean, ...rest: A.B<K>[]) => test;
     constructor(){
-        this.computed = (() => {
+        this.computed = ((): (req: number, opt?: boolean, ...rest: A.B<K>[]) => test => {
         return 0;
         })();
     }
@@ -356,7 +378,7 @@ test("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: [number, bool, new () => void];
     constructor(){
-        this.computed = (() => {
+        this.computed = ((): [number, bool, new () => void] => {
         })();
     }
 }`
@@ -367,7 +389,7 @@ test("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: (a: (typeof a)[]) => (new () => void);
     constructor(){
-        this.computed = (() => {
+        this.computed = ((): (a: (typeof a)[]) => (new () => void) => {
         })();
     }
 }`
@@ -378,7 +400,7 @@ test("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: {a: number; b: boolean};
     constructor(){
-        this.computed = (() => {
+        this.computed = ((): {a: number; b: boolean} => {
         })();
     }
 }`
@@ -389,7 +411,7 @@ test("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: {a: number; b: {nested: () => void};}[];
     constructor(){
-        this.computed = (() => {
+        this.computed = ((): {a: number; b: {nested: () => void};}[] => {
         })();
     }
 }`
@@ -400,7 +422,7 @@ test("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: { a(x: number): void };
     constructor(){
-        this.computed = (() => {
+        this.computed = ((): { a(x: number): void } => {
         })();
     }
 }`
@@ -411,7 +433,7 @@ test("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: { [x: string]: void };
     constructor(){
-        this.computed = (() => {
+        this.computed = ((): { [x: string]: void } => {
         })();
     }
 }`
@@ -422,7 +444,7 @@ test("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: { "test": test };
     constructor(){
-        this.computed = (() => {
+        this.computed = ((): { "test": test } => {
         })();
     }
 }`
