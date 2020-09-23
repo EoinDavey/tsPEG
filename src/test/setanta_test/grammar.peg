@@ -1,3 +1,15 @@
+---
+import { Context } from "setanta/node_build/ctx";
+import { callFunc, idxList, Value } from "setanta/node_build/values";
+import { unescapeChars } from "setanta/node_build/teacs";
+import * as Asserts from "setanta/node_build/asserts";
+import * as Checks from "setanta/node_build/checks";
+import { orBinOp, orQuickBinOp, andBinOp, andQuickBinOp,
+    binOpEvalFn, binOpQuickEvalFn } from "setanta/node_build/binops";
+import { objLookupsEval, postfixArgsEval, csArgsEval, prefEval, EvalFn } from "setanta/node_build/evals";
+import { qEvalToEval } from "setanta/node_build/evals";
+import * as Quick from "setanta/node_build/quickevals";
+---
 Program     := stmts=AsgnStmt* _
 AsgnStmt    := IfStmt
              | BlockStmt
@@ -24,46 +36,93 @@ IfStmt      := _ 'm[áa]' &gap expr=Expr &gap stmt=NonAsgnStmt elsebranch={_ 'n[
 BlockStmt   := _ '{' blk=AsgnStmt* _ '}'
 NuairStmt   := _ 'nuair-a' expr=Expr &gap stmt=NonAsgnStmt
 LeStmt      := _ 'le' &gap id=ID _ 'idir' _ '\('strt=Expr _ ',' end=Expr step={_ ',' step=Expr}? _ '\)' stmt=NonAsgnStmt
-DefnStmt    := _ id=ID _ ':=' _ expr=Expr
-AssgnStmt   := _ lhs=Postfix _ op=AsgnOp _ expr=Expr
+DefnStmt    := _ idstart=@ id=ID idend=@ _ ':=' _ expr=Expr
+AssgnStmt   := _ lstart=@ lhs=Postfix lend=@ _ op=AsgnOp _ expr=Expr
 GniomhStmt  := _ 'gn[íi]omh' &gap id=ID _ '\(' args=CSIDs? _ '\)' _ '{'
     stmts=AsgnStmt*
 _ '}'
-CtlchStmt   := _ 'creatlach' &gap id=ID tuis={_ 'ó' &gap id=ID}? _ '{'
+CtlchStmt   := _ 'creatlach' &gap id=ID tuis={_ 'ó' &gap parentstart=@ id=ID parentend=@}? _ '{'
     gniomhs=GniomhStmt*
 _ '}'
 BrisStmt    := _ 'bris'
 CCStmt      := _ 'chun-cinn'
 ToradhStmt  := _ 'toradh' &gap exp=Expr?
 Expr        := And
-And         := head=Or tail={_ '\&' trm=Or}*
-Or          := head=Eq tail={_ '\|' trm=Eq}*
-Eq          := head=Comp tail={_ op='[!=]=' trm=Comp}*
-Comp        := head=Sum tail={_ op=Compare trm=Sum}*
-Sum         := head=Product tail={_ op=PlusMinus trm=Product}*
-Product     := head=Prefix tail={_ op=MulDiv trm=Prefix}*
-Prefix      := _ op='-|!'? pf=Postfix
-Postfix     := at=ObjLookups ops=PostOp*
-ObjLookups  := attrs={id=ID '@' !wspace}* root=Atom
+And         := start=@ head=Or tail={_ '\&' trm=Or}* end=@
+               .evalfn = EvalFn { return andBinOp(this); }
+               .qeval = Quick.MaybeEv { return andQuickBinOp(this); }
+Or          := start=@ head=Eq tail={_ '\|' trm=Eq}* end=@
+               .evalfn = EvalFn { return orBinOp(this) }
+               .qeval = Quick.MaybeEv { return orQuickBinOp(this); }
+Eq          := start=@ head=Comp tail={_ op='[!=]=' trm=Comp}* end=@
+               .evalfn = EvalFn { return binOpEvalFn(this) }
+               .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+Comp        := start=@ head=Sum tail={_ op=Compare trm=Sum}* end=@
+               .evalfn = EvalFn { return binOpEvalFn(this) }
+               .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+Sum         := start=@ head=Product tail={_ op=PlusMinus trm=Product}* end=@
+               .evalfn = EvalFn { return binOpEvalFn(this) }
+               .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+Product     := start=@ head=Prefix tail={_ op=MulDiv trm=Prefix}* end=@
+               .evalfn = EvalFn { return binOpEvalFn(this); }
+               .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+Prefix      := _ start=@ op='-|!'? pf=Postfix end=@
+               .evalfn = EvalFn { return prefEval(this); }
+               .qeval = Quick.MaybeEv { return Quick.qPrefEval(this); }
+Postfix     := start=@ at=ObjLookups ops=PostOp* end=@
+               .evalfn = EvalFn { return postfixArgsEval(this); }
+               .qeval = Quick.MaybeEv { return Quick.qPostfixArgsEval(this); }
+ObjLookups  := start=@ attrs={id=ID '@' !wspace}* root=Atom end=@
+               .evalfn = EvalFn { return objLookupsEval(this); }
+               .qeval = Quick.MaybeEv { return Quick.qObjLookupsEval(this); }
 PostOp      := '\(' args=CSArgs? _ '\)' | '\[' expr=Expr _ '\]'
-Atom        :=  _ '\(' trm=Expr '\)'
+Atom        :=  _ '\(' trm=Expr _ '\)'
+               .evalfn = EvalFn { return (env: Context) => this.trm.evalfn(env); }
+               .qeval = Quick.MaybeEv {
+                    const childF = this.trm.qeval;
+                    return childF === null ? null : childF.bind(this.trm);
+               }
              | ID
-             | Litreacha
+             | Teacs
              | Int
              | Bool
              | Neamhni
              | ListLit
+             | GniomhExpr
+GniomhExpr  := _ 'gn[íi]omh' _ '\(' args=CSIDs? _ '\)' _ '{'
+    stmts=AsgnStmt*
+_ '}'
+               .evalfn = EvalFn { return qEvalToEval(Quick.qGníomhEval(this)); }
+               .qeval = Quick.EvalFn { return Quick.qGníomhEval(this); }
 ListLit     := _ '\[' els=CSArgs? _ '\]'
-CSArgs      := head=Expr tail={_ ',' exp=Expr}*
+               .evalfn = EvalFn {
+                   return (env: Context) => this.els ? this.els.evalfn(env) : Promise.resolve([]);
+               }
+               .qeval = Quick.MaybeEv { return Quick.qListLitEval(this); }
+CSArgs      := start=@ head=Expr tail={_ ',' exp=Expr}* end=@
+               .evalfn = (env:Context)=>Promise<Value[]> { return csArgsEval(this); }
+               .qeval = ((env:Context)=>Value[])|null { return Quick.qCSArgsEval(this); }
 CSIDs       := head=ID tail={_ ',' id=ID}*
-ID          := _ !{Keyword gap} id='[a-zA-Z_áéíóúÁÉÍÓÚ]+'
+               .ids = string[] { return [this.head.id].concat(this.tail.map((x) => x.id.id)); }
+ID          := _ !{Keyword gap} start=@ id='[a-zA-Z_áéíóúÁÉÍÓÚ][a-zA-Z_áéíóúÁÉÍÓÚ0-9]*' end=@
+               .evalfn = EvalFn { return qEvalToEval(Quick.qIdEval(this.id, this.start, this.end)); }
+               .qeval = Quick.EvalFn { return Quick.qIdEval(this.id, this.start, this.end); }
 Bool        := _ bool='f[ií]or|br[eé]ag'
+               .evalfn = EvalFn { return qEvalToEval(Quick.qBoolEval(this.bool)); }
+               .qeval = Quick.EvalFn { return Quick.qBoolEval(this.bool); }
 Neamhni     := _ 'neamhn[ií]'
+               .evalfn = EvalFn { return () => Promise.resolve(null); }
+               .qeval = Quick.EvalFn { return () => null; }
 Int         := _ int='-?[0-9]+(?:\.[0-9]+)?'
-Litreacha   := _ '\'' val='([^\'\\]|\\.)*' '\''
+               .evalfn = EvalFn { return qEvalToEval(Quick.qIntEval(this.int)); }
+               .qeval = Quick.EvalFn { return Quick.qIntEval(this.int); }
+Teacs       := _ lit={ start=@ '\'' val='([^\'\\]|\\.)*' '\'' end=@ |
+                       start=@ '"' val='([^"\\]|\\.)*' '"' end=@ }
+               .evalfn = EvalFn { return qEvalToEval(Quick.qTéacsEval(this.lit.val, this.lit.start, this.lit.end)); }
+               .qeval = Quick.EvalFn { return Quick.qTéacsEval(this.lit.val, this.lit.start, this.lit.end); }
 _           := wspace*
 wspace      := '(?:\s|>--(?:(?!--<).)*(--<|\n|$))'
-gap         := { wspace | '[^a-zA-Z0-9áéíóúÁÉÍÓÚ]' }+ | '$'
+gap         := wspace | '[^a-zA-Z0-9áéíóúÁÉÍÓÚ]' | '$'
 PlusMinus   := '\+|-'
 AsgnOp      := '=|\+=|\*=|-=|%=|\/='
 MulDiv      := '\*|\/\/|%|\/'

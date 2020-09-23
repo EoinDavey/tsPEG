@@ -24,6 +24,7 @@
         "@types/node": "^12.12.30",
         "@types/yargs": "^15.0.5",
         "jest": "^26.4.2",
+        "setanta": "^0.8.0",
         "ts-jest": "^26.3.0",
         "tslint": "^6.1.0",
         "typescript": "^3.8.3"
