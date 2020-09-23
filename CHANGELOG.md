@@ -10,6 +10,7 @@
 
 ### Changed
 
+- No longer need to use braces ({}) in code sections in computed properties.
 - `mark` parser method is now public.
 - Enums are now string valued by default.
 
