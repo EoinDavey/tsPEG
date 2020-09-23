@@ -10,7 +10,7 @@ MATCHSPEC := _ named={name=NAME _ '=' _}? rule=MATCH
 MATCH     := SPECIAL | POSTOP
 SPECIAL   := op='@'
 POSTOP    := pre=PREOP op='\+|\*|\?'?
-            .optional = boolean { return this.op !== null && this.op === '?'}
+            .optional = boolean { return this.op === '?';}
 PREOP     := op='\&|!'? at=ATOM
 ATOM      := name=NAME !'\s*:='
            | match=STRLIT
@@ -24,3 +24,31 @@ STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
 // Whitespace definition includes traditional whitespace
 // and // comments.
 _         := '(?:\s|(?:\/\/.*(?:\n|$)))*'
+
+// Grammar to match TypeScript type defs
+
+TS_TYPE := TS_EXPR | TS_FUNCTION | TS_CONSTRUCTOR
+
+TS_EXPR := TS_PRIM { '[&|]' TS_PRIM }*
+TS_PRIM := '\(' TS_TYPE '\)'
+    | TS_TYPE_REF
+
+TS_TYPE_REF := NAME {'\.' NAME}* TS_GENERIC_PARAMS?
+
+TS_FUNCTION := TS_GENERIC_PARAMS? '\(' TS_PARAM_LIST? '\)' '=>' TS_TYPE
+TS_CONSTRUCTOR := 'new' TS_FUNCTION
+
+TS_GENERIC_PARAMS := '<' {TS_GENERIC_PARAM {',' TS_GENERIC_PARAM}* }? '>'
+TS_GENERIC_PARAM := NAME {_ 'extends' TS_TYPE}?
+
+TS_PARAM_LIST := TS_REQUIRED_PARAMS {',' TS_OPTIONAL_PARAMS}? {',' TS_REST_PARAM}?
+    | TS_OPTIONAL_PARAMS {',' TS_REST_PARAM}?
+    | TS_REST_PARAM
+
+TS_REQUIRED_PARAMS := TS_REQUIRED_PARAM {',' TS_REQUIRED_PARAM}*
+TS_REQUIRED_PARAM := NAME ':' TS_TYPE
+
+TS_OPTIONAL_PARAMS := TS_OPTIONAL_PARAM {',' TS_OPTIONAL_PARAM}*
+TS_OPTIONAL_PARAM := NAME '\?' ':' TS_TYPE
+
+TS_REST_PARAM := '\.\.\.' NAME ':' TS_TYPE

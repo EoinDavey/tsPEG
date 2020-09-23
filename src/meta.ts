@@ -11,7 +11,7 @@
 * MATCH     := SPECIAL | POSTOP
 * SPECIAL   := op='@'
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
-*             .optional = boolean { return this.op !== null && this.op === '?'}
+*             .optional = boolean { return this.op === '?';}
 * PREOP     := op='\&|!'? at=ATOM
 * ATOM      := name=NAME !'\s*:='
 *            | match=STRLIT
@@ -24,6 +24,24 @@
 * // Whitespace definition includes traditional whitespace
 * // and // comments.
 * _         := '(?:\s|(?:\/\/.*(?:\n|$)))*'
+* // Grammar to match TypeScript type defs
+* TS_TYPE := TS_EXPR | TS_FUNCTION | TS_CONSTRUCTOR
+* TS_EXPR := TS_PRIM { '[&|]' TS_PRIM }*
+* TS_PRIM := '\(' TS_TYPE '\)'
+*     | TS_TYPE_REF
+* TS_TYPE_REF := NAME {'\.' NAME}* TS_GENERIC_PARAMS?
+* TS_FUNCTION := TS_GENERIC_PARAMS? '\(' TS_PARAM_LIST? '\)' '=>' TS_TYPE
+* TS_CONSTRUCTOR := 'new' TS_FUNCTION
+* TS_GENERIC_PARAMS := '<' {TS_GENERIC_PARAM {',' TS_GENERIC_PARAM}* }? '>'
+* TS_GENERIC_PARAM := NAME {_ 'extends' TS_TYPE}?
+* TS_PARAM_LIST := TS_REQUIRED_PARAMS {',' TS_OPTIONAL_PARAMS}? {',' TS_REST_PARAM}?
+*     | TS_OPTIONAL_PARAMS {',' TS_REST_PARAM}?
+*     | TS_REST_PARAM
+* TS_REQUIRED_PARAMS := TS_REQUIRED_PARAM {',' TS_REQUIRED_PARAM}*
+* TS_REQUIRED_PARAM := NAME ':' TS_TYPE
+* TS_OPTIONAL_PARAMS := TS_OPTIONAL_PARAM {',' TS_OPTIONAL_PARAM}*
+* TS_OPTIONAL_PARAM := NAME '\?' ':' TS_TYPE
+* TS_REST_PARAM := '\.\.\.' NAME ':' TS_TYPE
 */
 type Nullable<T> = T | null;
 type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
@@ -54,6 +72,35 @@ export enum ASTKinds {
     NAME = "NAME",
     STRLIT = "STRLIT",
     _ = "_",
+    TS_TYPE_1 = "TS_TYPE_1",
+    TS_TYPE_2 = "TS_TYPE_2",
+    TS_TYPE_3 = "TS_TYPE_3",
+    TS_EXPR = "TS_EXPR",
+    TS_EXPR_$0 = "TS_EXPR_$0",
+    TS_PRIM_1 = "TS_PRIM_1",
+    TS_PRIM_2 = "TS_PRIM_2",
+    TS_TYPE_REF = "TS_TYPE_REF",
+    TS_TYPE_REF_$0 = "TS_TYPE_REF_$0",
+    TS_FUNCTION = "TS_FUNCTION",
+    TS_CONSTRUCTOR = "TS_CONSTRUCTOR",
+    TS_GENERIC_PARAMS = "TS_GENERIC_PARAMS",
+    TS_GENERIC_PARAMS_$0 = "TS_GENERIC_PARAMS_$0",
+    TS_GENERIC_PARAMS_$0_$0 = "TS_GENERIC_PARAMS_$0_$0",
+    TS_GENERIC_PARAM = "TS_GENERIC_PARAM",
+    TS_GENERIC_PARAM_$0 = "TS_GENERIC_PARAM_$0",
+    TS_PARAM_LIST_1 = "TS_PARAM_LIST_1",
+    TS_PARAM_LIST_2 = "TS_PARAM_LIST_2",
+    TS_PARAM_LIST_3 = "TS_PARAM_LIST_3",
+    TS_PARAM_LIST_$0 = "TS_PARAM_LIST_$0",
+    TS_PARAM_LIST_$1 = "TS_PARAM_LIST_$1",
+    TS_PARAM_LIST_$2 = "TS_PARAM_LIST_$2",
+    TS_REQUIRED_PARAMS = "TS_REQUIRED_PARAMS",
+    TS_REQUIRED_PARAMS_$0 = "TS_REQUIRED_PARAMS_$0",
+    TS_REQUIRED_PARAM = "TS_REQUIRED_PARAM",
+    TS_OPTIONAL_PARAMS = "TS_OPTIONAL_PARAMS",
+    TS_OPTIONAL_PARAMS_$0 = "TS_OPTIONAL_PARAMS_$0",
+    TS_OPTIONAL_PARAM = "TS_OPTIONAL_PARAM",
+    TS_REST_PARAM = "TS_REST_PARAM",
 }
 export interface GRAM {
     kind: ASTKinds.GRAM;
@@ -116,7 +163,7 @@ export class POSTOP {
         this.pre = pre;
         this.op = op;
         this.optional = (() => {
-        return this.op !== null && this.op === '?'
+        return this.op === '?';
         })();
     }
 }
@@ -151,6 +198,86 @@ export interface STRLIT {
     val: string;
 }
 export type _ = string;
+export type TS_TYPE = TS_TYPE_1 | TS_TYPE_2 | TS_TYPE_3;
+export type TS_TYPE_1 = TS_EXPR;
+export type TS_TYPE_2 = TS_FUNCTION;
+export type TS_TYPE_3 = TS_CONSTRUCTOR;
+export interface TS_EXPR {
+    kind: ASTKinds.TS_EXPR;
+}
+export interface TS_EXPR_$0 {
+    kind: ASTKinds.TS_EXPR_$0;
+}
+export type TS_PRIM = TS_PRIM_1 | TS_PRIM_2;
+export interface TS_PRIM_1 {
+    kind: ASTKinds.TS_PRIM_1;
+}
+export type TS_PRIM_2 = TS_TYPE_REF;
+export interface TS_TYPE_REF {
+    kind: ASTKinds.TS_TYPE_REF;
+}
+export interface TS_TYPE_REF_$0 {
+    kind: ASTKinds.TS_TYPE_REF_$0;
+}
+export interface TS_FUNCTION {
+    kind: ASTKinds.TS_FUNCTION;
+}
+export interface TS_CONSTRUCTOR {
+    kind: ASTKinds.TS_CONSTRUCTOR;
+}
+export interface TS_GENERIC_PARAMS {
+    kind: ASTKinds.TS_GENERIC_PARAMS;
+}
+export interface TS_GENERIC_PARAMS_$0 {
+    kind: ASTKinds.TS_GENERIC_PARAMS_$0;
+}
+export interface TS_GENERIC_PARAMS_$0_$0 {
+    kind: ASTKinds.TS_GENERIC_PARAMS_$0_$0;
+}
+export interface TS_GENERIC_PARAM {
+    kind: ASTKinds.TS_GENERIC_PARAM;
+}
+export interface TS_GENERIC_PARAM_$0 {
+    kind: ASTKinds.TS_GENERIC_PARAM_$0;
+}
+export type TS_PARAM_LIST = TS_PARAM_LIST_1 | TS_PARAM_LIST_2 | TS_PARAM_LIST_3;
+export interface TS_PARAM_LIST_1 {
+    kind: ASTKinds.TS_PARAM_LIST_1;
+}
+export interface TS_PARAM_LIST_2 {
+    kind: ASTKinds.TS_PARAM_LIST_2;
+}
+export type TS_PARAM_LIST_3 = TS_REST_PARAM;
+export interface TS_PARAM_LIST_$0 {
+    kind: ASTKinds.TS_PARAM_LIST_$0;
+}
+export interface TS_PARAM_LIST_$1 {
+    kind: ASTKinds.TS_PARAM_LIST_$1;
+}
+export interface TS_PARAM_LIST_$2 {
+    kind: ASTKinds.TS_PARAM_LIST_$2;
+}
+export interface TS_REQUIRED_PARAMS {
+    kind: ASTKinds.TS_REQUIRED_PARAMS;
+}
+export interface TS_REQUIRED_PARAMS_$0 {
+    kind: ASTKinds.TS_REQUIRED_PARAMS_$0;
+}
+export interface TS_REQUIRED_PARAM {
+    kind: ASTKinds.TS_REQUIRED_PARAM;
+}
+export interface TS_OPTIONAL_PARAMS {
+    kind: ASTKinds.TS_OPTIONAL_PARAMS;
+}
+export interface TS_OPTIONAL_PARAMS_$0 {
+    kind: ASTKinds.TS_OPTIONAL_PARAMS_$0;
+}
+export interface TS_OPTIONAL_PARAM {
+    kind: ASTKinds.TS_OPTIONAL_PARAM;
+}
+export interface TS_REST_PARAM {
+    kind: ASTKinds.TS_REST_PARAM;
+}
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;
@@ -494,6 +621,439 @@ export class Parser {
     }
     public match_($$dpth: number, $$cr?: ContextRecorder): Nullable<_> {
         return this.regexAccept(String.raw`(?:(?:\s|(?:\/\/.*(?:\n|$)))*)`, $$dpth + 1, $$cr);
+    }
+    public matchTS_TYPE($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE> {
+        return this.choice<TS_TYPE>([
+            () => this.matchTS_TYPE_1($$dpth + 1, $$cr),
+            () => this.matchTS_TYPE_2($$dpth + 1, $$cr),
+            () => this.matchTS_TYPE_3($$dpth + 1, $$cr),
+        ]);
+    }
+    public matchTS_TYPE_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_1> {
+        return this.matchTS_EXPR($$dpth + 1, $$cr);
+    }
+    public matchTS_TYPE_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_2> {
+        return this.matchTS_FUNCTION($$dpth + 1, $$cr);
+    }
+    public matchTS_TYPE_3($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_3> {
+        return this.matchTS_CONSTRUCTOR($$dpth + 1, $$cr);
+    }
+    public matchTS_EXPR($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_EXPR> {
+        return this.runner<TS_EXPR>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_EXPR");
+                }
+                let $$res: Nullable<TS_EXPR> = null;
+                if (true
+                    && this.matchTS_PRIM($$dpth + 1, $$cr) !== null
+                    && this.loop<TS_EXPR_$0>(() => this.matchTS_EXPR_$0($$dpth + 1, $$cr), true) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_EXPR, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_EXPR_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_EXPR_$0> {
+        return this.runner<TS_EXPR_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_EXPR_$0");
+                }
+                let $$res: Nullable<TS_EXPR_$0> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:[&|])`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_PRIM($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_EXPR_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PRIM($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM> {
+        return this.choice<TS_PRIM>([
+            () => this.matchTS_PRIM_1($$dpth + 1, $$cr),
+            () => this.matchTS_PRIM_2($$dpth + 1, $$cr),
+        ]);
+    }
+    public matchTS_PRIM_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_1> {
+        return this.runner<TS_PRIM_1>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PRIM_1");
+                }
+                let $$res: Nullable<TS_PRIM_1> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_PRIM_1, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PRIM_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_2> {
+        return this.matchTS_TYPE_REF($$dpth + 1, $$cr);
+    }
+    public matchTS_TYPE_REF($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_REF> {
+        return this.runner<TS_TYPE_REF>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_REF");
+                }
+                let $$res: Nullable<TS_TYPE_REF> = null;
+                if (true
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && this.loop<TS_TYPE_REF_$0>(() => this.matchTS_TYPE_REF_$0($$dpth + 1, $$cr), true) !== null
+                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_REF, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_TYPE_REF_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_REF_$0> {
+        return this.runner<TS_TYPE_REF_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_REF_$0");
+                }
+                let $$res: Nullable<TS_TYPE_REF_$0> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\.)`, $$dpth + 1, $$cr) !== null
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_REF_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_FUNCTION($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_FUNCTION> {
+        return this.runner<TS_FUNCTION>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_FUNCTION");
+                }
+                let $$res: Nullable<TS_FUNCTION> = null;
+                if (true
+                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:=>)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_FUNCTION, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_CONSTRUCTOR($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_CONSTRUCTOR> {
+        return this.runner<TS_CONSTRUCTOR>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_CONSTRUCTOR");
+                }
+                let $$res: Nullable<TS_CONSTRUCTOR> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:new)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_FUNCTION($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_CONSTRUCTOR, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_GENERIC_PARAMS($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_GENERIC_PARAMS> {
+        return this.runner<TS_GENERIC_PARAMS>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_GENERIC_PARAMS");
+                }
+                let $$res: Nullable<TS_GENERIC_PARAMS> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:<)`, $$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_GENERIC_PARAMS_$0($$dpth + 1, $$cr)) || true)
+                    && this.regexAccept(String.raw`(?:>)`, $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_GENERIC_PARAMS, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_GENERIC_PARAMS_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_GENERIC_PARAMS_$0> {
+        return this.runner<TS_GENERIC_PARAMS_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_GENERIC_PARAMS_$0");
+                }
+                let $$res: Nullable<TS_GENERIC_PARAMS_$0> = null;
+                if (true
+                    && this.matchTS_GENERIC_PARAM($$dpth + 1, $$cr) !== null
+                    && this.loop<TS_GENERIC_PARAMS_$0_$0>(() => this.matchTS_GENERIC_PARAMS_$0_$0($$dpth + 1, $$cr), true) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_GENERIC_PARAMS_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_GENERIC_PARAMS_$0_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_GENERIC_PARAMS_$0_$0> {
+        return this.runner<TS_GENERIC_PARAMS_$0_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_GENERIC_PARAMS_$0_$0");
+                }
+                let $$res: Nullable<TS_GENERIC_PARAMS_$0_$0> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_GENERIC_PARAM($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_GENERIC_PARAMS_$0_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_GENERIC_PARAM($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_GENERIC_PARAM> {
+        return this.runner<TS_GENERIC_PARAM>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_GENERIC_PARAM");
+                }
+                let $$res: Nullable<TS_GENERIC_PARAM> = null;
+                if (true
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_GENERIC_PARAM_$0($$dpth + 1, $$cr)) || true)
+                ) {
+                    $$res = {kind: ASTKinds.TS_GENERIC_PARAM, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_GENERIC_PARAM_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_GENERIC_PARAM_$0> {
+        return this.runner<TS_GENERIC_PARAM_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_GENERIC_PARAM_$0");
+                }
+                let $$res: Nullable<TS_GENERIC_PARAM_$0> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:extends)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_GENERIC_PARAM_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PARAM_LIST($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PARAM_LIST> {
+        return this.choice<TS_PARAM_LIST>([
+            () => this.matchTS_PARAM_LIST_1($$dpth + 1, $$cr),
+            () => this.matchTS_PARAM_LIST_2($$dpth + 1, $$cr),
+            () => this.matchTS_PARAM_LIST_3($$dpth + 1, $$cr),
+        ]);
+    }
+    public matchTS_PARAM_LIST_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PARAM_LIST_1> {
+        return this.runner<TS_PARAM_LIST_1>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PARAM_LIST_1");
+                }
+                let $$res: Nullable<TS_PARAM_LIST_1> = null;
+                if (true
+                    && this.matchTS_REQUIRED_PARAMS($$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_PARAM_LIST_$0($$dpth + 1, $$cr)) || true)
+                    && ((this.matchTS_PARAM_LIST_$1($$dpth + 1, $$cr)) || true)
+                ) {
+                    $$res = {kind: ASTKinds.TS_PARAM_LIST_1, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PARAM_LIST_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PARAM_LIST_2> {
+        return this.runner<TS_PARAM_LIST_2>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PARAM_LIST_2");
+                }
+                let $$res: Nullable<TS_PARAM_LIST_2> = null;
+                if (true
+                    && this.matchTS_OPTIONAL_PARAMS($$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_PARAM_LIST_$2($$dpth + 1, $$cr)) || true)
+                ) {
+                    $$res = {kind: ASTKinds.TS_PARAM_LIST_2, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PARAM_LIST_3($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PARAM_LIST_3> {
+        return this.matchTS_REST_PARAM($$dpth + 1, $$cr);
+    }
+    public matchTS_PARAM_LIST_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PARAM_LIST_$0> {
+        return this.runner<TS_PARAM_LIST_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PARAM_LIST_$0");
+                }
+                let $$res: Nullable<TS_PARAM_LIST_$0> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_OPTIONAL_PARAMS($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_PARAM_LIST_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PARAM_LIST_$1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PARAM_LIST_$1> {
+        return this.runner<TS_PARAM_LIST_$1>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PARAM_LIST_$1");
+                }
+                let $$res: Nullable<TS_PARAM_LIST_$1> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_PARAM_LIST_$1, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PARAM_LIST_$2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PARAM_LIST_$2> {
+        return this.runner<TS_PARAM_LIST_$2>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PARAM_LIST_$2");
+                }
+                let $$res: Nullable<TS_PARAM_LIST_$2> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_PARAM_LIST_$2, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_REQUIRED_PARAMS($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_REQUIRED_PARAMS> {
+        return this.runner<TS_REQUIRED_PARAMS>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_REQUIRED_PARAMS");
+                }
+                let $$res: Nullable<TS_REQUIRED_PARAMS> = null;
+                if (true
+                    && this.matchTS_REQUIRED_PARAM($$dpth + 1, $$cr) !== null
+                    && this.loop<TS_REQUIRED_PARAMS_$0>(() => this.matchTS_REQUIRED_PARAMS_$0($$dpth + 1, $$cr), true) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_REQUIRED_PARAMS, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_REQUIRED_PARAMS_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_REQUIRED_PARAMS_$0> {
+        return this.runner<TS_REQUIRED_PARAMS_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_REQUIRED_PARAMS_$0");
+                }
+                let $$res: Nullable<TS_REQUIRED_PARAMS_$0> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_REQUIRED_PARAM($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_REQUIRED_PARAMS_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_REQUIRED_PARAM($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_REQUIRED_PARAM> {
+        return this.runner<TS_REQUIRED_PARAM>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_REQUIRED_PARAM");
+                }
+                let $$res: Nullable<TS_REQUIRED_PARAM> = null;
+                if (true
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_REQUIRED_PARAM, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_OPTIONAL_PARAMS($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_OPTIONAL_PARAMS> {
+        return this.runner<TS_OPTIONAL_PARAMS>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_OPTIONAL_PARAMS");
+                }
+                let $$res: Nullable<TS_OPTIONAL_PARAMS> = null;
+                if (true
+                    && this.matchTS_OPTIONAL_PARAM($$dpth + 1, $$cr) !== null
+                    && this.loop<TS_OPTIONAL_PARAMS_$0>(() => this.matchTS_OPTIONAL_PARAMS_$0($$dpth + 1, $$cr), true) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_OPTIONAL_PARAMS, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_OPTIONAL_PARAMS_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_OPTIONAL_PARAMS_$0> {
+        return this.runner<TS_OPTIONAL_PARAMS_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_OPTIONAL_PARAMS_$0");
+                }
+                let $$res: Nullable<TS_OPTIONAL_PARAMS_$0> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_OPTIONAL_PARAM($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_OPTIONAL_PARAMS_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_OPTIONAL_PARAM($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_OPTIONAL_PARAM> {
+        return this.runner<TS_OPTIONAL_PARAM>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_OPTIONAL_PARAM");
+                }
+                let $$res: Nullable<TS_OPTIONAL_PARAM> = null;
+                if (true
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\?)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_OPTIONAL_PARAM, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_REST_PARAM($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_REST_PARAM> {
+        return this.runner<TS_REST_PARAM>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_REST_PARAM");
+                }
+                let $$res: Nullable<TS_REST_PARAM> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\.\.\.)`, $$dpth + 1, $$cr) !== null
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_REST_PARAM, };
+                }
+                return $$res;
+            }, $$cr)();
     }
     public test(): boolean {
         const mrk = this.mark();
