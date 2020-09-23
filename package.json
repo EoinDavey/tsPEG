@@ -12,10 +12,8 @@
     "scripts": {
         "gen-tests": "./gen-tests.sh",
         "build": "tsc && npm run gen && tsc",
-        "lint": "tslint --force",
         "gen": "cp src/meta.ts /tmp/meta.ts && node ./tsbuild/cli.js src/metagrammar.peg src/meta.ts",
-        "lint-all": "tslint --force \"src/**/*.ts\"",
-        "test": "./gen-tests.sh && jest && tslint --project . -c tslint.json",
+        "test": "./gen-tests.sh && jest",
         "clean": "rm -rf tsbuild"
     },
     "license": "ISC",
@@ -26,7 +24,6 @@
         "jest": "^26.4.2",
         "setanta": "^0.8.0",
         "ts-jest": "^26.4.0",
-        "tslint": "^6.1.3",
         "typescript": "^4.0.3"
     },
     "bin": {
