@@ -1,14 +1,14 @@
 SUM  := head=FAC tail={ op='\+|-' sm=FAC }*
         .value = number {
-            return this.tail.reduce((x, y) => \{
+            return this.tail.reduce((x, y) => {
                 return y.op === "+" ? x + y.sm.value : x - y.sm.value;
-            \}, this.head.value);
+            }, this.head.value);
         }
 FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*
         .value = number {
-            return this.tail.reduce((x, y) => \{
+            return this.tail.reduce((x, y) => {
                 return y.op === "*" ? x * y.sm.value : x / y.sm.value;
-            \}, this.head.value);
+            }, this.head.value);
         }
 ATOM := _ val=INT _
         .value = number { return this.val.value; }

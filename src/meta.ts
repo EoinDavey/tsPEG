@@ -16,9 +16,7 @@
 * ATOM      := name=NAME !'\s*:='
 *            | match=STRLIT
 *            | '{' _ sub=RULE _ '}'
-* ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ '\{'
-*     action='([^\{\}\\]|(\\.))*'
-* '\}'
+* ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ code=CODE_SECTION
 * NAME      := '[a-zA-Z_][a-zA-Z0-9_]*'
 * STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
 * // Whitespace definition includes traditional whitespace
@@ -59,6 +57,10 @@
 * TS_STRING := '"' val='([^"\\]|(\\.))*' '"'
 *     | '\'' val='([^\'\\]|(\\.))*' '\''
 * TS_NUM := '-?[0-9]+(?:\.[0-9]+)?'
+* // Grammar to match code section without escaped braces
+* // Logic is based off braces can only appear without matching brace in strings.
+* CODE_SECTION := _ '\{' start=@ CODE_REC? end=@ _ '\}'
+* CODE_REC := { '[^{}\'"]+' | TS_STRING | '\{' CODE_REC _ '\}' }*
 */
 type Nullable<T> = T | null;
 type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
@@ -145,6 +147,11 @@ export enum ASTKinds {
     TS_STRING_1 = "TS_STRING_1",
     TS_STRING_2 = "TS_STRING_2",
     TS_NUM = "TS_NUM",
+    CODE_SECTION = "CODE_SECTION",
+    CODE_REC = "CODE_REC",
+    CODE_REC_$0_1 = "CODE_REC_$0_1",
+    CODE_REC_$0_2 = "CODE_REC_$0_2",
+    CODE_REC_$0_3 = "CODE_REC_$0_3",
 }
 export interface GRAM {
     kind: ASTKinds.GRAM;
@@ -233,7 +240,7 @@ export interface ATTR {
     kind: ASTKinds.ATTR;
     name: NAME;
     type: TS_TYPE;
-    action: string;
+    code: CODE_SECTION;
 }
 export type NAME = string;
 export interface STRLIT {
@@ -400,6 +407,18 @@ export interface TS_STRING_2 {
     val: string;
 }
 export type TS_NUM = string;
+export interface CODE_SECTION {
+    kind: ASTKinds.CODE_SECTION;
+    start: PosInfo;
+    end: PosInfo;
+}
+export type CODE_REC = CODE_REC_$0[];
+export type CODE_REC_$0 = CODE_REC_$0_1 | CODE_REC_$0_2 | CODE_REC_$0_3;
+export type CODE_REC_$0_1 = string;
+export type CODE_REC_$0_2 = TS_STRING;
+export interface CODE_REC_$0_3 {
+    kind: ASTKinds.CODE_REC_$0_3;
+}
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;
@@ -698,7 +717,7 @@ export class Parser {
                 }
                 let $scope$name: Nullable<NAME>;
                 let $scope$type: Nullable<TS_TYPE>;
-                let $scope$action: Nullable<string>;
+                let $scope$code: Nullable<CODE_SECTION>;
                 let $$res: Nullable<ATTR> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -709,11 +728,9 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$type = this.matchTS_TYPE($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\{)`, $$dpth + 1, $$cr) !== null
-                    && ($scope$action = this.regexAccept(String.raw`(?:([^\{\}\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:\})`, $$dpth + 1, $$cr) !== null
+                    && ($scope$code = this.matchCODE_SECTION($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.ATTR, name: $scope$name, type: $scope$type, action: $scope$action};
+                    $$res = {kind: ASTKinds.ATTR, name: $scope$name, type: $scope$type, code: $scope$code};
                 }
                 return $$res;
             }, $$cr)();
@@ -1695,6 +1712,63 @@ export class Parser {
     }
     public matchTS_NUM($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_NUM> {
         return this.regexAccept(String.raw`(?:-?[0-9]+(?:\.[0-9]+)?)`, $$dpth + 1, $$cr);
+    }
+    public matchCODE_SECTION($$dpth: number, $$cr?: ContextRecorder): Nullable<CODE_SECTION> {
+        return this.runner<CODE_SECTION>($$dpth,
+            (log) => {
+                if (log) {
+                    log("CODE_SECTION");
+                }
+                let $scope$start: Nullable<PosInfo>;
+                let $scope$end: Nullable<PosInfo>;
+                let $$res: Nullable<CODE_SECTION> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\{)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$start = this.mark()) !== null
+                    && ((this.matchCODE_REC($$dpth + 1, $$cr)) || true)
+                    && ($scope$end = this.mark()) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\})`, $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.CODE_SECTION, start: $scope$start, end: $scope$end};
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchCODE_REC($$dpth: number, $$cr?: ContextRecorder): Nullable<CODE_REC> {
+        return this.loop<CODE_REC_$0>(() => this.matchCODE_REC_$0($$dpth + 1, $$cr), true);
+    }
+    public matchCODE_REC_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<CODE_REC_$0> {
+        return this.choice<CODE_REC_$0>([
+            () => this.matchCODE_REC_$0_1($$dpth + 1, $$cr),
+            () => this.matchCODE_REC_$0_2($$dpth + 1, $$cr),
+            () => this.matchCODE_REC_$0_3($$dpth + 1, $$cr),
+        ]);
+    }
+    public matchCODE_REC_$0_1($$dpth: number, $$cr?: ContextRecorder): Nullable<CODE_REC_$0_1> {
+        return this.regexAccept(String.raw`(?:[^{}\'"]+)`, $$dpth + 1, $$cr);
+    }
+    public matchCODE_REC_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<CODE_REC_$0_2> {
+        return this.matchTS_STRING($$dpth + 1, $$cr);
+    }
+    public matchCODE_REC_$0_3($$dpth: number, $$cr?: ContextRecorder): Nullable<CODE_REC_$0_3> {
+        return this.runner<CODE_REC_$0_3>($$dpth,
+            (log) => {
+                if (log) {
+                    log("CODE_REC_$0_3");
+                }
+                let $$res: Nullable<CODE_REC_$0_3> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\{)`, $$dpth + 1, $$cr) !== null
+                    && this.matchCODE_REC($$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\})`, $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.CODE_REC_$0_3, };
+                }
+                return $$res;
+            }, $$cr)();
     }
     public test(): boolean {
         const mrk = this.mark();

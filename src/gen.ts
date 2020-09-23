@@ -1,4 +1,4 @@
-import { TS_TYPE, ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, MATCH, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
+import { TS_TYPE, ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, PosInfo, MATCH, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
 
 import { expandTemplate } from "./template";
 
@@ -21,7 +21,7 @@ function addScope(id: string): string {
     return "$scope$" + id;
 }
 
-export function printType(t: TS_TYPE, inputStr: string): string {
+export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: string): string {
     return inputStr.substring(t.start.overallPos, t.end.overallPos);
 }
 
@@ -186,11 +186,11 @@ export class Generator {
                 [
                     `public kind: ASTKinds.${name} = ASTKinds.${name};`,
                     ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
-                    ...alt.attrs.map((x) => `public ${x.name}: ${printType(x.type, this.input)};`),
+                    ...alt.attrs.map((x) => `public ${x.name}: ${getMatchedSubstr(x.type, this.input)};`),
                      `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
                     namedTypes.map((x) => `this.${x[0]} = ${x[0]};`),
-                    ...alt.attrs.map((x) => [`this.${x.name} = (() => {`,
-                            unescapeSeqs(x.action).trim(),
+                    ...alt.attrs.map(x => [`this.${x.name} = ((): ${getMatchedSubstr(x.type, this.input)} => {`,
+                            getMatchedSubstr(x.code, this.input).trim(),
                         "})();"]),
                     "}",
                 ],

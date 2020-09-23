@@ -364,10 +364,10 @@ export class And {
         this.head = head;
         this.tail = tail;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return andBinOp(this);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return andQuickBinOp(this);
         })();
     }
@@ -389,10 +389,10 @@ export class Or {
         this.head = head;
         this.tail = tail;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return orBinOp(this)
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return orQuickBinOp(this);
         })();
     }
@@ -414,10 +414,10 @@ export class Eq {
         this.head = head;
         this.tail = tail;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return binOpEvalFn(this)
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return binOpQuickEvalFn(this);
         })();
     }
@@ -440,10 +440,10 @@ export class Comp {
         this.head = head;
         this.tail = tail;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return binOpEvalFn(this)
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return binOpQuickEvalFn(this);
         })();
     }
@@ -466,10 +466,10 @@ export class Sum {
         this.head = head;
         this.tail = tail;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return binOpEvalFn(this)
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return binOpQuickEvalFn(this);
         })();
     }
@@ -492,10 +492,10 @@ export class Product {
         this.head = head;
         this.tail = tail;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return binOpEvalFn(this);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return binOpQuickEvalFn(this);
         })();
     }
@@ -518,10 +518,10 @@ export class Prefix {
         this.op = op;
         this.pf = pf;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return prefEval(this);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return Quick.qPrefEval(this);
         })();
     }
@@ -539,10 +539,10 @@ export class Postfix {
         this.at = at;
         this.ops = ops;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return postfixArgsEval(this);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return Quick.qPostfixArgsEval(this);
         })();
     }
@@ -560,10 +560,10 @@ export class ObjLookups {
         this.attrs = attrs;
         this.root = root;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return objLookupsEval(this);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return Quick.qObjLookupsEval(this);
         })();
     }
@@ -589,10 +589,10 @@ export class Atom_1 {
     public qeval: Quick.MaybeEv;
     constructor(trm: Expr){
         this.trm = trm;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return (env: Context) => this.trm.evalfn(env);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         const childF = this.trm.qeval;
                     return childF === null ? null : childF.bind(this.trm);
         })();
@@ -614,10 +614,10 @@ export class GniomhExpr {
     constructor(args: Nullable<CSIDs>, stmts: AsgnStmt[]){
         this.args = args;
         this.stmts = stmts;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return qEvalToEval(Quick.qGníomhEval(this));
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.EvalFn => {
         return Quick.qGníomhEval(this);
         })();
     }
@@ -629,10 +629,10 @@ export class ListLit {
     public qeval: Quick.MaybeEv;
     constructor(els: Nullable<CSArgs>){
         this.els = els;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return (env: Context) => this.els ? this.els.evalfn(env) : Promise.resolve([]);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.MaybeEv => {
         return Quick.qListLitEval(this);
         })();
     }
@@ -650,10 +650,10 @@ export class CSArgs {
         this.head = head;
         this.tail = tail;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): (env:Context)=>Promise<Value[]> => {
         return csArgsEval(this);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): ((env:Context)=>Value[])|null => {
         return Quick.qCSArgsEval(this);
         })();
     }
@@ -670,7 +670,7 @@ export class CSIDs {
     constructor(head: ID, tail: CSIDs_$0[]){
         this.head = head;
         this.tail = tail;
-        this.ids = (() => {
+        this.ids = ((): string[] => {
         return [this.head.id].concat(this.tail.map((x) => x.id.id));
         })();
     }
@@ -690,10 +690,10 @@ export class ID {
         this.start = start;
         this.id = id;
         this.end = end;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return qEvalToEval(Quick.qIdEval(this.id, this.start, this.end));
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.EvalFn => {
         return Quick.qIdEval(this.id, this.start, this.end);
         })();
     }
@@ -708,10 +708,10 @@ export class Bool {
     public qeval: Quick.EvalFn;
     constructor(bool: string){
         this.bool = bool;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return qEvalToEval(Quick.qBoolEval(this.bool));
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.EvalFn => {
         return Quick.qBoolEval(this.bool);
         })();
     }
@@ -721,10 +721,10 @@ export class Neamhni {
     public evalfn: EvalFn;
     public qeval: Quick.EvalFn;
     constructor(){
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return () => Promise.resolve(null);
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.EvalFn => {
         return () => null;
         })();
     }
@@ -736,10 +736,10 @@ export class Int {
     public qeval: Quick.EvalFn;
     constructor(int: string){
         this.int = int;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return qEvalToEval(Quick.qIntEval(this.int));
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.EvalFn => {
         return Quick.qIntEval(this.int);
         })();
     }
@@ -751,10 +751,10 @@ export class Teacs {
     public qeval: Quick.EvalFn;
     constructor(lit: Teacs_$0){
         this.lit = lit;
-        this.evalfn = (() => {
+        this.evalfn = ((): EvalFn => {
         return qEvalToEval(Quick.qTéacsEval(this.lit.val, this.lit.start, this.lit.end));
         })();
-        this.qeval = (() => {
+        this.qeval = ((): Quick.EvalFn => {
         return Quick.qTéacsEval(this.lit.val, this.lit.start, this.lit.end);
         })();
     }

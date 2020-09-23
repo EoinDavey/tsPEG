@@ -37,7 +37,7 @@ export class rule {
     public a: number;
     constructor(rule: rule){
         this.rule = rule;
-        this.a = (() => {
+        this.a = ((): number => {
         return 0;
         })();
     }

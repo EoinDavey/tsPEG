@@ -2,15 +2,15 @@
 * INPUT GRAMMAR:
 * SUM  := head=FAC tail={ op='\+|-' sm=FAC }*
 *         .value = number {
-*             return this.tail.reduce((x, y) => \{
+*             return this.tail.reduce((x, y) => {
 *                 return y.op === "+" ? x + y.sm.value : x - y.sm.value;
-*             \}, this.head.value);
+*             }, this.head.value);
 *         }
 * FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*
 *         .value = number {
-*             return this.tail.reduce((x, y) => \{
+*             return this.tail.reduce((x, y) => {
 *                 return y.op === "*" ? x * y.sm.value : x / y.sm.value;
-*             \}, this.head.value);
+*             }, this.head.value);
 *         }
 * ATOM := _ val=INT _
 *         .value = number { return this.val.value; }
@@ -46,7 +46,7 @@ export class SUM {
     constructor(head: FAC, tail: SUM_$0[]){
         this.head = head;
         this.tail = tail;
-        this.value = (() => {
+        this.value = ((): number => {
         return this.tail.reduce((x, y) => {
                 return y.op === "+" ? x + y.sm.value : x - y.sm.value;
             }, this.head.value);
@@ -66,7 +66,7 @@ export class FAC {
     constructor(head: ATOM, tail: FAC_$0[]){
         this.head = head;
         this.tail = tail;
-        this.value = (() => {
+        this.value = ((): number => {
         return this.tail.reduce((x, y) => {
                 return y.op === "*" ? x * y.sm.value : x / y.sm.value;
             }, this.head.value);
@@ -85,7 +85,7 @@ export class ATOM_1 {
     public value: number;
     constructor(val: INT){
         this.val = val;
-        this.value = (() => {
+        this.value = ((): number => {
         return this.val.value;
         })();
     }
@@ -96,7 +96,7 @@ export class ATOM_2 {
     public value: number;
     constructor(val: SUM){
         this.val = val;
-        this.value = (() => {
+        this.value = ((): number => {
         return this.val.value;
         })();
     }
@@ -107,7 +107,7 @@ export class INT {
     public value: number;
     constructor(val: string){
         this.val = val;
-        this.value = (() => {
+        this.value = ((): number => {
         return parseInt(this.val);
         })();
     }
