@@ -219,6 +219,7 @@ export function expandTemplate(input: string, header: Block, kinds: Block,
         "}",
         "public toString(): string {",
         [
+            // eslint-disable-next-line no-template-curly-in-string
             "return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Tried to match rules ${this.exprules.join(\", \")}. Expected one of ${this.expmatches.map((x) => ` '${x}'`)}`;",
         ],
         "}",
@@ -259,6 +260,7 @@ export function expandTemplate(input: string, header: Block, kinds: Block,
                 "}",
                 "if (extraInfo[0] === \"$$!StrMatch\") {",
                 [
+                    // eslint-disable-next-line no-template-curly-in-string
                     "this.pmatches.add(`not ${extraInfo[1]}`);",
                 ],
                 "}",

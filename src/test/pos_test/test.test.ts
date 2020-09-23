@@ -1,4 +1,4 @@
-import { EXPR, Parser, PosInfo, parse } from "./parser";
+import { EXPR, PosInfo, parse } from "./parser";
 
 function comp(a: number, b: number): number {
     if(a < b)

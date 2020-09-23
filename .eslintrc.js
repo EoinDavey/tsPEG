@@ -36,4 +36,15 @@ module.exports = {
         "no-var": "error",
         "prefer-const": "warn",
     },
+    overrides: [
+        {
+            // Disabling non-null assertions checks in tests because we are asserting
+            // them to be non-null with jest, the type system is just not aware of
+            // that
+            files: ["**/*.test.ts"],
+            rules: {
+                "@typescript-eslint/no-non-null-assertion": "off"
+            }
+        }
+    ]
 };

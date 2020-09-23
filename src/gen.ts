@@ -1,8 +1,8 @@
-import { ALT, ASTKinds, ATOM, GRAM, MATCH, MATCHSPEC, PREOP, Parser, PosInfo, RULE, RULEDEF, STRLIT, TS_TYPE } from "./meta";
+import { ALT, ASTKinds, ATOM, GRAM, MATCH, PREOP, Parser, PosInfo }  from "./meta";
 
 import { expandTemplate } from "./template";
 
-import { Block, indentBlock, unescapeSeqs, writeBlock } from "./util";
+import { Block, writeBlock } from "./util";
 
 type Rule = ALT[];
 type Grammar = Ruledef[];
@@ -119,9 +119,9 @@ export class Generator {
             const reg = "(?:" + mtch.val + ")";
             try {
                 // Ensure the original regex is valid
-                let _ = new RegExp(mtch.val);
+                new RegExp(mtch.val);
                 // Ensure the RegExp wrapped in brackets is valid
-                _  = new RegExp(reg);
+                new RegExp(reg);
             } catch (err) {
                 throw new Error(`Couldnt' compile regex ${mtch.val} at line ${mtch.start.line}:${mtch.start.offset} : ${err}`);
             }
