@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Special error is raised when EOF is not reached during parse.
+- Numbers can now be used in names of IDs (not in first position).
+- Added `num-enums` flag to specify numeric kind enums.
+
+### Changed
+
+- `mark` parser method is now public.
+- Enums are now string valued by default.
+
+### Fixed
+
+- Bump lodash dependency from 4.17.15 to 4.17.19
+- Name collision avoidance has been avoided.
+- Type expressions no longer require whitespace in computed properties.
+
 ## 1.3.2 - 2020/07/11
 
 ### Fixed
