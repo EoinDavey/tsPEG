@@ -303,8 +303,7 @@ test("writeRuleClasses Test", () => {
         },
         // Test complex type names
         {
-            inp: `rule := 'a'
-                .computed = (x: number, y: string) => number | boolean { return 0; }`,
+            inp: `rule := 'a' .computed = (x: number, y: string) => number | boolean { return 0; }`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: (x: number, y: string) => number | boolean;
@@ -316,8 +315,7 @@ test("writeRuleClasses Test", () => {
 }`
         },
         {
-            inp: `rule := 'a'
-                .computed = <Generic extends Something>(x: Array<Generic>) => number { return 0; }`,
+            inp: `rule := 'a' .computed = <Generic extends Something>(x: Array<Generic>) => number { return 0; }`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: <Generic extends Something>(x: Array<Generic>) => number;
@@ -329,8 +327,7 @@ test("writeRuleClasses Test", () => {
 }`
         },
         {
-            inp: `rule := 'a'
-                .computed = A.B.C<Generic>[][] { return 0; }`,
+            inp: `rule := 'a' .computed = A.B.C<Generic>[][] { return 0; }`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: A.B.C<Generic>[][];
@@ -342,8 +339,7 @@ test("writeRuleClasses Test", () => {
 }`
         },
         {
-            inp: `rule := 'a'
-                .computed = (req: number, opt?: boolean, ...rest: A.B<K>[]) => test { return 0; }`,
+            inp: `rule := 'a' .computed = (req: number, opt?: boolean, ...rest: A.B<K>[]) => test { return 0; }`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: (req: number, opt?: boolean, ...rest: A.B<K>[]) => test;
@@ -355,11 +351,76 @@ test("writeRuleClasses Test", () => {
 }`
         },
         {
-            inp: `rule := 'a'
-                .computed = [number, bool, new () => void] {}`,
+            inp: `rule := 'a' .computed = [number, bool, new () => void] {}`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: [number, bool, new () => void];
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = (a: (typeof a)[]) => (new () => void) {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: (a: (typeof a)[]) => (new () => void);
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = {a: number; b: boolean} {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: {a: number; b: boolean};
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = {a: number; b: {nested: () => void};}[] {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: {a: number; b: {nested: () => void};}[];
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = { a(x: number): void } {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: { a(x: number): void };
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = { [x: string]: void } {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: { [x: string]: void };
+    constructor(){
+        this.computed = (() => {
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a' .computed = { "test": test } {}`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: { "test": test };
     constructor(){
         this.computed = (() => {
         })();

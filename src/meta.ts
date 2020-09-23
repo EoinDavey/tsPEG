@@ -29,10 +29,14 @@
 * TS_EXPR := _ TS_PRIM {_ '[&|]' TS_PRIM }*
 * TS_PRIM := {
 *     '\(' _ TS_TYPE _ '\)'
+*     | TS_TYPE_QUERY
 *     | TS_TYPE_REF
+*     | TS_PROPERTY_NAME
+*     | '\{' {_ TS_TYPE_MEMBER {_ '[;,]' _ TS_TYPE_MEMBER }* _ '[;,]?' }? _ '\}'
 *     | '\[' _ { _ TS_TYPE {_ ',' _ TS_TYPE}* }? _ '\]'
 *     } '\[\]'* // Optional trailing []s for array type
 * TS_TYPE_REF := _ NAME {'\.' NAME}* {_ TS_GENERIC_PARAMS}?
+* TS_TYPE_QUERY := _ 'typeof' &_ _ NAME {'\.' NAME}*
 * TS_FUNCTION := _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ '=>' _ TS_TYPE
 * TS_CONSTRUCTOR := _ 'new' _ TS_FUNCTION
 * TS_GENERIC_PARAMS := _ '<' _ {TS_GENERIC_PARAM {_ ',' _ TS_GENERIC_PARAM}* }? _ '>'
@@ -45,6 +49,15 @@
 * TS_OPTIONAL_PARAMS := _ TS_OPTIONAL_PARAM _ {',' _ TS_OPTIONAL_PARAM}*
 * TS_OPTIONAL_PARAM := _ NAME '\?' _ ':' _ TS_TYPE
 * TS_REST_PARAM := _ '\.\.\.' _ NAME _ ':' _ TS_TYPE
+* TS_TYPE_MEMBER := TS_PROPERTY_NAME '\??' _ ':' _ TS_TYPE
+*     | _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+*     | _ 'new' &_ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+*     | _ '\[' _ NAME _ ':' _ NAME _ '\]' _ ':' _ TS_TYPE
+*     | _ NAME '\??' _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+* TS_PROPERTY_NAME := NAME | TS_STRING | TS_NUM
+* TS_STRING := '"' val='([^"\\]|(\\.))*' '"'
+*     | '\'' val='([^\'\\]|(\\.))*' '\''
+* TS_NUM := '-?[0-9]+(?:\.[0-9]+)?'
 */
 type Nullable<T> = T | null;
 type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
@@ -85,11 +98,18 @@ export enum ASTKinds {
     TS_PRIM_$0_1 = "TS_PRIM_$0_1",
     TS_PRIM_$0_2 = "TS_PRIM_$0_2",
     TS_PRIM_$0_3 = "TS_PRIM_$0_3",
+    TS_PRIM_$0_4 = "TS_PRIM_$0_4",
+    TS_PRIM_$0_5 = "TS_PRIM_$0_5",
+    TS_PRIM_$0_6 = "TS_PRIM_$0_6",
     TS_PRIM_$0_$0 = "TS_PRIM_$0_$0",
     TS_PRIM_$0_$0_$0 = "TS_PRIM_$0_$0_$0",
+    TS_PRIM_$0_$1 = "TS_PRIM_$0_$1",
+    TS_PRIM_$0_$1_$0 = "TS_PRIM_$0_$1_$0",
     TS_TYPE_REF = "TS_TYPE_REF",
     TS_TYPE_REF_$0 = "TS_TYPE_REF_$0",
     TS_TYPE_REF_$1 = "TS_TYPE_REF_$1",
+    TS_TYPE_QUERY = "TS_TYPE_QUERY",
+    TS_TYPE_QUERY_$0 = "TS_TYPE_QUERY_$0",
     TS_FUNCTION = "TS_FUNCTION",
     TS_CONSTRUCTOR = "TS_CONSTRUCTOR",
     TS_GENERIC_PARAMS = "TS_GENERIC_PARAMS",
@@ -110,6 +130,17 @@ export enum ASTKinds {
     TS_OPTIONAL_PARAMS_$0 = "TS_OPTIONAL_PARAMS_$0",
     TS_OPTIONAL_PARAM = "TS_OPTIONAL_PARAM",
     TS_REST_PARAM = "TS_REST_PARAM",
+    TS_TYPE_MEMBER_1 = "TS_TYPE_MEMBER_1",
+    TS_TYPE_MEMBER_2 = "TS_TYPE_MEMBER_2",
+    TS_TYPE_MEMBER_3 = "TS_TYPE_MEMBER_3",
+    TS_TYPE_MEMBER_4 = "TS_TYPE_MEMBER_4",
+    TS_TYPE_MEMBER_5 = "TS_TYPE_MEMBER_5",
+    TS_PROPERTY_NAME_1 = "TS_PROPERTY_NAME_1",
+    TS_PROPERTY_NAME_2 = "TS_PROPERTY_NAME_2",
+    TS_PROPERTY_NAME_3 = "TS_PROPERTY_NAME_3",
+    TS_STRING_1 = "TS_STRING_1",
+    TS_STRING_2 = "TS_STRING_2",
+    TS_NUM = "TS_NUM",
 }
 export interface GRAM {
     kind: ASTKinds.GRAM;
@@ -225,19 +256,30 @@ export interface TS_EXPR_$0 {
 export interface TS_PRIM {
     kind: ASTKinds.TS_PRIM;
 }
-export type TS_PRIM_$0 = TS_PRIM_$0_1 | TS_PRIM_$0_2 | TS_PRIM_$0_3;
+export type TS_PRIM_$0 = TS_PRIM_$0_1 | TS_PRIM_$0_2 | TS_PRIM_$0_3 | TS_PRIM_$0_4 | TS_PRIM_$0_5 | TS_PRIM_$0_6;
 export interface TS_PRIM_$0_1 {
     kind: ASTKinds.TS_PRIM_$0_1;
 }
-export type TS_PRIM_$0_2 = TS_TYPE_REF;
-export interface TS_PRIM_$0_3 {
-    kind: ASTKinds.TS_PRIM_$0_3;
+export type TS_PRIM_$0_2 = TS_TYPE_QUERY;
+export type TS_PRIM_$0_3 = TS_TYPE_REF;
+export type TS_PRIM_$0_4 = TS_PROPERTY_NAME;
+export interface TS_PRIM_$0_5 {
+    kind: ASTKinds.TS_PRIM_$0_5;
+}
+export interface TS_PRIM_$0_6 {
+    kind: ASTKinds.TS_PRIM_$0_6;
 }
 export interface TS_PRIM_$0_$0 {
     kind: ASTKinds.TS_PRIM_$0_$0;
 }
 export interface TS_PRIM_$0_$0_$0 {
     kind: ASTKinds.TS_PRIM_$0_$0_$0;
+}
+export interface TS_PRIM_$0_$1 {
+    kind: ASTKinds.TS_PRIM_$0_$1;
+}
+export interface TS_PRIM_$0_$1_$0 {
+    kind: ASTKinds.TS_PRIM_$0_$1_$0;
 }
 export interface TS_TYPE_REF {
     kind: ASTKinds.TS_TYPE_REF;
@@ -247,6 +289,12 @@ export interface TS_TYPE_REF_$0 {
 }
 export interface TS_TYPE_REF_$1 {
     kind: ASTKinds.TS_TYPE_REF_$1;
+}
+export interface TS_TYPE_QUERY {
+    kind: ASTKinds.TS_TYPE_QUERY;
+}
+export interface TS_TYPE_QUERY_$0 {
+    kind: ASTKinds.TS_TYPE_QUERY_$0;
 }
 export interface TS_FUNCTION {
     kind: ASTKinds.TS_FUNCTION;
@@ -309,6 +357,36 @@ export interface TS_OPTIONAL_PARAM {
 export interface TS_REST_PARAM {
     kind: ASTKinds.TS_REST_PARAM;
 }
+export type TS_TYPE_MEMBER = TS_TYPE_MEMBER_1 | TS_TYPE_MEMBER_2 | TS_TYPE_MEMBER_3 | TS_TYPE_MEMBER_4 | TS_TYPE_MEMBER_5;
+export interface TS_TYPE_MEMBER_1 {
+    kind: ASTKinds.TS_TYPE_MEMBER_1;
+}
+export interface TS_TYPE_MEMBER_2 {
+    kind: ASTKinds.TS_TYPE_MEMBER_2;
+}
+export interface TS_TYPE_MEMBER_3 {
+    kind: ASTKinds.TS_TYPE_MEMBER_3;
+}
+export interface TS_TYPE_MEMBER_4 {
+    kind: ASTKinds.TS_TYPE_MEMBER_4;
+}
+export interface TS_TYPE_MEMBER_5 {
+    kind: ASTKinds.TS_TYPE_MEMBER_5;
+}
+export type TS_PROPERTY_NAME = TS_PROPERTY_NAME_1 | TS_PROPERTY_NAME_2 | TS_PROPERTY_NAME_3;
+export type TS_PROPERTY_NAME_1 = NAME;
+export type TS_PROPERTY_NAME_2 = TS_STRING;
+export type TS_PROPERTY_NAME_3 = TS_NUM;
+export type TS_STRING = TS_STRING_1 | TS_STRING_2;
+export interface TS_STRING_1 {
+    kind: ASTKinds.TS_STRING_1;
+    val: string;
+}
+export interface TS_STRING_2 {
+    kind: ASTKinds.TS_STRING_2;
+    val: string;
+}
+export type TS_NUM = string;
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;
@@ -744,6 +822,9 @@ export class Parser {
             () => this.matchTS_PRIM_$0_1($$dpth + 1, $$cr),
             () => this.matchTS_PRIM_$0_2($$dpth + 1, $$cr),
             () => this.matchTS_PRIM_$0_3($$dpth + 1, $$cr),
+            () => this.matchTS_PRIM_$0_4($$dpth + 1, $$cr),
+            () => this.matchTS_PRIM_$0_5($$dpth + 1, $$cr),
+            () => this.matchTS_PRIM_$0_6($$dpth + 1, $$cr),
         ]);
     }
     public matchTS_PRIM_$0_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_$0_1> {
@@ -766,23 +847,47 @@ export class Parser {
             }, $$cr)();
     }
     public matchTS_PRIM_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_$0_2> {
-        return this.matchTS_TYPE_REF($$dpth + 1, $$cr);
+        return this.matchTS_TYPE_QUERY($$dpth + 1, $$cr);
     }
     public matchTS_PRIM_$0_3($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_$0_3> {
-        return this.runner<TS_PRIM_$0_3>($$dpth,
+        return this.matchTS_TYPE_REF($$dpth + 1, $$cr);
+    }
+    public matchTS_PRIM_$0_4($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_$0_4> {
+        return this.matchTS_PROPERTY_NAME($$dpth + 1, $$cr);
+    }
+    public matchTS_PRIM_$0_5($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_$0_5> {
+        return this.runner<TS_PRIM_$0_5>($$dpth,
             (log) => {
                 if (log) {
-                    log("TS_PRIM_$0_3");
+                    log("TS_PRIM_$0_5");
                 }
-                let $$res: Nullable<TS_PRIM_$0_3> = null;
+                let $$res: Nullable<TS_PRIM_$0_5> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\{)`, $$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_PRIM_$0_$0($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\})`, $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_PRIM_$0_5, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PRIM_$0_6($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_$0_6> {
+        return this.runner<TS_PRIM_$0_6>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PRIM_$0_6");
+                }
+                let $$res: Nullable<TS_PRIM_$0_6> = null;
                 if (true
                     && this.regexAccept(String.raw`(?:\[)`, $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PRIM_$0_$0($$dpth + 1, $$cr)) || true)
+                    && ((this.matchTS_PRIM_$0_$1($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:\])`, $$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_3, };
+                    $$res = {kind: ASTKinds.TS_PRIM_$0_6, };
                 }
                 return $$res;
             }, $$cr)();
@@ -796,8 +901,10 @@ export class Parser {
                 let $$res: Nullable<TS_PRIM_$0_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE_MEMBER($$dpth + 1, $$cr) !== null
                     && this.loop<TS_PRIM_$0_$0_$0>(() => this.matchTS_PRIM_$0_$0_$0($$dpth + 1, $$cr), true) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:[;,]?)`, $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_PRIM_$0_$0, };
                 }
@@ -813,11 +920,46 @@ export class Parser {
                 let $$res: Nullable<TS_PRIM_$0_$0_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:[;,])`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE_MEMBER($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_PRIM_$0_$0_$0, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PRIM_$0_$1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_$0_$1> {
+        return this.runner<TS_PRIM_$0_$1>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PRIM_$0_$1");
+                }
+                let $$res: Nullable<TS_PRIM_$0_$1> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                    && this.loop<TS_PRIM_$0_$1_$0>(() => this.matchTS_PRIM_$0_$1_$0($$dpth + 1, $$cr), true) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_PRIM_$0_$1, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PRIM_$0_$1_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PRIM_$0_$1_$0> {
+        return this.runner<TS_PRIM_$0_$1_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_PRIM_$0_$1_$0");
+                }
+                let $$res: Nullable<TS_PRIM_$0_$1_$0> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_$0_$0, };
+                    $$res = {kind: ASTKinds.TS_PRIM_$0_$1_$0, };
                 }
                 return $$res;
             }, $$cr)();
@@ -868,6 +1010,42 @@ export class Parser {
                     && this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_TYPE_REF_$1, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_TYPE_QUERY($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_QUERY> {
+        return this.runner<TS_TYPE_QUERY>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_QUERY");
+                }
+                let $$res: Nullable<TS_TYPE_QUERY> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:typeof)`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<_>(() => this.match_($$dpth + 1, $$cr)) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && this.loop<TS_TYPE_QUERY_$0>(() => this.matchTS_TYPE_QUERY_$0($$dpth + 1, $$cr), true) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_QUERY, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_TYPE_QUERY_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_QUERY_$0> {
+        return this.runner<TS_TYPE_QUERY_$0>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_QUERY_$0");
+                }
+                let $$res: Nullable<TS_TYPE_QUERY_$0> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\.)`, $$dpth + 1, $$cr) !== null
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_QUERY_$0, };
                 }
                 return $$res;
             }, $$cr)();
@@ -1249,6 +1427,207 @@ export class Parser {
                 }
                 return $$res;
             }, $$cr)();
+    }
+    public matchTS_TYPE_MEMBER($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_MEMBER> {
+        return this.choice<TS_TYPE_MEMBER>([
+            () => this.matchTS_TYPE_MEMBER_1($$dpth + 1, $$cr),
+            () => this.matchTS_TYPE_MEMBER_2($$dpth + 1, $$cr),
+            () => this.matchTS_TYPE_MEMBER_3($$dpth + 1, $$cr),
+            () => this.matchTS_TYPE_MEMBER_4($$dpth + 1, $$cr),
+            () => this.matchTS_TYPE_MEMBER_5($$dpth + 1, $$cr),
+        ]);
+    }
+    public matchTS_TYPE_MEMBER_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_MEMBER_1> {
+        return this.runner<TS_TYPE_MEMBER_1>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_MEMBER_1");
+                }
+                let $$res: Nullable<TS_TYPE_MEMBER_1> = null;
+                if (true
+                    && this.matchTS_PROPERTY_NAME($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\??)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_1, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_TYPE_MEMBER_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_MEMBER_2> {
+        return this.runner<TS_TYPE_MEMBER_2>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_MEMBER_2");
+                }
+                let $$res: Nullable<TS_TYPE_MEMBER_2> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_2, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_TYPE_MEMBER_3($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_MEMBER_3> {
+        return this.runner<TS_TYPE_MEMBER_3>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_MEMBER_3");
+                }
+                let $$res: Nullable<TS_TYPE_MEMBER_3> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:new)`, $$dpth + 1, $$cr) !== null
+                    && this.noConsume<_>(() => this.match_($$dpth + 1, $$cr)) !== null
+                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_3, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_TYPE_MEMBER_4($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_MEMBER_4> {
+        return this.runner<TS_TYPE_MEMBER_4>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_MEMBER_4");
+                }
+                let $$res: Nullable<TS_TYPE_MEMBER_4> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\[)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\])`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_4, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_TYPE_MEMBER_5($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_TYPE_MEMBER_5> {
+        return this.runner<TS_TYPE_MEMBER_5>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_TYPE_MEMBER_5");
+                }
+                let $$res: Nullable<TS_TYPE_MEMBER_5> = null;
+                if (true
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchNAME($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\??)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_5, };
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_PROPERTY_NAME($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PROPERTY_NAME> {
+        return this.choice<TS_PROPERTY_NAME>([
+            () => this.matchTS_PROPERTY_NAME_1($$dpth + 1, $$cr),
+            () => this.matchTS_PROPERTY_NAME_2($$dpth + 1, $$cr),
+            () => this.matchTS_PROPERTY_NAME_3($$dpth + 1, $$cr),
+        ]);
+    }
+    public matchTS_PROPERTY_NAME_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PROPERTY_NAME_1> {
+        return this.matchNAME($$dpth + 1, $$cr);
+    }
+    public matchTS_PROPERTY_NAME_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PROPERTY_NAME_2> {
+        return this.matchTS_STRING($$dpth + 1, $$cr);
+    }
+    public matchTS_PROPERTY_NAME_3($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_PROPERTY_NAME_3> {
+        return this.matchTS_NUM($$dpth + 1, $$cr);
+    }
+    public matchTS_STRING($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_STRING> {
+        return this.choice<TS_STRING>([
+            () => this.matchTS_STRING_1($$dpth + 1, $$cr),
+            () => this.matchTS_STRING_2($$dpth + 1, $$cr),
+        ]);
+    }
+    public matchTS_STRING_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_STRING_1> {
+        return this.runner<TS_STRING_1>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_STRING_1");
+                }
+                let $scope$val: Nullable<string>;
+                let $$res: Nullable<TS_STRING_1> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:")`, $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:([^"\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:")`, $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_STRING_1, val: $scope$val};
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_STRING_2($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_STRING_2> {
+        return this.runner<TS_STRING_2>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_STRING_2");
+                }
+                let $scope$val: Nullable<string>;
+                let $$res: Nullable<TS_STRING_2> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:([^\'\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_STRING_2, val: $scope$val};
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_NUM($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_NUM> {
+        return this.regexAccept(String.raw`(?:-?[0-9]+(?:\.[0-9]+)?)`, $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();

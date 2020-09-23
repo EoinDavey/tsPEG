@@ -32,11 +32,15 @@ TS_TYPE := _ start=@ { TS_FUNCTION | TS_CONSTRUCTOR | TS_EXPR } end=@
 TS_EXPR := _ TS_PRIM {_ '[&|]' TS_PRIM }*
 TS_PRIM := {
     '\(' _ TS_TYPE _ '\)'
+    | TS_TYPE_QUERY
     | TS_TYPE_REF
+    | TS_PROPERTY_NAME
+    | '\{' {_ TS_TYPE_MEMBER {_ '[;,]' _ TS_TYPE_MEMBER }* _ '[;,]?' }? _ '\}'
     | '\[' _ { _ TS_TYPE {_ ',' _ TS_TYPE}* }? _ '\]'
     } '\[\]'* // Optional trailing []s for array type
 
 TS_TYPE_REF := _ NAME {'\.' NAME}* {_ TS_GENERIC_PARAMS}?
+TS_TYPE_QUERY := _ 'typeof' &_ _ NAME {'\.' NAME}*
 
 TS_FUNCTION := _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ '=>' _ TS_TYPE
 TS_CONSTRUCTOR := _ 'new' _ TS_FUNCTION
@@ -55,3 +59,14 @@ TS_OPTIONAL_PARAMS := _ TS_OPTIONAL_PARAM _ {',' _ TS_OPTIONAL_PARAM}*
 TS_OPTIONAL_PARAM := _ NAME '\?' _ ':' _ TS_TYPE
 
 TS_REST_PARAM := _ '\.\.\.' _ NAME _ ':' _ TS_TYPE
+
+TS_TYPE_MEMBER := TS_PROPERTY_NAME '\??' _ ':' _ TS_TYPE
+    | _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+    | _ 'new' &_ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+    | _ '\[' _ NAME _ ':' _ NAME _ '\]' _ ':' _ TS_TYPE
+    | _ NAME '\??' _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ ':' _ TS_TYPE
+
+TS_PROPERTY_NAME := NAME | TS_STRING | TS_NUM
+TS_STRING := '"' val='([^"\\]|(\\.))*' '"'
+    | '\'' val='([^\'\\]|(\\.))*' '\''
+TS_NUM := '-?[0-9]+(?:\.[0-9]+)?'
