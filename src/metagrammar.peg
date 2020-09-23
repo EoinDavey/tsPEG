@@ -34,7 +34,7 @@ TS_PRIM := {
     '\(' _ TS_TYPE _ '\)'
     | TS_TYPE_REF
     | '\[' _ { _ TS_TYPE {_ ',' _ TS_TYPE}* }? _ '\]'
-    } '\[\]'? // Optional trailing []s for array type
+    } '\[\]'* // Optional trailing []s for array type
 
 TS_TYPE_REF := _ NAME {'\.' NAME}* {_ TS_GENERIC_PARAMS}?
 

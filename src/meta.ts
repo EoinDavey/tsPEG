@@ -31,7 +31,7 @@
 *     '\(' _ TS_TYPE _ '\)'
 *     | TS_TYPE_REF
 *     | '\[' _ { _ TS_TYPE {_ ',' _ TS_TYPE}* }? _ '\]'
-*     } '\[\]'? // Optional trailing []s for array type
+*     } '\[\]'* // Optional trailing []s for array type
 * TS_TYPE_REF := _ NAME {'\.' NAME}* {_ TS_GENERIC_PARAMS}?
 * TS_FUNCTION := _ TS_GENERIC_PARAMS? _ '\(' _ TS_PARAM_LIST? _ '\)' _ '=>' _ TS_TYPE
 * TS_CONSTRUCTOR := _ 'new' _ TS_FUNCTION
@@ -167,7 +167,7 @@ export class POSTOP {
     public kind: ASTKinds.POSTOP = ASTKinds.POSTOP;
     public pre: PREOP;
     public op: Nullable<string>;
-    public optional: boolean ;
+    public optional: boolean;
     constructor(pre: PREOP, op: Nullable<string>){
         this.pre = pre;
         this.op = op;
@@ -732,7 +732,7 @@ export class Parser {
                 let $$res: Nullable<TS_PRIM> = null;
                 if (true
                     && this.matchTS_PRIM_$0($$dpth + 1, $$cr) !== null
-                    && ((this.regexAccept(String.raw`(?:\[\])`, $$dpth + 1, $$cr)) || true)
+                    && this.loop<string>(() => this.regexAccept(String.raw`(?:\[\])`, $$dpth + 1, $$cr), true) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_PRIM, };
                 }

@@ -300,7 +300,47 @@ test("writeRuleClasses Test", () => {
         })();
     }
 }`
-        }
+        },
+        // Test complex type names
+        {
+            inp: `rule := 'a'
+                .computed = (x: number, y: string) => number | boolean { return 0; }`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: (x: number, y: string) => number | boolean;
+    constructor(){
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a'
+                .computed = <Generic extends Something>(x: Array<Generic>) => number { return 0; }`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: <Generic extends Something>(x: Array<Generic>) => number;
+    constructor(){
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        },
+        {
+            inp: `rule := 'a'
+                .computed = A.B.C<Generic>[][] { return 0; }`,
+            ruleClasses: `export class rule {
+    public kind: ASTKinds.rule = ASTKinds.rule;
+    public computed: A.B.C<Generic>[][];
+    constructor(){
+        this.computed = (() => {
+        return 0;
+        })();
+    }
+}`
+        },
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
