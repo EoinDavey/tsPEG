@@ -1,8 +1,8 @@
-import { TS_TYPE, ALT, ASTKinds, ATOM, GRAM, MATCHSPEC, Parser, PosInfo, MATCH, PREOP, RULE, RULEDEF, STRLIT } from "./meta";
+import { ALT, ASTKinds, ATOM, GRAM, MATCH, MATCHSPEC, PREOP, Parser, PosInfo, RULE, RULEDEF, STRLIT, TS_TYPE } from "./meta";
 
 import { expandTemplate } from "./template";
 
-import { unescapeSeqs, Block, indentBlock, writeBlock } from "./util";
+import { Block, indentBlock, unescapeSeqs, writeBlock } from "./util";
 
 type Rule = ALT[];
 type Grammar = Ruledef[];
@@ -30,7 +30,7 @@ export class Generator {
     private numEnums: boolean;
     private input: string;
 
-    public constructor(input: string, numEnums: boolean = false) {
+    public constructor(input: string, numEnums = false) {
         this.input = input;
         this.numEnums = numEnums;
     }

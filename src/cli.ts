@@ -11,7 +11,7 @@ yargs.command("$0 <grammar> <output_file>", "build parser from grammar",
             type: "boolean",
             default: false,
             desc: "Use numeric enums for AST kinds",
-        }
+        },
     }),
     argv => {
         const grammarFile = argv.grammar as string;

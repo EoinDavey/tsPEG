@@ -1,7 +1,7 @@
 import { parse } from "./parser";
 
 test("test calculator", () => {
-    interface TestCase { inp: string, exp: number };
+    interface TestCase { inp: string, exp: number }
     const tcs: TestCase[] = [
         { inp: "1+2", exp: 3 },
         { inp: " 1 + 2 ", exp: 3 },
@@ -16,4 +16,4 @@ test("test calculator", () => {
         const ast = res.ast!;
         expect(ast.value).toEqual(tc.exp);
     }
-})
+});

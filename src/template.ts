@@ -131,7 +131,7 @@ export function expandTemplate(input: string, header: Block, kinds: Block,
                         "}",
                         "// We substring from 3 to len - 1 to strip off the",
                         "// non-capture group syntax added as a WebKit workaround",
-                        "log(match.substring(3, match.length - 1));"
+                        "log(match.substring(3, match.length - 1));",
                     ],
                     "}",
                     "const reg = new RegExp(match, \"y\");",
@@ -192,7 +192,7 @@ export function expandTemplate(input: string, header: Block, kinds: Block,
     "export function parse(s: string): ParseResult {",
     [
         "const p = new Parser(s);",
-        "return p.parse();"
+        "return p.parse();",
     ],
     "}",
 

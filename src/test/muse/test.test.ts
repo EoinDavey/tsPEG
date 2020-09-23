@@ -3,7 +3,7 @@ import { parse } from "./parser";
 // Just ensure they all parse
 
 test("test calculator", () => {
-    interface TestCase { inp: string };
+    interface TestCase { inp: string }
     const tcs: TestCase[] = [
         {
             inp: `melody main start
@@ -31,7 +31,7 @@ end
 
 melody four x start
     play (repeat x 4)
-end`
+end`,
         },
         {
             inp: `melody main start
@@ -75,7 +75,7 @@ end
 
 melody emin start
     play (overlay (Piano E4) (Piano G4) (Piano B4))
-end`
+end`,
         },
         {
             inp: `melody a start
@@ -90,7 +90,7 @@ melody fib n start
         b = a + b
         a = b - a
     end
-end`
+end`,
         },
         {
             inp: `melody a start
@@ -105,7 +105,7 @@ melody fib n start
         b = a + b
         a = b - a
     end
-end`
+end`,
         },
         {
             inp: `melody A start
@@ -117,7 +117,7 @@ melody Fib n a b start
         play (Sine 220 + a)
         play (Fib (n-1) (a+b) a)
     end
-end`
+end`,
         },
         {
             inp: `melody a start
@@ -140,12 +140,12 @@ melody d start
     play (Piano G4)
     play (Piano D4)
     play (Piano A4)
-end`
-        }
+end`,
+        },
     ];
     for (const tc of tcs) {
         const res = parse(tc.inp);
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
     }
-})
+});

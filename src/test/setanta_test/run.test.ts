@@ -18,4 +18,4 @@ res := fib[fad@fib - 1]
 
     // Expect result to be 10946, the fibonacci number
     expect(i.global.env.get("res")).toEqual(10946);
-})
+});

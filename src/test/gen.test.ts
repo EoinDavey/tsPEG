@@ -1,4 +1,4 @@
-import { ASTKinds, MATCH, parse, Parser, SyntaxErr } from "../meta";
+import { ASTKinds, MATCH, Parser, SyntaxErr, parse } from "../meta";
 import { Generator } from "../gen";
 import { writeBlock } from "../util";
 
@@ -6,22 +6,22 @@ test("Parser Test", () => {
     interface TestCase { inp: string, expmatches?: string[];  }
     const tcs : TestCase[] = [
         {
-            inp: "rule := 'regex'"
+            inp: "rule := 'regex'",
         },
         {
-            inp: String.raw`rule := 'string \' with \' quote \' inside \' \' \''`
+            inp: String.raw`rule := 'string \' with \' quote \' inside \' \' \''`,
         },
         {
-            inp: "rule := 'regex1' | 'regex2' | 'regex3'"
+            inp: "rule := 'regex1' | 'regex2' | 'regex3'",
         },
         {
-            inp: "rule := named='regex1' | 'regex2' | named_again  =  'regex3'"
+            inp: "rule := named='regex1' | 'regex2' | named_again  =  'regex3'",
         },
         {
-            inp: "rule := named=rule_ref | 'regex'"
+            inp: "rule := named=rule_ref | 'regex'",
         },
         {
-            inp: "rule := named=rule_ref | 'regex' | pos=@"
+            inp: "rule := named=rule_ref | 'regex' | pos=@",
         },
         {
             inp: `rule := named=rule_ref
@@ -30,19 +30,19 @@ test("Parser Test", () => {
         {
             inp: `rule_one := named=rule_ref
             rule_two := 'regex1'
-            rule_three := rule_one | capture=rule_two`
+            rule_three := rule_one | capture=rule_two`,
         },
         {
             inp: `rule1_:= named=rule_ref
             rule1 := 'regex1'
-            rule3 := rule_one | capture=rule_two`
+            rule3 := rule_one | capture=rule_two`,
         },
         {
             inp: `---
             HEADER SECTION ANYTHING HERE
             ---
             rule_one := 'regex'
-            rule_two := rule_one .test = boolean { return true; }`
+            rule_two := rule_one .test = boolean { return true; }`,
         },
         {
             inp: `---HEADER---
@@ -51,7 +51,7 @@ test("Parser Test", () => {
                       | unnamed
                       .prop = boolean { return true; }
             rule_two := 'regex1'
-            rule_three := rule_one | capture=rule_two`
+            rule_three := rule_one | capture=rule_two`,
         },
         {
             inp: `// Comment here
@@ -66,24 +66,24 @@ test("Parser Test", () => {
             // Comment here
             rule_two := 'regex1'
             // Comment here
-            rule_three := rule_one | capture=rule_two`
+            rule_three := rule_one | capture=rule_two`,
         },
         {
             inp: "rule :=",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@"]
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@"],
         },
         {
             inp: "rule := 'unterminated",
-            expmatches: ["\\'"]
+            expmatches: ["\\'"],
         },
         {
             inp: "rule := 'unmatched-op' | ",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@"]
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@"],
         },
         {
             inp: "rule := 'can\\'t repeat @ special rule' @*",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\.", "\\|"]
-        }
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\.", "\\|"],
+        },
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
@@ -106,24 +106,24 @@ test("extractRule test", () => {
     const tcs : TestCase[] = [
         {
             inp: "rule := 'a'",
-            rulenames: ["rule"]
+            rulenames: ["rule"],
         },
         {
             inp: "rule_one := 'a' ruletwo := 'b' rule_____three := 'c'",
-            rulenames: ["rule_one", "ruletwo", "rule_____three"]
+            rulenames: ["rule_one", "ruletwo", "rule_____three"],
         },
         {
             inp: "rule := { 'subrule' }?",
-            rulenames: ["rule", "rule_$0"]
+            rulenames: ["rule", "rule_$0"],
         },
         {
             inp: "rule := { 'subrule1' }? { 'subrule' | 'two' }+",
-            rulenames: ["rule", "rule_$0", "rule_$1"]
+            rulenames: ["rule", "rule_$0", "rule_$1"],
         },
         {
             inp: "rule := { sub rule { subsub rule 'zero' } { subsubrule_one }? } { sub rule 'two' @ { sub sub rule } }",
-            rulenames: ["rule", "rule_$0", "rule_$0_$0", "rule_$0_$1", "rule_$1", "rule_$1_$0"]
-        }
+            rulenames: ["rule", "rule_$0", "rule_$0_$0", "rule_$0_$1", "rule_$1", "rule_$1_$0"],
+        },
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
@@ -143,48 +143,48 @@ test("match type/rule test", () => {
         {
             match: "ruleReference",
             expType: "ruleReference",
-            expRule: "this.matchruleReference($$dpth + 1, $$cr)"
+            expRule: "this.matchruleReference($$dpth + 1, $$cr)",
         },
         {
             match: "ruleReference*",
             expType: "ruleReference[]",
-            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), true)"
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), true)",
         },
         {
             match: "ruleReference+",
             expType: "ruleReference[]",
-            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), false)"
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), false)",
         },
         {
             match: "ruleReference?",
             expType: "Nullable<ruleReference>",
-            expRule: "this.matchruleReference($$dpth + 1, $$cr)"
+            expRule: "this.matchruleReference($$dpth + 1, $$cr)",
         },
         {
             match: "!ruleReference",
             expType: "boolean",
-            expRule: "this.negate(() => this.matchruleReference($$dpth + 1, $$cr))"
+            expRule: "this.negate(() => this.matchruleReference($$dpth + 1, $$cr))",
         },
         {
             match: "'regex'",
             expType: "string",
-            expRule: "this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr)"
+            expRule: "this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr)",
         },
         {
             match: "'regex'+",
             expType: "string[]",
-            expRule: "this.loop<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr), false)"
+            expRule: "this.loop<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr), false)",
         },
         {
             match: "&'regex'",
             expType: "string",
-            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr))"
+            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr))",
         },
         {
             match: "@",
             expType: "PosInfo",
-            expRule: "this.mark()"
-        }
+            expRule: "this.mark()",
+        },
     ];
     for(const tc of tcs) {
         const p = new Parser(tc.match);
@@ -219,7 +219,7 @@ test("subrule type/rule test", () => {
 });
 
 test("writeKinds test", () => {
-    interface TestCase { inp: string, writeKinds: string, numEnums: boolean };
+    interface TestCase { inp: string, writeKinds: string, numEnums: boolean }
     const tcs: TestCase[] = [
         {
             inp: "rule := 'regex'",
@@ -274,18 +274,18 @@ test("writeKinds test", () => {
 });
 
 test("writeRuleClasses Test", () => {
-    interface TestCase { inp: string, ruleClasses: string };
+    interface TestCase { inp: string, ruleClasses: string }
     const tcs: TestCase[] = [
         {
             inp: "rule := 'regex'",
-            ruleClasses: "export type rule = string;"
+            ruleClasses: "export type rule = string;",
         },
         {
             inp: "rule := name='named regex'",
             ruleClasses: `export interface rule {
     kind: ASTKinds.rule;
     name: string;
-}`
+}`,
         },
         {
             inp: "rule := name='named regex' .computed = number { return 0; }",
@@ -299,7 +299,7 @@ test("writeRuleClasses Test", () => {
         return 0;
         })();
     }
-}`
+}`,
         },
         // Test complex type names and code section
         {
@@ -319,7 +319,7 @@ test("writeRuleClasses Test", () => {
             }
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a'
@@ -346,7 +346,7 @@ test("writeRuleClasses Test", () => {
             }
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = A.B.C<Generic>[][] { return "string with {} }}}{{}}"; }`,
@@ -358,7 +358,7 @@ test("writeRuleClasses Test", () => {
         return "string with {} }}}{{}}";
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = (req: number, opt?: boolean, ...rest: A.B<K>[]) => test { return 0; }`,
@@ -370,7 +370,7 @@ test("writeRuleClasses Test", () => {
         return 0;
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = [number, bool, new () => void] {}`,
@@ -381,7 +381,7 @@ test("writeRuleClasses Test", () => {
         this.computed = ((): [number, bool, new () => void] => {
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = (a: (typeof a)[]) => (new () => void) {}`,
@@ -392,7 +392,7 @@ test("writeRuleClasses Test", () => {
         this.computed = ((): (a: (typeof a)[]) => (new () => void) => {
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = {a: number; b: boolean} {}`,
@@ -403,7 +403,7 @@ test("writeRuleClasses Test", () => {
         this.computed = ((): {a: number; b: boolean} => {
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = {a: number; b: {nested: () => void};}[] {}`,
@@ -414,7 +414,7 @@ test("writeRuleClasses Test", () => {
         this.computed = ((): {a: number; b: {nested: () => void};}[] => {
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = { a(x: number): void } {}`,
@@ -425,7 +425,7 @@ test("writeRuleClasses Test", () => {
         this.computed = ((): { a(x: number): void } => {
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = { [x: string]: void } {}`,
@@ -436,7 +436,7 @@ test("writeRuleClasses Test", () => {
         this.computed = ((): { [x: string]: void } => {
         })();
     }
-}`
+}`,
         },
         {
             inp: `rule := 'a' .computed = { "test": test } {}`,
@@ -447,7 +447,7 @@ test("writeRuleClasses Test", () => {
         this.computed = ((): { "test": test } => {
         })();
     }
-}`
+}`,
         },
     ];
     for(const tc of tcs) {

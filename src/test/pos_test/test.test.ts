@@ -1,4 +1,4 @@
-import { PosInfo, parse, Parser, EXPR } from "./parser";
+import { EXPR, Parser, PosInfo, parse } from "./parser";
 
 function comp(a: number, b: number): number {
     if(a < b)
@@ -31,7 +31,7 @@ function traverse(e: EXPR): [PosInfo[], PosInfo[]] {
 }
 
 test("test positions", () => {
-    interface TestCase { inp: string; starts: PosInfo[]; ends: PosInfo[] };
+    interface TestCase { inp: string; starts: PosInfo[]; ends: PosInfo[] }
     const tcs: TestCase[] = [
         {
             inp: "()",
@@ -39,16 +39,16 @@ test("test positions", () => {
                 {
                     overallPos: 0,
                     line: 1,
-                    offset: 0
-                }
+                    offset: 0,
+                },
             ],
             ends: [
                 {
                     overallPos: 2,
                     line: 1,
-                    offset: 2
-                }
-            ]
+                    offset: 2,
+                },
+            ],
         },
         {
             inp: "()()()",
@@ -56,36 +56,36 @@ test("test positions", () => {
                 {
                     overallPos: 0,
                     line: 1,
-                    offset: 0
+                    offset: 0,
                 },
                 {
                     overallPos: 2,
                     line: 1,
-                    offset: 2
+                    offset: 2,
                 },
                 {
                     overallPos: 4,
                     line: 1,
-                    offset: 4
-                }
+                    offset: 4,
+                },
             ],
             ends: [
                 {
                     overallPos: 2,
                     line: 1,
-                    offset: 2
+                    offset: 2,
                 },
                 {
                     overallPos: 4,
                     line: 1,
-                    offset: 4
+                    offset: 4,
                 },
                 {
                     overallPos: 6,
                     line: 1,
-                    offset: 6
-                }
-            ]
+                    offset: 6,
+                },
+            ],
         },
         {
             inp: "(()())",
@@ -93,36 +93,36 @@ test("test positions", () => {
                 {
                     overallPos: 0,
                     line: 1,
-                    offset: 0
+                    offset: 0,
                 },
                 {
                     overallPos: 1,
                     line: 1,
-                    offset: 1
+                    offset: 1,
                 },
                 {
                     overallPos: 3,
                     line: 1,
-                    offset: 3
-                }
+                    offset: 3,
+                },
             ],
             ends: [
                 {
                     overallPos: 3,
                     line: 1,
-                    offset: 3
+                    offset: 3,
                 },
                 {
                     overallPos: 5,
                     line: 1,
-                    offset: 5
+                    offset: 5,
                 },
                 {
                     overallPos: 6,
                     line: 1,
-                    offset: 6
-                }
-            ]
+                    offset: 6,
+                },
+            ],
         },
         {
             inp: `
@@ -133,26 +133,26 @@ test("test positions", () => {
                 {
                     overallPos: 1,
                     line: 2,
-                    offset: 0
+                    offset: 0,
                 },
                 {
                     overallPos: 6,
                     line: 4,
-                    offset: 1
-                }
+                    offset: 1,
+                },
             ],
             ends: [
                 {
                     overallPos: 3,
                     line: 2,
-                    offset: 2
+                    offset: 2,
                 },
                 {
                     overallPos: 8,
                     line: 4,
-                    offset: 3
-                }
-            ]
+                    offset: 3,
+                },
+            ],
         },
     ];
     for (const tc of tcs) {
@@ -165,4 +165,4 @@ test("test positions", () => {
         expect(tc.starts.sort(posSort)).toEqual(starts.sort(posSort));
         expect(tc.ends.sort(posSort)).toEqual(ends.sort(posSort));
     }
-})
+});

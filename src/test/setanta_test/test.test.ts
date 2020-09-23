@@ -3,7 +3,7 @@ import { parse } from "./parser";
 // Just ensure they all parse
 
 test("test calculator", () => {
-    interface TestCase { inp: string };
+    interface TestCase { inp: string }
     const tcs: TestCase[] = [
         {
             inp: `masses := []
@@ -37,10 +37,10 @@ gníomh cuidb() {
 }
 
 scríobh('Cuid A', cuida())
-scríobh('Cuid B', cuidb())`
+scríobh('Cuid B', cuidb())`,
         },
         {
-            inp:`mns := [
+            inp: `mns := [
     [-7,17,-11],
     [9, 12, 5],
     [-9, 0, -4],
@@ -108,10 +108,10 @@ le m idir (0, 4) {
     }
     sm = sm + vsm*psm
 }
-scríobh(sm)`
+scríobh(sm)`,
         },
         {
-            inp:`
+            inp: `
 línte := []
 nuair-a fíor {
     líne := léigh_líne()
@@ -214,7 +214,7 @@ nuair-a L < R {
 scríobh('Cuid A')
 scríobh(reitigh(1))
 scríobh('Cuid B')
-scríobh(L)`
+scríobh(L)`,
         },
         {
             inp: `
@@ -269,17 +269,17 @@ gníomh ab(N) {
 }
 
 p := ab(10007)
-scríobh('Cuid 1', (p[0]*2019 + p[1])%10007)`
+scríobh('Cuid 1', (p[0]*2019 + p[1])%10007)`,
         },
         {
-            inp:`
+            inp: `
 gníomh fac(x) {
     má x <= 1
         toradh 1
     toradh x * fac(x - 1)
 }
 
-scríobh(fac(10))`
+scríobh(fac(10))`,
         },
         {
             inp: `s := 'test'
@@ -303,10 +303,10 @@ gníomh gen(ind, used, st) {
     }
 }
 
-gen(0, [breag]*fad(s), '')`
+gen(0, [breag]*fad(s), '')`,
         },
         {
-            inp:`
+            inp: `
 >-- Comhair na uimhreacha phríomha
 gníomh príómha(x) {
     má x <= 2
@@ -323,12 +323,12 @@ gníomh príómha(x) {
 le i idir (2, 100) {
     má príómha(i)
         scríobh(i)
-}`
-        }
+}`,
+        },
     ];
     for (const tc of tcs) {
         const res = parse(tc.inp);
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
     }
-})
+});
