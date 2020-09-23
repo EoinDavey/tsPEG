@@ -13,7 +13,7 @@
         "gen-tests": "./gen-tests.sh",
         "build": "tsc && npm run gen && tsc",
         "gen": "cp src/meta.ts /tmp/meta.ts && node ./tsbuild/cli.js src/metagrammar.peg src/meta.ts",
-        "test": "./gen-tests.sh && jest",
+        "test": "./gen-tests.sh && jest && npm run lint-all -- --max-warnings=0",
         "clean": "rm -rf tsbuild",
         "lint": "eslint",
         "lint-all": "eslint --ext .ts src/"
