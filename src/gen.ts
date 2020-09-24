@@ -1,8 +1,7 @@
 import { ALT, ASTKinds, ATOM, GRAM, MATCH, PREOP, Parser, PosInfo }  from "./meta";
-
 import { expandTemplate } from "./template";
-
 import { Block, writeBlock } from "./util";
+import { CheckError } from "./checks";
 
 type Rule = ALT[];
 type Grammar = Ruledef[];
@@ -123,7 +122,7 @@ export class Generator {
                 // Ensure the RegExp wrapped in brackets is valid
                 new RegExp(reg);
             } catch (err) {
-                throw new Error(`Couldnt' compile regex ${mtch.val} at line ${mtch.start.line}:${mtch.start.offset} : ${err}`);
+                throw new CheckError(`Couldnt' compile regex '${mtch.val}': ${err}`, mtch.start);
             }
             return `this.regexAccept(String.raw\`${reg}\`, $$dpth + 1, $$cr)`;
         }
@@ -389,12 +388,10 @@ export class Generator {
     public generate(): string {
         const p = new Parser(this.input);
         const res = p.parse();
-        if (res.err) {
+        if (res.err)
             throw res.err;
-        }
-        if (!res.ast) {
+        if (!res.ast)
             throw new Error("No AST found");
-        }
         const gram = this.AST2Gram(res.ast);
         const hdr: Block = res.ast.header ? [res.ast.header.content] : [];
         const parseBlock = expandTemplate(this.input, hdr, this.writeKinds(gram), this.writeRuleClasses(gram),

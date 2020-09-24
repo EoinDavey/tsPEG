@@ -2,8 +2,8 @@
 
 import * as fs from "fs";
 import * as yargs from "yargs";
-
 import { buildParser } from "./gen";
+import { CheckError } from "./checks";
 
 yargs.command("$0 <grammar> <output_file>", "build parser from grammar",
     _yargs => _yargs.options({
@@ -22,7 +22,10 @@ yargs.command("$0 <grammar> <output_file>", "build parser from grammar",
             fs.writeFileSync(outputFile, parser);
         } catch(err) {
             process.exitCode = 1;
-            console.error(err);
+            if(err instanceof CheckError)
+                console.error(err.message);
+            else
+                console.error(err);
         }
     })
     .strict()
