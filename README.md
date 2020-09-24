@@ -162,6 +162,11 @@ class PosInfo {
 }
 ```
 
+## Comments
+
+C-style comments can be added to grammar spec files. Anything on a line after a // is a comment, and
+is ignored by the generator.
+
 ## Computed Properties
 
 As well as assigning parsing results to variables and storing them on the AST, *tsPEG* also allows you to create **computed properties**, which are fields on the AST that are computed when the parser is run.
@@ -249,6 +254,22 @@ The names of the ASTKinds enum entries vary.
 ## Position tracking
 
 tsPEG supports a special match expression "`@`" for storing the positions of matches. Using `@` you can store the current position of the parser.
+
+The `@` expression returns a `PosInfo` object:
+
+```TypeScript
+export interface PosInfo {
+    // overallPos is the index of the input string
+    readonly overallPos: number;
+
+    // line is the line of the input
+    readonly line: number;
+
+    // offset is the number of characters from the
+    // start of the line
+    readonly offset: number;
+}
+```
 
 ### Example
 
