@@ -1,3 +1,12 @@
+import { ALT } from "./meta";
+
+export type Rule = ALT[];
+export type Grammar = Ruledef[];
+export interface Ruledef {
+    name: string;
+    rule: Rule;
+}
+
 export type Block = Array<string | Block>
 
 export function indentBlock(blk: string[]): string[] {

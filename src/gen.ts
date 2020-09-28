@@ -1,14 +1,7 @@
 import { ALT, ASTKinds, ATOM, GRAM, MATCH, PREOP, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
-import { Block, writeBlock } from "./util";
-import { CheckError } from "./checks";
-
-type Rule = ALT[];
-type Grammar = Ruledef[];
-interface Ruledef {
-    name: string;
-    rule: Rule;
-}
+import { Block, Grammar, Rule, Ruledef, writeBlock } from "./util";
+import { CheckError, Checker } from "./checks";
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -28,6 +21,7 @@ export class Generator {
     private subRules: Map<ATOM, string> = new Map();
     private numEnums: boolean;
     private input: string;
+    private checkers: Checker[] = [];
 
     public constructor(input: string, numEnums = false) {
         this.input = input;
@@ -65,6 +59,11 @@ export class Generator {
             }
         }
         return rules;
+    }
+
+    public addChecker(c: Checker): this {
+        this.checkers.push(c);
+        return this;
     }
 
     public preType(expr: PREOP): string {
@@ -393,6 +392,11 @@ export class Generator {
         if (!res.ast)
             throw new Error("No AST found");
         const gram = this.AST2Gram(res.ast);
+        for (const checker of this.checkers) {
+            const err = checker.Check(gram, this.input);
+            if (err)
+                throw err;
+        }
         const hdr: Block = res.ast.header ? [res.ast.header.content] : [];
         const parseBlock = expandTemplate(this.input, hdr, this.writeKinds(gram), this.writeRuleClasses(gram),
             this.writeRuleParseFns(gram), this.writeParseResultClass(gram));
