@@ -1,7 +1,7 @@
 import { ALT, ASTKinds, ATOM, GRAM, MATCH, PREOP, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
 import { Block, Grammar, Rule, Ruledef, writeBlock } from "./util";
-import { BannedNamesChecker, CheckError, Checker } from "./checks";
+import { BannedNamesChecker, CheckError, Checker, RulesExistChecker } from "./checks";
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -406,6 +406,7 @@ export class Generator {
 
 export function buildParser(s: string, numEnums: boolean): string {
     const gen = new Generator(s, numEnums)
-        .addChecker(BannedNamesChecker);
+        .addChecker(BannedNamesChecker)
+        .addChecker(RulesExistChecker);
     return gen.generate();
 }

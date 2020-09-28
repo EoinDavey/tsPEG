@@ -13,7 +13,7 @@
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
 *             .optional = boolean { return this.op === '?';}
 * PREOP     := op='\&|!'? at=ATOM
-* ATOM      := name=NAME !'\s*:='
+* ATOM      := start=@ name=NAME !'\s*:='
 *            | match=STRLIT
 *            | '{' _ sub=RULE _ '}'
 * ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ code=CODE_SECTION
@@ -227,6 +227,7 @@ export interface PREOP {
 export type ATOM = ATOM_1 | ATOM_2 | ATOM_3;
 export interface ATOM_1 {
     kind: ASTKinds.ATOM_1;
+    start: PosInfo;
     name: NAME;
 }
 export interface ATOM_2 {
@@ -665,13 +666,15 @@ export class Parser {
                 if (log) {
                     log("ATOM_1");
                 }
+                let $scope$start: Nullable<PosInfo>;
                 let $scope$name: Nullable<NAME>;
                 let $$res: Nullable<ATOM_1> = null;
                 if (true
+                    && ($scope$start = this.mark()) !== null
                     && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
                     && this.negate(() => this.regexAccept(String.raw`(?:\s*:=)`, $$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.ATOM_1, name: $scope$name};
+                    $$res = {kind: ASTKinds.ATOM_1, start: $scope$start, name: $scope$name};
                 }
                 return $$res;
             }, $$cr)();
