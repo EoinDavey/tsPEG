@@ -7,7 +7,7 @@
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
 *           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
 * ALT       := matches=MATCHSPEC+ attrs=ATTR*
-* MATCHSPEC := _ named={name=NAME _ '=' _}? rule=MATCH
+* MATCHSPEC := _ named={start=@ name=NAME _ '=' _}? rule=MATCH
 * MATCH     := SPECIAL | POSTOP
 * SPECIAL   := op='@'
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
@@ -175,7 +175,7 @@ export class RULE {
     constructor(head: ALT, tail: RULE_$0[]){
         this.head = head;
         this.tail = tail;
-        this.list = (() => {
+        this.list = ((): ALT[] => {
         return [this.head, ...this.tail.map((x) => x.alt)];
         })();
     }
@@ -196,6 +196,7 @@ export interface MATCHSPEC {
 }
 export interface MATCHSPEC_$0 {
     kind: ASTKinds.MATCHSPEC_$0;
+    start: PosInfo;
     name: NAME;
 }
 export type MATCH = MATCH_1 | MATCH_2;
@@ -213,7 +214,7 @@ export class POSTOP {
     constructor(pre: PREOP, op: Nullable<string>){
         this.pre = pre;
         this.op = op;
-        this.optional = (() => {
+        this.optional = ((): boolean => {
         return this.op === '?';
         })();
     }
@@ -572,15 +573,17 @@ export class Parser {
                 if (log) {
                     log("MATCHSPEC_$0");
                 }
+                let $scope$start: Nullable<PosInfo>;
                 let $scope$name: Nullable<NAME>;
                 let $$res: Nullable<MATCHSPEC_$0> = null;
                 if (true
+                    && ($scope$start = this.mark()) !== null
                     && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:=)`, $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = {kind: ASTKinds.MATCHSPEC_$0, name: $scope$name};
+                    $$res = {kind: ASTKinds.MATCHSPEC_$0, start: $scope$start, name: $scope$name};
                 }
                 return $$res;
             }, $$cr)();
