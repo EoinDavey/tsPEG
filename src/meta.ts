@@ -56,11 +56,12 @@
 * TS_PROPERTY_NAME := NAME | TS_STRING | TS_NUM
 * TS_STRING := '"' val='([^"\\]|(\\.))*' '"'
 *     | '\'' val='([^\'\\]|(\\.))*' '\''
+*     | '`' val='([^`\\]|(\\.))*' '`'
 * TS_NUM := '-?[0-9]+(?:\.[0-9]+)?'
 * // Grammar to match code section without escaped braces
 * // Logic is based off braces can only appear without matching brace in strings.
 * CODE_SECTION := _ '\{' start=@ CODE_REC? end=@ _ '\}'
-* CODE_REC := { '[^{}\'"]+' | TS_STRING | '\{' CODE_REC _ '\}' }*
+* CODE_REC := { '[^{}\'"`]+' | TS_STRING | '\{' CODE_REC _ '\}' }*
 */
 type Nullable<T> = T | null;
 type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
@@ -146,6 +147,7 @@ export enum ASTKinds {
     TS_PROPERTY_NAME_3 = "TS_PROPERTY_NAME_3",
     TS_STRING_1 = "TS_STRING_1",
     TS_STRING_2 = "TS_STRING_2",
+    TS_STRING_3 = "TS_STRING_3",
     TS_NUM = "TS_NUM",
     CODE_SECTION = "CODE_SECTION",
     CODE_REC = "CODE_REC",
@@ -399,13 +401,17 @@ export type TS_PROPERTY_NAME = TS_PROPERTY_NAME_1 | TS_PROPERTY_NAME_2 | TS_PROP
 export type TS_PROPERTY_NAME_1 = NAME;
 export type TS_PROPERTY_NAME_2 = TS_STRING;
 export type TS_PROPERTY_NAME_3 = TS_NUM;
-export type TS_STRING = TS_STRING_1 | TS_STRING_2;
+export type TS_STRING = TS_STRING_1 | TS_STRING_2 | TS_STRING_3;
 export interface TS_STRING_1 {
     kind: ASTKinds.TS_STRING_1;
     val: string;
 }
 export interface TS_STRING_2 {
     kind: ASTKinds.TS_STRING_2;
+    val: string;
+}
+export interface TS_STRING_3 {
+    kind: ASTKinds.TS_STRING_3;
     val: string;
 }
 export type TS_NUM = string;
@@ -1678,6 +1684,7 @@ export class Parser {
         return this.choice<TS_STRING>([
             () => this.matchTS_STRING_1($$dpth + 1, $$cr),
             () => this.matchTS_STRING_2($$dpth + 1, $$cr),
+            () => this.matchTS_STRING_3($$dpth + 1, $$cr),
         ]);
     }
     public matchTS_STRING_1($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_STRING_1> {
@@ -1712,6 +1719,24 @@ export class Parser {
                     && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_STRING_2, val: $scope$val};
+                }
+                return $$res;
+            }, $$cr)();
+    }
+    public matchTS_STRING_3($$dpth: number, $$cr?: ContextRecorder): Nullable<TS_STRING_3> {
+        return this.runner<TS_STRING_3>($$dpth,
+            (log) => {
+                if (log) {
+                    log("TS_STRING_3");
+                }
+                let $scope$val: Nullable<string>;
+                let $$res: Nullable<TS_STRING_3> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\`)`, $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:([^\`\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\`)`, $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.TS_STRING_3, val: $scope$val};
                 }
                 return $$res;
             }, $$cr)();
@@ -1753,7 +1778,7 @@ export class Parser {
         ]);
     }
     public matchCODE_REC_$0_1($$dpth: number, $$cr?: ContextRecorder): Nullable<CODE_REC_$0_1> {
-        return this.regexAccept(String.raw`(?:[^{}\'"]+)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:[^{}\'"\`]+)`, $$dpth + 1, $$cr);
     }
     public matchCODE_REC_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<CODE_REC_$0_2> {
         return this.matchTS_STRING($$dpth + 1, $$cr);

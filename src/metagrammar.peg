@@ -68,10 +68,11 @@ TS_TYPE_MEMBER := TS_PROPERTY_NAME '\??' _ ':' _ TS_TYPE
 TS_PROPERTY_NAME := NAME | TS_STRING | TS_NUM
 TS_STRING := '"' val='([^"\\]|(\\.))*' '"'
     | '\'' val='([^\'\\]|(\\.))*' '\''
+    | '`' val='([^`\\]|(\\.))*' '`'
 TS_NUM := '-?[0-9]+(?:\.[0-9]+)?'
 
 // Grammar to match code section without escaped braces
 // Logic is based off braces can only appear without matching brace in strings.
 
 CODE_SECTION := _ '\{' start=@ CODE_REC? end=@ _ '\}'
-CODE_REC := { '[^{}\'"]+' | TS_STRING | '\{' CODE_REC _ '\}' }*
+CODE_REC := { '[^{}\'"`]+' | TS_STRING | '\{' CODE_REC _ '\}' }*
