@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added static checks for banned match names
+- Added static checks for undefined rules
+
 ## 2.0.0 - 2020/09/23
 
 ### Added
