@@ -27,12 +27,15 @@
 - Special error is raised when EOF is not reached during parse.
 - Numbers can now be used in names of IDs (not in first position).
 - Added `num-enums` flag to specify numeric kind enums.
+- Support for C-style comments (#2)
+- Add `--version` and `--help` CLI flags
 
 ### Changed
 
-- No longer need to use braces ({}) in code sections in computed properties.
+- No longer need to escape braces ({}) in code sections in computed properties. (#12)
+- Type declarations for computed properties properly support whitespace. (#4)
 - `mark` parser method is now public.
-- Enums are now string valued by default.
+- Enums are now string valued by default. (#3)
 
 ### Fixed
 
