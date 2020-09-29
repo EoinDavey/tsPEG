@@ -1,6 +1,6 @@
 import { ALT, ASTKinds, ATOM, GRAM, MATCH, PREOP, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Rule, Ruledef, writeBlock } from "./util";
+import { Block, Grammar, Rule, Ruledef, escapeBackticks, writeBlock } from "./util";
 import { BannedNamesChecker, CheckError, Checker, RulesExistChecker } from "./checks";
 
 function hasAttrs(alt: ALT): boolean {
@@ -123,7 +123,7 @@ export class Generator {
             } catch (err) {
                 throw new CheckError(`Couldnt' compile regex '${mtch.val}': ${err}`, mtch.start);
             }
-            return `this.regexAccept(String.raw\`${reg}\`, $$dpth + 1, $$cr)`;
+            return `this.regexAccept(String.raw\`${escapeBackticks(reg)}\`, $$dpth + 1, $$cr)`;
         }
         const subname = this.subRules.get(at);
         if (subname) {

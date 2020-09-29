@@ -42,3 +42,9 @@ export function unescapeSeqs(s: string): string {
     }
     return out;
 }
+
+// escapeBackticks replaces backticks in strings with escaped backticks
+// for use in inserting into a call to String.raw``
+export function escapeBackticks(s: string): string {
+    return s.replace('`', '\\`');
+}

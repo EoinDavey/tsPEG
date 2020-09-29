@@ -12,6 +12,9 @@ test("Parser Test", () => {
             inp: String.raw`rule := 'string \' with \' quote \' inside \' \' \''`,
         },
         {
+            inp: String.raw`rule := 'string with \`backticks\`'`,
+        },
+        {
             inp: "rule := 'regex1' | 'regex2' | 'regex3'",
         },
         {
