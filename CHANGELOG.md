@@ -7,6 +7,10 @@
 - Added static checks for banned match names
 - Added static checks for undefined rules
 
+### Fixed
+
+- Fixed template string support in code blocks
+
 ## 2.0.0 - 2020/09/23
 
 ### Added
