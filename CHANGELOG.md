@@ -5,11 +5,12 @@
 ### Added
 
 - Added static checks for banned match names
-- Added static checks for undefined rules
+- Added static checks for undefined rules (#13).
 
 ### Fixed
 
 - Fixed template string support in code blocks
+- Reduced size of npm package (#14).
 
 ## 2.0.0 - 2020/09/23
 
