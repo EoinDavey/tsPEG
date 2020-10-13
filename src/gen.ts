@@ -1,7 +1,8 @@
 import { ALT, ASTKinds, ATOM, GRAM, MATCH, PREOP, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Rule, Ruledef, escapeBackticks, writeBlock } from "./util";
-import { BannedNamesChecker, CheckError, Checker, RulesExistChecker } from "./checks";
+import { Block, Grammar, Rule, Ruledef, altNames, escapeBackticks, writeBlock } from "./util";
+import { BannedNamesChecker, CheckError, Checker, NoRuleNameCollisionChecker,
+    RulesExistChecker } from "./checks";
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -29,7 +30,7 @@ export class Generator {
     }
 
     public AST2Gram(g: GRAM): Grammar {
-        const gram = g.rules.map((def) => this.extractRules(def.rule.list, def.name));
+        const gram = g.rules.map(def => this.extractRules(def.rule.list, def.name, def.namestart));
         return gram.reduce((x, y) => x.concat(y));
     }
 
@@ -37,9 +38,9 @@ export class Generator {
     // subrules and storing them in this.subRules. It takes subrules and assigns
     // them their own Ruledef in the grammar, effectively flattening the
     // structure of the grammar.
-    public extractRules(rule: Rule, name: string): Ruledef[] {
+    public extractRules(rule: Rule, name: string, pos?: PosInfo): Ruledef[] {
         let cnt = 0;
-        const rules = [{name, rule}];
+        const rules: Ruledef[] = [{name, rule, pos}];
         for (const alt of rule) {
             for (const match of alt.matches) {
                 // Check if special rule
@@ -47,9 +48,8 @@ export class Generator {
                     continue;
                 // Check if not a subrule
                 const at = match.rule.pre.at;
-                if (at === null || at.kind !== ASTKinds.ATOM_3) {
+                if (at === null || at.kind !== ASTKinds.ATOM_3)
                     continue;
-                }
                 const subrule = at.sub;
                 const nm = `${name}_$${cnt}`;
                 this.subRules.set(at, nm);
@@ -108,9 +108,8 @@ export class Generator {
     }
 
     public atomRule(at: ATOM): string {
-        if (at.kind === ASTKinds.ATOM_1) {
+        if (at.kind === ASTKinds.ATOM_1)
             return `this.match${at.name}($$dpth + 1, $$cr)`;
-        }
         if (at.kind === ASTKinds.ATOM_2) {
             // Regex match
             const mtch = at.match;
@@ -147,14 +146,7 @@ export class Generator {
     }
 
     public writeKinds(gram: Grammar): Block {
-        const astKinds = [];
-        for (const ruledef of gram) {
-            const nm = ruledef.name;
-            for (let i = 0; i < ruledef.rule.length; i++) {
-                const md = ruledef.rule.length === 1 ? "" : `_${i + 1}`;
-                astKinds.push(nm + md);
-            }
-        }
+        const astKinds = ([] as string[]).concat(...gram.map(altNames));
         return [
             "export enum ASTKinds {",
             this.numEnums
@@ -207,13 +199,11 @@ export class Generator {
 
     public writeRuleClass(ruledef: Ruledef): Block {
         const nm = ruledef.name;
-        const union: string[] = [];
+        const union = altNames(ruledef);
         const choices: Block = [];
-        for (let i = 0; i < ruledef.rule.length; i++) {
-            const md = nm + (ruledef.rule.length === 1 ? "" : `_${i + 1}`);
-            choices.push(...this.writeChoice(md, ruledef.rule[i]));
-            union.push(md);
-        }
+        altNames(ruledef).forEach((name, i) => {
+            choices.push(...this.writeChoice(name, ruledef.rule[i]));
+        });
         const typedef = ruledef.rule.length > 1 ? [`export type ${nm} = ${union.join(" | ")};`] : [];
         return [...typedef, ...choices];
     }
@@ -267,11 +257,10 @@ export class Generator {
         for (const match of alt.matches) {
             const expr = match.rule;
             const rn = this.matchType(expr);
-            if (match.named) {
+            if (match.named)
                 namedTypes.push([match.named.name, rn]);
-            } else {
+            else
                 unnamedTypes.push(rn);
-            }
         }
         if (namedTypes.length === 0 && alt.matches.length === 1) {
             return this.writeRuleAliasFn(name, alt.matches[0].rule);
@@ -310,12 +299,10 @@ export class Generator {
     public writeRuleParseFn(ruledef: Ruledef): Block {
         const nm = ruledef.name;
         const choices: Block = [];
-        const nms: string[] = [];
-        for (let i = 0; i < ruledef.rule.length; i++) {
-            const md = nm + (ruledef.rule.length === 1 ? "" : `_${i + 1}`);
-            nms.push(md);
-            choices.push(...this.writeChoiceParseFn(md, ruledef.rule[i]));
-        }
+        const nms: string[] = altNames(ruledef);
+        nms.forEach((name, i) => {
+            choices.push(...this.writeChoiceParseFn(name, ruledef.rule[i]));
+        });
         const union = ruledef.rule.length <= 1 ? []
             : [`public match${nm}($$dpth: number, $$cr?: ContextRecorder): Nullable<${nm}> {`,
                 [
@@ -329,9 +316,8 @@ export class Generator {
 
     public writeRuleParseFns(gram: Grammar): Block {
         const fns: Block = [];
-        for (const ruledef of gram) {
+        for (const ruledef of gram)
             fns.push(...this.writeRuleParseFn(ruledef));
-        }
         const S: string = gram[0].name;
         return [...fns,
             "public test(): boolean {",
@@ -407,6 +393,7 @@ export class Generator {
 export function buildParser(s: string, numEnums: boolean): string {
     const gen = new Generator(s, numEnums)
         .addChecker(BannedNamesChecker)
-        .addChecker(RulesExistChecker);
+        .addChecker(RulesExistChecker)
+        .addChecker(NoRuleNameCollisionChecker);
     return gen.generate();
 }

@@ -1,11 +1,15 @@
 import { ASTKinds, PosInfo } from "./meta";
-import { Grammar } from "./util";
+import { Grammar, altNames } from "./util";
+
+// TODO Support returning multiple CheckErrors
 
 export class CheckError extends Error {
-    constructor(public s: string, public pos: PosInfo) {
+    constructor(public s: string, public pos?: PosInfo) {
         super(s);
         this.name = "CheckError";
-        this.message = `Error at line ${pos.line}:${pos.offset}: ${s}`;
+        this.message = pos
+            ? `Error at line ${pos.line}:${pos.offset}: ${s}`
+            : `Error: ${s}`;
     }
 }
 
@@ -48,6 +52,43 @@ export const RulesExistChecker: Checker = {
                     if(!ruleNames.has(at.name))
                         return new CheckError(`'Rule '${at.name}' is not defined`, at.start);
                 }
+            }
+        }
+        return null;
+    },
+};
+
+// get the correct rule collision name error, based on the
+// name of the rule, if the rule is called `<rule>_<N>`, then
+// we know that this is a collision of rule names and alternative names
+// (It is possible that this could be triggered falsely, but they would
+// have to declare >= 2 rules, both called `<rule>_<N>`, for same N,
+// which I don't worry about
+function ruleCollisionNameErr(ruleName: string) : CheckError {
+    const match = ruleName.match(/^(.*)_([0-9])+$/);
+    if(match === null)
+        return new CheckError(`Rule already defined: "${ruleName}"`);
+    const baseRule = match[1];
+    const index = match[2];
+    return new CheckError(`Rule "${baseRule}" declared with >= ${index} alternatives and rule "${ruleName}" should not both be declared`);
+}
+
+export const NoRuleNameCollisionChecker: Checker = {
+    Check: (g: Grammar): CheckError | null => {
+        const seen: Set<string> = new Set();
+        for(const ruledef of g) {
+            if(seen.has(ruledef.name))
+                return ruleCollisionNameErr(ruledef.name);
+
+            // Stop after adding ruledef.name if === 1 alternative
+            // as altNames(ruledef) will only contain ruledef.name
+            seen.add(ruledef.name);
+            if(ruledef.rule.length === 1)
+                continue;
+            for(const name of altNames(ruledef)) {
+                if(seen.has(name))
+                    return ruleCollisionNameErr(ruledef.name);
+                seen.add(name);
             }
         }
         return null;

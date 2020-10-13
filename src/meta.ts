@@ -3,7 +3,7 @@
 * // Meta grammar for parser
 * GRAM      := header=HDR? rules=RULEDEF+
 * HDR       := '---' content='((?!---)(.|\n))*' '---'
-* RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _
+* RULEDEF   := _ namestart=@ name=NAME nameend=@ _ ':=' _ rule=RULE _
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
 *           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
 * ALT       := matches=MATCHSPEC+ attrs=ATTR*
@@ -166,7 +166,9 @@ export interface HDR {
 }
 export interface RULEDEF {
     kind: ASTKinds.RULEDEF;
+    namestart: PosInfo;
     name: NAME;
+    nameend: PosInfo;
     rule: RULE;
 }
 export class RULE {
@@ -483,19 +485,23 @@ export class Parser {
                 if (log) {
                     log("RULEDEF");
                 }
+                let $scope$namestart: Nullable<PosInfo>;
                 let $scope$name: Nullable<NAME>;
+                let $scope$nameend: Nullable<PosInfo>;
                 let $scope$rule: Nullable<RULE>;
                 let $$res: Nullable<RULEDEF> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
+                    && ($scope$namestart = this.mark()) !== null
                     && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
+                    && ($scope$nameend = this.mark()) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?::=)`, $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$rule = this.matchRULE($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = {kind: ASTKinds.RULEDEF, name: $scope$name, rule: $scope$rule};
+                    $$res = {kind: ASTKinds.RULEDEF, namestart: $scope$namestart, name: $scope$name, nameend: $scope$nameend, rule: $scope$rule};
                 }
                 return $$res;
             }, $$cr)();

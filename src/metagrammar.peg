@@ -2,7 +2,7 @@
 
 GRAM      := header=HDR? rules=RULEDEF+
 HDR       := '---' content='((?!---)(.|\n))*' '---'
-RULEDEF   := _ name=NAME _ ':=' _ rule=RULE _
+RULEDEF   := _ namestart=@ name=NAME nameend=@ _ ':=' _ rule=RULE _
 RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
 ALT       := matches=MATCHSPEC+ attrs=ATTR*
