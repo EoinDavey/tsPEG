@@ -12,6 +12,8 @@ SPECIAL   := op='@'
 POSTOP    := pre=PREOP op='\+|\*|\?'?
             .optional = boolean { return this.op === '?';}
 PREOP     := op='\&|!'? at=ATOM
+// Negative lookahead is used here to allow no requirement for semicolons
+// to denote end of rule definition
 ATOM      := start=@ name=NAME !'\s*:='
            | match=STRLIT
            | '{' _ sub=RULE _ '}'

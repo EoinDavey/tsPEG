@@ -57,3 +57,10 @@ export function unescapeSeqs(s: string): string {
 export function escapeBackticks(s: string): string {
     return s.replace('`', '\\`');
 }
+
+export function getRuleFromGram(gram: Grammar, name: string): Ruledef | null {
+    for(const rule of gram)
+        if(rule.name === name)
+            return rule;
+    return null;
+}
