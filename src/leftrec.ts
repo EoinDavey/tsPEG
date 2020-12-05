@@ -41,10 +41,10 @@ function updateNullableAtomsInRule(rule: Rule, gram: Grammar, nullableAtoms: Set
             if(nullableAtoms.has(at))
                 continue;
             if(at.kind === ASTKinds.ATOM_1) {
-                const rule = getRuleFromGram(gram, at.name);
-                if(rule === null)
+                const namedRule = getRuleFromGram(gram, at.name);
+                if(namedRule === null)
                     continue;
-                if(ruleIsNullableInCtx(rule.rule, nullableAtoms))
+                if(ruleIsNullableInCtx(namedRule.rule, nullableAtoms))
                     nullableAtoms.add(at);
             }
             if(at.kind === ASTKinds.ATOM_2) {
@@ -61,7 +61,7 @@ function updateNullableAtomsInRule(rule: Rule, gram: Grammar, nullableAtoms: Set
     }
 }
 
-function nullableRules(gram: Grammar): string[] {
+export function nullableRules(gram: Grammar): string[] {
     // Inefficient approach but it doesn't matter
     const nullable: Set<ATOM> = new Set();
     for(;;) {
