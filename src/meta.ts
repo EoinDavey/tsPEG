@@ -12,7 +12,9 @@
 * SPECIAL   := op='@'
 * POSTOP    := pre=PREOP op='\+|\*|\?'?
 *             .optional = boolean { return this.op === '?';}
-* PREOP     := op='\&|!'? at=ATOM
+* PREOP     := start=@ op='\&|!'? at=ATOM
+* // Negative lookahead is used here to allow no requirement for semicolons
+* // to denote end of rule definition
 * ATOM      := start=@ name=NAME !'\s*:='
 *            | match=STRLIT
 *            | '{' _ sub=RULE _ '}'
@@ -225,6 +227,7 @@ export class POSTOP {
 }
 export interface PREOP {
     kind: ASTKinds.PREOP;
+    start: PosInfo;
     op: Nullable<string>;
     at: ATOM;
 }
@@ -653,14 +656,16 @@ export class Parser {
                 if (log) {
                     log("PREOP");
                 }
+                let $scope$start: Nullable<PosInfo>;
                 let $scope$op: Nullable<Nullable<string>>;
                 let $scope$at: Nullable<ATOM>;
                 let $$res: Nullable<PREOP> = null;
                 if (true
+                    && ($scope$start = this.mark()) !== null
                     && (($scope$op = this.regexAccept(String.raw`(?:\&|!)`, $$dpth + 1, $$cr)) || true)
                     && ($scope$at = this.matchATOM($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.PREOP, op: $scope$op, at: $scope$at};
+                    $$res = {kind: ASTKinds.PREOP, start: $scope$start, op: $scope$op, at: $scope$at};
                 }
                 return $$res;
             }, $$cr)();

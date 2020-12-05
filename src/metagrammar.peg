@@ -6,12 +6,12 @@ RULEDEF   := _ namestart=@ name=NAME nameend=@ _ ':=' _ rule=RULE _
 RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
 ALT       := matches=MATCHSPEC+ attrs=ATTR*
-MATCHSPEC := _ named={start=@ name=NAME _ '=' _}? rule=MATCH
+MATCHSPEC := _ named={start=@ name=NAME _ '=' _}? rule=MATCH // TODO rename to match
 MATCH     := SPECIAL | POSTOP
 SPECIAL   := op='@'
 POSTOP    := pre=PREOP op='\+|\*|\?'?
             .optional = boolean { return this.op === '?';}
-PREOP     := op='\&|!'? at=ATOM
+PREOP     := start=@ op='\&|!'? at=ATOM
 // Negative lookahead is used here to allow no requirement for semicolons
 // to denote end of rule definition
 ATOM      := start=@ name=NAME !'\s*:='
