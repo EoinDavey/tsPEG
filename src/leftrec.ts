@@ -79,10 +79,10 @@ export function nullableRules(gram: Grammar): string[] {
     return names;
 }
 
-export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<string>): boolean {
-    if(visited.has(nm))
+export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<Rule>): boolean {
+    if(visited.has(r))
         return false;
-    visited.add(nm);
+    visited.add(r);
     // Check if any alternative calls nm at left.
     for(const alt of r) {
         // Only check first match in alt.

@@ -1,7 +1,7 @@
 import { parse } from "../meta";
 import { Generator } from "../gen";
 import { getRuleFromGram } from "../util";
-import { callsRuleLeft } from "../leftrec";
+import { callsRuleLeft, nullableRules } from "../leftrec";
 
 test("test left recursion detection", () => {
     const tcs: {inp: string, hasLeftRec: boolean}[] = [
@@ -46,6 +46,59 @@ test("test left recursion detection", () => {
         const gram = g.AST2Gram(res.ast!);
         const rule = getRuleFromGram(gram, "test");
         expect(rule).not.toBeNull();
-        expect(callsRuleLeft(rule!.name, rule!.rule, gram, new Set()));
+        expect(callsRuleLeft(rule!.name, rule!.rule, gram, new Set())).toEqual(tc.hasLeftRec);
+    }
+});
+
+test("test nullable rule detection", () => {
+    const tcs: {inp: string, nullableRules: string[]}[] = [
+        {
+            inp: "test := ''",
+            nullableRules: ["test"],
+        },
+        {
+            inp: "test := 'a?'",
+            nullableRules: ["test"],
+        },
+        {
+            inp: "test := 'a'",
+            nullableRules: [],
+        },
+        {
+            inp: "test := 'a'?",
+            nullableRules: ["test"],
+        },
+        {
+            inp: "test := 'a'*",
+            nullableRules: ["test"],
+        },
+        {
+            inp: `
+            a := 'a*'
+            b := 'b*'
+            c := a | b
+            d := a b c`,
+            nullableRules: ["a", "b", "c", "d"],
+        },
+        {
+            inp: `
+            a := 'a*'
+            b := a | 'b'
+            c := 'c'`,
+            nullableRules: ["a", "b"],
+        },
+        {
+            inp: `
+            a := a | ''`,
+            nullableRules: ["a"],
+        },
+    ];
+    for(const tc of tcs) {
+        const res = parse(tc.inp);
+        expect(res.err).toBeNull();
+        expect(res.ast).not.toBeNull();
+        const g = new Generator(tc.inp);
+        const gram = g.AST2Gram(res.ast!);
+        expect(nullableRules(gram).sort()).toEqual(tc.nullableRules.sort());
     }
 });
