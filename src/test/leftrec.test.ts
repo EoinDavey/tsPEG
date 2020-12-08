@@ -1,7 +1,7 @@
 import { parse } from "../meta";
 import { Generator } from "../gen";
 import { getRuleFromGram } from "../util";
-import { callsRuleLeft, nullableRules } from "../leftrec";
+import { callsRuleLeft, nullableAtomSet, ruleIsNullableInCtx } from "../leftrec";
 
 test("test left recursion detection", () => {
     const tcs: {inp: string, hasLeftRec: boolean}[] = [
@@ -37,6 +37,22 @@ test("test left recursion detection", () => {
             other := other | test`,
             hasLeftRec: true,
         },
+        { // Nullable prefix, left recurses
+            inp: "test := 'a?' test",
+            hasLeftRec: true,
+        },
+        { // Nullable prefix, doesn't recurse
+            inp: "test := 'a?' 'b'",
+            hasLeftRec: false,
+        },
+        { // Long nullable prefix, recurses
+            inp: `
+            test := nullme nullme 'a*' nonnull? indirect
+            nullme := '(optional)?' '(also optional)?'
+            nonnull := 'not optional'
+            indirect := nullme test`,
+            hasLeftRec: true,
+        },
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
@@ -45,8 +61,9 @@ test("test left recursion detection", () => {
         const g = new Generator(tc.inp);
         const gram = g.AST2Gram(res.ast!);
         const rule = getRuleFromGram(gram, "test");
+        const nullAtoms = nullableAtomSet(gram);
         expect(rule).not.toBeNull();
-        expect(callsRuleLeft(rule!.name, rule!.rule, gram, new Set())).toEqual(tc.hasLeftRec);
+        expect(callsRuleLeft(rule!.name, rule!.rule, gram, new Set(), nullAtoms)).toEqual(tc.hasLeftRec);
     }
 });
 
@@ -99,6 +116,8 @@ test("test nullable rule detection", () => {
         expect(res.ast).not.toBeNull();
         const g = new Generator(tc.inp);
         const gram = g.AST2Gram(res.ast!);
-        expect(nullableRules(gram).sort()).toEqual(tc.nullableRules.sort());
+        const atoms = nullableAtomSet(gram);
+        for(const rule of tc.nullableRules)
+            expect(ruleIsNullableInCtx(getRuleFromGram(gram, rule)!.rule, atoms)).toEqual(true);
     }
 });

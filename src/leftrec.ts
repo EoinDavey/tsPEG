@@ -1,32 +1,37 @@
 import { Grammar, Rule, assertValidRegex, getRuleFromGram } from "./util";
-import { ASTKinds, ATOM } from "./meta";
+import { ASTKinds, ATOM, MATCH } from "./meta";
 import { CheckError } from "./checks";
 
-function ruleIsNullableInCtx(r: Rule, nullableAtoms: Set<ATOM>): boolean {
+export function ruleIsNullableInCtx(r: Rule, nullableAtoms: Set<ATOM>): boolean {
     for(const alt of r) {
         let allNullable = true;
         for(const matchspec of alt.matches) {
-            const match = matchspec.rule;
-            if(match.kind === ASTKinds.SPECIAL)
-                continue;
-            // match is a POSTOP
-
-            // match is nullable if these are the postops
-            if(match.op === "?" || match.op === "*")
-                continue;
-            const preop = match.pre;
-            // Negations of nullables are invalid grammar expressions
-            if(preop.op === "!" && nullableAtoms.has(preop.at))
-                throw new CheckError("Cannot negate a nullable expression", preop.start);
-            // Always nullable, doesn't match anything
-            if(preop.op !== null)
-                continue;
-            if(!nullableAtoms.has(preop.at))
+            if(!matchIsNullableInCtx(matchspec.rule, nullableAtoms))
                 allNullable = false;
         }
         if(allNullable)
             return true;
     }
+    return false;
+}
+
+function matchIsNullableInCtx(match: MATCH, nullableAtoms: Set<ATOM>): boolean {
+    if(match.kind === ASTKinds.SPECIAL)
+        return true;
+    // match is a POSTOP
+
+    // match is nullable if these are the postops
+    if(match.op === "?" || match.op === "*")
+        return true;
+    const preop = match.pre;
+    // Negations of nullables are invalid grammar expressions
+    if(preop.op === "!" && nullableAtoms.has(preop.at))
+        throw new CheckError("Cannot negate a nullable expression", preop.start);
+    // Always nullable, doesn't match anything
+    if(preop.op !== null)
+        return true;
+    if(nullableAtoms.has(preop.at))
+        return true;
     return false;
 }
 
@@ -61,7 +66,7 @@ function updateNullableAtomsInRule(rule: Rule, gram: Grammar, nullableAtoms: Set
     }
 }
 
-export function nullableRules(gram: Grammar): string[] {
+export function nullableAtomSet(gram: Grammar): Set<ATOM> {
     // Inefficient approach but it doesn't matter
     const nullable: Set<ATOM> = new Set();
     for(;;) {
@@ -72,33 +77,31 @@ export function nullableRules(gram: Grammar): string[] {
         if(newSize === oldSize)
             break;
     }
-    const names: string[] = [];
-    for(const ruledef of gram)
-        if(ruleIsNullableInCtx(ruledef.rule, nullable))
-            names.push(ruledef.name);
-    return names;
+    return nullable;
 }
 
-export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<Rule>): boolean {
+export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<Rule>, nullableAtoms: Set<ATOM>): boolean {
     if(visited.has(r))
         return false;
     visited.add(r);
     // Check if any alternative calls nm at left.
     for(const alt of r) {
-        // Only check first match in alt.
-        // TODO extend to allow nullable prefixes
-        const mtch = alt.matches[0].rule;
-        // Pos matches don't need searching
-        if(mtch.kind === ASTKinds.SPECIAL)
-            continue;
-        const at = mtch.pre.at;
-        if(at.kind === ASTKinds.ATOM_1) {
-            const rule = getRuleFromGram(gram, at.name);
-            if(rule && (rule.name === nm || callsRuleLeft(nm, rule.rule, gram, visited)))
-                return true;
-        } else if(at.kind === ASTKinds.ATOM_3) {
-            if(callsRuleLeft(nm, at.sub.list, gram, visited))
-                return true;
+        for(const matchspec of alt.matches) {
+            const mtch = matchspec.rule;
+            // Pos matches don't need searching
+            if(mtch.kind === ASTKinds.SPECIAL)
+                continue;
+            const at = mtch.pre.at;
+            if(at.kind === ASTKinds.ATOM_1) {
+                const rule = getRuleFromGram(gram, at.name);
+                if(rule && (rule.name === nm || callsRuleLeft(nm, rule.rule, gram, visited, nullableAtoms)))
+                    return true;
+            } else if(at.kind === ASTKinds.ATOM_3) {
+                if(callsRuleLeft(nm, at.sub.list, gram, visited, nullableAtoms))
+                    return true;
+            }
+            if(!matchIsNullableInCtx(mtch, nullableAtoms))
+                break;
         }
     }
     return false;
