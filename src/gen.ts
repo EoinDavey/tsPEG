@@ -246,47 +246,62 @@ export class Generator {
     }
 
     public writeChoiceParseFn(name: string, alt: ALT): Block {
-        const namedTypes: [string, string][] = [];
-        const unnamedTypes: string[] = [];
-        for (const match of alt.matches) {
-            const expr = match.rule;
-            const rn = this.matchType(expr);
-            if (match.named)
-                namedTypes.push([match.named.name, rn]);
-            else
-                unnamedTypes.push(rn);
-        }
-        if (namedTypes.length === 0 && alt.matches.length === 1) {
+        const namedTypes: [string, string][] = this.getNamedTypes(alt);
+        const unnamedTypes: string[] = this.getUnnamedTypes(alt);
+        if (namedTypes.length === 0 && alt.matches.length === 1)
             return this.writeRuleAliasFn(name, alt.matches[0].rule);
-        }
         return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
-            [
-                `return this.runner<${name}>($$dpth,`,
-                [
-                    "(log) => {",
-                    [
-                        "if (log) {",
-                        [
-                            `log("${name}");`,
-                        ],
-                        "}",
-                        ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
-                        `let $$res: Nullable<${name}> = null;`,
-                        "if (true",
-                        this.writeParseIfStmt(alt),
-                        ") {",
-                        [
-                            hasAttrs(alt)
-                            ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
-                            : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
-                        ],
-                        "}",
-                        "return $$res;",
-                    ],
-                    "}, $$cr)();",
-                ],
-            ],
+            this.writeChoiceParseBody(name, namedTypes, unnamedTypes, alt),
             "}",
+        ];
+    }
+
+    public getNamedTypes(alt: ALT): [string, string][] {
+        const types: [string, string][] = [];
+        for (const match of alt.matches) {
+            if (!match.named)
+                continue;
+            const rn = this.matchType(match.rule);
+            types.push([match.named.name, rn]);
+        }
+        return types;
+    }
+
+    public getUnnamedTypes(alt: ALT): string[] {
+        const types: string[] = [];
+        for (const match of alt.matches) {
+            if (match.named)
+                continue;
+            const rn = this.matchType(match.rule);
+            types.push(rn);
+        }
+        return types;
+    }
+
+    public writeChoiceParseBody(name: string, namedTypes: [string, string][], unnamedTypes: string[], alt: ALT): Block {
+        return [`return this.runner<${name}>($$dpth,`,
+            [
+                "log => {",
+                [
+                    "if (log)",
+                    [
+                        `log("${name}");`,
+                    ],
+                    ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
+                    `let $$res: Nullable<${name}> = null;`,
+                    "if (true",
+                    this.writeParseIfStmt(alt),
+                    ") {",
+                    [
+                        hasAttrs(alt)
+                        ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
+                        : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
+                    ],
+                    "}",
+                    "return $$res;",
+                ],
+                "}, $$cr)();",
+            ],
         ];
     }
 
@@ -299,13 +314,17 @@ export class Generator {
         });
         const union = ruledef.rule.length <= 1 ? []
             : [`public match${nm}($$dpth: number, $$cr?: ContextRecorder): Nullable<${nm}> {`,
-                [
-                    `return this.choice<${nm}>([`,
-                    nms.map((x) => `() => this.match${x}($$dpth + 1, $$cr),`),
-                    `]);`,
-                ],
+                this.writeUnionParseBody(nm, nms),
                 `}`];
         return [...union, ...choices];
+    }
+
+    public writeUnionParseBody(name: string, alts: string[]): Block {
+        return [
+            `return this.choice<${name}>([`,
+            alts.map(x => `() => this.match${x}($$dpth + 1, $$cr),`),
+            `]);`,
+        ];
     }
 
     public writeRuleParseFns(gram: Grammar): Block {
