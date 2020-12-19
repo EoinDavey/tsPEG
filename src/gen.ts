@@ -1,9 +1,10 @@
-import { ALT, ASTKinds, ATOM, GRAM, MATCH, PREOP, Parser, PosInfo }  from "./meta";
+import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Rule, Ruledef, altNames, assertValidRegex,
-    escapeBackticks, writeBlock } from "./util";
+import { Block, Grammar, Ruledef, altNames, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker,
     RulesExistChecker } from "./checks";
+import { matchType } from "./types";
+import { extractRules, matchRule } from "./rules";
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -20,123 +21,33 @@ export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: st
 }
 
 export class Generator {
-    private subRules: Map<ATOM, string> = new Map();
+    public gram: Grammar;
     private numEnums: boolean;
     private input: string;
     private checkers: Checker[] = [];
+    private header: string | null;
 
     public constructor(input: string, numEnums = false) {
         this.input = input;
         this.numEnums = numEnums;
+        const p = new Parser(this.input);
+        const res = p.parse();
+        if (res.err)
+            throw res.err;
+        if (!res.ast)
+            throw new Error("No AST found");
+        this.gram = this.AST2Gram(res.ast);
+        this.header = res.ast.header?.content ?? null;
     }
 
-    public AST2Gram(g: GRAM): Grammar {
-        const gram = g.rules.map(def => this.extractRules(def.rule.list, def.name, def.namestart));
+    private AST2Gram(g: GRAM): Grammar {
+        const gram = g.rules.map(def => extractRules(def.rule.list, def.name, def.namestart));
         return gram.reduce((x, y) => x.concat(y));
-    }
-
-    // extractRule does a traversal of the AST assigning names to
-    // subrules and storing them in this.subRules. It takes subrules and assigns
-    // them their own Ruledef in the grammar, effectively flattening the
-    // structure of the grammar.
-    public extractRules(rule: Rule, name: string, pos?: PosInfo): Ruledef[] {
-        let cnt = 0;
-        const rules: Ruledef[] = [{name, rule, pos}];
-        for (const alt of rule) {
-            for (const match of alt.matches) {
-                // Check if special rule
-                if(match.rule.kind === ASTKinds.SPECIAL)
-                    continue;
-                // Check if not a subrule
-                const at = match.rule.pre.at;
-                if (at === null || at.kind !== ASTKinds.ATOM_3)
-                    continue;
-                const subrule = at.sub;
-                const nm = `${name}_$${cnt}`;
-                this.subRules.set(at, nm);
-                const rdfs = this.extractRules(subrule.list, nm);
-                rules.push(...rdfs);
-                ++cnt;
-            }
-        }
-        return rules;
     }
 
     public addChecker(c: Checker): this {
         this.checkers.push(c);
         return this;
-    }
-
-    public preType(expr: PREOP): string {
-        if (expr.op && expr.op === "!") { // Negation types return null if matched, true otherwise
-            return "boolean";
-        }
-        return this.atomType(expr.at);
-    }
-
-    public preRule(expr: PREOP): string {
-        if (expr.op && expr.op === "&") {
-            return `this.noConsume<${this.atomType(expr.at)}>(() => ${this.atomRule(expr.at)})`;
-        }
-        if (expr.op && expr.op === "!") {
-            return `this.negate(() => ${this.atomRule(expr.at)})`;
-        }
-        return this.atomRule(expr.at);
-    }
-
-    public matchType(expr: MATCH): string {
-        // Check if special rule
-        if (expr.kind === ASTKinds.SPECIAL)
-            return "PosInfo";
-        if (expr.op) {
-            if (expr.op === "?") {
-                return `Nullable<${this.preType(expr.pre)}>`;
-            }
-            return `${this.preType(expr.pre)}[]`;
-        }
-        return this.preType(expr.pre);
-    }
-
-    public matchRule(expr: MATCH): string {
-        // Check if special rule
-        if (expr.kind === ASTKinds.SPECIAL) {
-            return "this.mark()";
-        }
-        if (expr.op && expr.op !== "?") {
-                return `this.loop<${this.preType(expr.pre)}>(() => ${this.preRule(expr.pre)}, ${expr.op === "+" ? "false" : "true"})`;
-        }
-        return this.preRule(expr.pre);
-    }
-
-    public atomRule(at: ATOM): string {
-        if (at.kind === ASTKinds.ATOM_1)
-            return `this.match${at.name}($$dpth + 1, $$cr)`;
-        if (at.kind === ASTKinds.ATOM_2) {
-            // Ensure the regex is valid
-            const mtch = at.match;
-            assertValidRegex(mtch.val);
-            const reg = "(?:" + mtch.val + ")";
-            return `this.regexAccept(String.raw\`${escapeBackticks(reg)}\`, $$dpth + 1, $$cr)`;
-        }
-        const subname = this.subRules.get(at);
-        if (subname) {
-            return `this.match${subname}($$dpth + 1, $$cr)`;
-        }
-        return "ERR";
-    }
-
-    public atomType(at: ATOM): string {
-        if (at.kind === ASTKinds.ATOM_1) {
-            return at.name;
-        }
-        if (at.kind === ASTKinds.ATOM_2) {
-            return "string";
-        }
-        const subname = this.subRules.get(at);
-        if (subname) {
-            return subname;
-        }
-        throw new Error("Unknown subrule");
     }
 
     public writeKinds(gram: Grammar): Block {
@@ -155,13 +66,13 @@ export class Generator {
         for (const match of alt.matches) {
             if (match.named) {
                 const at = match.rule;
-                namedTypes.push([match.named.name, this.matchType(at)]);
+                namedTypes.push([match.named.name, matchType(at)]);
             }
         }
         // Rules with no named matches, no attrs and only one match are rule aliases
         if (namedTypes.length === 0 && alt.matches.length === 1 && !hasAttrs(alt)) {
             const at = alt.matches[0].rule;
-            return [`export type ${name} = ${this.matchType(at)};`];
+            return [`export type ${name} = ${matchType(at)};`];
         }
         // If we have computed properties, then we need a class, not an interface.
         if (hasAttrs(alt)) {
@@ -216,7 +127,7 @@ export class Generator {
         const checks: string[] = [];
         for (const match of alt.matches) {
             const expr = match.rule;
-            const rn = this.matchRule(expr);
+            const rn = matchRule(expr);
             if (match.named) {
                 // Optional match
                 if (expr.kind !== ASTKinds.SPECIAL && expr.optional) {
@@ -239,7 +150,7 @@ export class Generator {
     public writeRuleAliasFn(name: string, expr: MATCH): Block {
         return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
             [
-                `return ${this.matchRule(expr)};`,
+                `return ${matchRule(expr)};`,
             ],
             "}",
         ];
@@ -261,7 +172,7 @@ export class Generator {
         for (const match of alt.matches) {
             if (!match.named)
                 continue;
-            const rn = this.matchType(match.rule);
+            const rn = matchType(match.rule);
             types.push([match.named.name, rn]);
         }
         return types;
@@ -272,7 +183,7 @@ export class Generator {
         for (const match of alt.matches) {
             if (match.named)
                 continue;
-            const rn = this.matchType(match.rule);
+            const rn = matchType(match.rule);
             types.push(rn);
         }
         return types;
@@ -384,21 +295,14 @@ export class Generator {
     }
 
     public generate(): string {
-        const p = new Parser(this.input);
-        const res = p.parse();
-        if (res.err)
-            throw res.err;
-        if (!res.ast)
-            throw new Error("No AST found");
-        const gram = this.AST2Gram(res.ast);
         for (const checker of this.checkers) {
-            const err = checker.Check(gram, this.input);
+            const err = checker.Check(this.gram, this.input);
             if (err)
                 throw err;
         }
-        const hdr: Block = res.ast.header ? [res.ast.header.content] : [];
-        const parseBlock = expandTemplate(this.input, hdr, this.writeKinds(gram), this.writeRuleClasses(gram),
-            this.writeRuleParseFns(gram), this.writeParseResultClass(gram));
+        const hdr: Block = this.header ? [this.header] : [];
+        const parseBlock = expandTemplate(this.input, hdr, this.writeKinds(this.gram), this.writeRuleClasses(this.gram),
+            this.writeRuleParseFns(this.gram), this.writeParseResultClass(this.gram));
         return writeBlock(parseBlock).join("\n");
     }
 }

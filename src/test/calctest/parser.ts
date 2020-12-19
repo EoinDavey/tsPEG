@@ -129,10 +129,9 @@ export class Parser {
     }
     public matchSUM($$dpth: number, $$cr?: ContextRecorder): Nullable<SUM> {
         return this.runner<SUM>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("SUM");
-                }
                 let $scope$head: Nullable<FAC>;
                 let $scope$tail: Nullable<SUM_$0[]>;
                 let $$res: Nullable<SUM> = null;
@@ -147,10 +146,9 @@ export class Parser {
     }
     public matchSUM_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<SUM_$0> {
         return this.runner<SUM_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("SUM_$0");
-                }
                 let $scope$op: Nullable<string>;
                 let $scope$sm: Nullable<FAC>;
                 let $$res: Nullable<SUM_$0> = null;
@@ -165,10 +163,9 @@ export class Parser {
     }
     public matchFAC($$dpth: number, $$cr?: ContextRecorder): Nullable<FAC> {
         return this.runner<FAC>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("FAC");
-                }
                 let $scope$head: Nullable<ATOM>;
                 let $scope$tail: Nullable<FAC_$0[]>;
                 let $$res: Nullable<FAC> = null;
@@ -183,10 +180,9 @@ export class Parser {
     }
     public matchFAC_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<FAC_$0> {
         return this.runner<FAC_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("FAC_$0");
-                }
                 let $scope$op: Nullable<string>;
                 let $scope$sm: Nullable<ATOM>;
                 let $$res: Nullable<FAC_$0> = null;
@@ -207,10 +203,9 @@ export class Parser {
     }
     public matchATOM_1($$dpth: number, $$cr?: ContextRecorder): Nullable<ATOM_1> {
         return this.runner<ATOM_1>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ATOM_1");
-                }
                 let $scope$val: Nullable<INT>;
                 let $$res: Nullable<ATOM_1> = null;
                 if (true
@@ -225,10 +220,9 @@ export class Parser {
     }
     public matchATOM_2($$dpth: number, $$cr?: ContextRecorder): Nullable<ATOM_2> {
         return this.runner<ATOM_2>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ATOM_2");
-                }
                 let $scope$val: Nullable<SUM>;
                 let $$res: Nullable<ATOM_2> = null;
                 if (true
@@ -245,10 +239,9 @@ export class Parser {
     }
     public matchINT($$dpth: number, $$cr?: ContextRecorder): Nullable<INT> {
         return this.runner<INT>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("INT");
-                }
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<INT> = null;
                 if (true

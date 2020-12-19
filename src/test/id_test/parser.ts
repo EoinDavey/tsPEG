@@ -78,10 +78,9 @@ export class Parser {
     }
     public matchrule($$dpth: number, $$cr?: ContextRecorder): Nullable<rule> {
         return this.runner<rule>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("rule");
-                }
                 let $scope$rule: Nullable<rule>;
                 let $$res: Nullable<rule> = null;
                 if (true
@@ -94,10 +93,9 @@ export class Parser {
     }
     public matchrule2($$dpth: number, $$cr?: ContextRecorder): Nullable<rule2> {
         return this.runner<rule2>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("rule2");
-                }
                 let $scope$res: Nullable<string>;
                 let $$res: Nullable<rule2> = null;
                 if (true
@@ -110,10 +108,9 @@ export class Parser {
     }
     public matchrule3($$dpth: number, $$cr?: ContextRecorder): Nullable<rule3> {
         return this.runner<rule3>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("rule3");
-                }
                 let $scope$cr: Nullable<string>;
                 let $$res: Nullable<rule3> = null;
                 if (true

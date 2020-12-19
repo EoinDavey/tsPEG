@@ -47,10 +47,9 @@ export class Parser {
     }
     public matchEXPR($$dpth: number, $$cr?: ContextRecorder): Nullable<EXPR> {
         return this.runner<EXPR>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("EXPR");
-                }
                 let $scope$strt: Nullable<PosInfo>;
                 let $scope$left: Nullable<Nullable<EXPR>>;
                 let $scope$end: Nullable<PosInfo>;

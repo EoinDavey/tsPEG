@@ -207,10 +207,9 @@ export class Parser {
     }
     public matchProgram($$dpth: number, $$cr?: ContextRecorder): Nullable<Program> {
         return this.runner<Program>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Program");
-                }
                 let $$res: Nullable<Program> = null;
                 if (true
                     && this.loop<Melody>(() => this.matchMelody($$dpth + 1, $$cr), true) !== null
@@ -223,10 +222,9 @@ export class Parser {
     }
     public matchMelody($$dpth: number, $$cr?: ContextRecorder): Nullable<Melody> {
         return this.runner<Melody>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Melody");
-                }
                 let $$res: Nullable<Melody> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -247,10 +245,9 @@ export class Parser {
     }
     public matchMelody_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Melody_$0> {
         return this.runner<Melody_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Melody_$0");
-                }
                 let $$res: Nullable<Melody_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -283,10 +280,9 @@ export class Parser {
     }
     public matchKeyStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<KeyStmt> {
         return this.runner<KeyStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("KeyStmt");
-                }
                 let $$res: Nullable<KeyStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -301,10 +297,9 @@ export class Parser {
     }
     public matchAssignStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<AssignStmt> {
         return this.runner<AssignStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("AssignStmt");
-                }
                 let $$res: Nullable<AssignStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -321,10 +316,9 @@ export class Parser {
     }
     public matchForStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<ForStmt> {
         return this.runner<ForStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ForStmt");
-                }
                 let $$res: Nullable<ForStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -350,10 +344,9 @@ export class Parser {
     }
     public matchIfStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt> {
         return this.runner<IfStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("IfStmt");
-                }
                 let $$res: Nullable<IfStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -378,10 +371,9 @@ export class Parser {
     }
     public matchIfStmt_$0_1($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt_$0_1> {
         return this.runner<IfStmt_$0_1>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("IfStmt_$0_1");
-                }
                 let $$res: Nullable<IfStmt_$0_1> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -394,10 +386,9 @@ export class Parser {
     }
     public matchIfStmt_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt_$0_2> {
         return this.runner<IfStmt_$0_2>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("IfStmt_$0_2");
-                }
                 let $$res: Nullable<IfStmt_$0_2> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -413,10 +404,9 @@ export class Parser {
     }
     public matchFuncExpr($$dpth: number, $$cr?: ContextRecorder): Nullable<FuncExpr> {
         return this.runner<FuncExpr>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("FuncExpr");
-                }
                 let $$res: Nullable<FuncExpr> = null;
                 if (true
                     && this.matchExpr($$dpth + 1, $$cr) !== null
@@ -429,10 +419,9 @@ export class Parser {
     }
     public matchFuncExpr_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<FuncExpr_$0> {
         return this.runner<FuncExpr_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("FuncExpr_$0");
-                }
                 let $$res: Nullable<FuncExpr_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -450,10 +439,9 @@ export class Parser {
     }
     public matchEq($$dpth: number, $$cr?: ContextRecorder): Nullable<Eq> {
         return this.runner<Eq>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Eq");
-                }
                 let $$res: Nullable<Eq> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -467,10 +455,9 @@ export class Parser {
     }
     public matchEq_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Eq_$0> {
         return this.runner<Eq_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Eq_$0");
-                }
                 let $$res: Nullable<Eq_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -484,10 +471,9 @@ export class Parser {
     }
     public matchComp($$dpth: number, $$cr?: ContextRecorder): Nullable<Comp> {
         return this.runner<Comp>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Comp");
-                }
                 let $$res: Nullable<Comp> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -501,10 +487,9 @@ export class Parser {
     }
     public matchComp_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Comp_$0> {
         return this.runner<Comp_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Comp_$0");
-                }
                 let $$res: Nullable<Comp_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -519,10 +504,9 @@ export class Parser {
     }
     public matchSum($$dpth: number, $$cr?: ContextRecorder): Nullable<Sum> {
         return this.runner<Sum>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Sum");
-                }
                 let $$res: Nullable<Sum> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -536,10 +520,9 @@ export class Parser {
     }
     public matchSum_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Sum_$0> {
         return this.runner<Sum_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Sum_$0");
-                }
                 let $$res: Nullable<Sum_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -554,10 +537,9 @@ export class Parser {
     }
     public matchProduct($$dpth: number, $$cr?: ContextRecorder): Nullable<Product> {
         return this.runner<Product>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Product");
-                }
                 let $$res: Nullable<Product> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -571,10 +553,9 @@ export class Parser {
     }
     public matchProduct_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Product_$0> {
         return this.runner<Product_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Product_$0");
-                }
                 let $$res: Nullable<Product_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -606,10 +587,9 @@ export class Parser {
     }
     public matchAtom_4($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_4> {
         return this.runner<Atom_4>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Atom_4");
-                }
                 let $$res: Nullable<Atom_4> = null;
                 if (true
                     && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
@@ -718,10 +698,9 @@ export class Parser {
     }
     public matchKID($$dpth: number, $$cr?: ContextRecorder): Nullable<KID> {
         return this.runner<KID>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("KID");
-                }
                 let $$res: Nullable<KID> = null;
                 if (true
                     && this.negate(() => this.matchKeyword($$dpth + 1, $$cr)) !== null

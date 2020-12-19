@@ -59,7 +59,7 @@ test("test left recursion detection", () => {
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
         const g = new Generator(tc.inp);
-        const gram = g.AST2Gram(res.ast!);
+        const gram = g.gram;
         const rule = getRuleFromGram(gram, "test");
         const nullAtoms = nullableAtomSet(gram);
         expect(rule).not.toBeNull();
@@ -114,8 +114,7 @@ test("test nullable rule detection", () => {
         const res = parse(tc.inp);
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
-        const g = new Generator(tc.inp);
-        const gram = g.AST2Gram(res.ast!);
+        const gram = new Generator(tc.inp).gram;
         const atoms = nullableAtomSet(gram);
         for(const rule of tc.nullableRules)
             expect(ruleIsNullableInCtx(getRuleFromGram(gram, rule)!.rule, atoms)).toEqual(true);
