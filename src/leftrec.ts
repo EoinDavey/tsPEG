@@ -86,6 +86,7 @@ export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<R
     visited.add(r);
     // Check if any alternative calls nm at left.
     for(const alt of r) {
+        // Loop as long as matches are nullable
         for(const matchspec of alt.matches) {
             const mtch = matchspec.rule;
             // Pos matches don't need searching
@@ -100,6 +101,7 @@ export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<R
                 if(callsRuleLeft(nm, at.sub.list, gram, visited, nullableAtoms))
                     return true;
             }
+            // Break if no longer nullable
             if(!matchIsNullableInCtx(mtch, nullableAtoms))
                 break;
         }
