@@ -64,6 +64,7 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
+    private $scope$rule$memo: Map<number, [Nullable<rule>, PosInfo]> = new Map();
     public matchlowercase($$dpth: number, $$cr?: ContextRecorder): Nullable<lowercase> {
         return this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr);
     }

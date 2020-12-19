@@ -63,6 +63,16 @@ export class Generator {
         ];
     }
 
+    public writeMemos(): Block {
+        const out: Block = [];
+        for(const rule of this.gram) {
+            if(this.leftRecRules.has(rule.name)) {
+                out.push(`private ${addScope(rule.name + "$memo")}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
+            }
+        }
+        return out;
+    }
+
     public writeChoice(name: string, alt: ALT): Block {
         const namedTypes: [string, string][] = [];
         for (const match of alt.matches) {
@@ -303,8 +313,9 @@ export class Generator {
                 throw err;
         }
         const hdr: Block = this.header ? [this.header] : [];
-        const parseBlock = expandTemplate(this.input, hdr, this.writeKinds(this.gram), this.writeRuleClasses(this.gram),
-            this.writeRuleParseFns(this.gram), this.writeParseResultClass(this.gram));
+        const parseBlock = expandTemplate(this.input, hdr, this.writeMemos(),
+            this.writeKinds(this.gram), this.writeRuleClasses(this.gram), this.writeRuleParseFns(this.gram),
+            this.writeParseResultClass(this.gram));
         return writeBlock(parseBlock).join("\n");
     }
 }
