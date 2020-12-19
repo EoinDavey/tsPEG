@@ -108,3 +108,12 @@ export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<R
     }
     return false;
 }
+
+export function leftRecRules(g: Grammar): Set<string> {
+    const s: Set<string> = new Set();
+    const nullAtoms = nullableAtomSet(g);
+    for(const rule of g)
+        if(callsRuleLeft(rule.name, rule.rule, g, new Set(), nullAtoms))
+            s.add(rule.name);
+    return s;
+}

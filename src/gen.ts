@@ -1,10 +1,10 @@
 import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
 import { Block, Grammar, Ruledef, altNames, writeBlock } from "./util";
-import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker,
-    RulesExistChecker } from "./checks";
+import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchType } from "./types";
 import { extractRules, matchRule } from "./rules";
+import { leftRecRules } from "./leftrec";
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -26,6 +26,7 @@ export class Generator {
     private input: string;
     private checkers: Checker[] = [];
     private header: string | null;
+    private leftRecRules: Set<string>;
 
     public constructor(input: string, numEnums = false) {
         this.input = input;
@@ -38,6 +39,7 @@ export class Generator {
             throw new Error("No AST found");
         this.gram = this.AST2Gram(res.ast);
         this.header = res.ast.header?.content ?? null;
+        this.leftRecRules = leftRecRules(this.gram);
     }
 
     private AST2Gram(g: GRAM): Grammar {

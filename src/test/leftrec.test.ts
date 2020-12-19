@@ -1,7 +1,7 @@
 import { parse } from "../meta";
 import { Generator } from "../gen";
 import { getRuleFromGram } from "../util";
-import { callsRuleLeft, nullableAtomSet, ruleIsNullableInCtx } from "../leftrec";
+import { leftRecRules, nullableAtomSet, ruleIsNullableInCtx } from "../leftrec";
 
 test("test left recursion detection", () => {
     const tcs: {inp: string, hasLeftRec: boolean}[] = [
@@ -59,11 +59,8 @@ test("test left recursion detection", () => {
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
         const g = new Generator(tc.inp);
-        const gram = g.gram;
-        const rule = getRuleFromGram(gram, "test");
-        const nullAtoms = nullableAtomSet(gram);
-        expect(rule).not.toBeNull();
-        expect(callsRuleLeft(rule!.name, rule!.rule, gram, new Set(), nullAtoms)).toEqual(tc.hasLeftRec);
+        const leftRecs = leftRecRules(g.gram);
+        expect(leftRecs.has("test")).toEqual(tc.hasLeftRec);
     }
 });
 
