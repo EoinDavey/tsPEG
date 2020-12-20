@@ -16,6 +16,10 @@ function addScope(id: string): string {
     return "$scope$" + id;
 }
 
+function memoName(id: string): string {
+    return addScope(id + "$memo");
+}
+
 export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: string): string {
     return inputStr.substring(t.start.overallPos, t.end.overallPos);
 }
@@ -67,7 +71,7 @@ export class Generator {
         const out: Block = [];
         for(const rule of this.gram) {
             if(this.leftRecRules.has(rule.name)) {
-                out.push(`private ${addScope(rule.name + "$memo")}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
+                out.push(`private ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
             }
         }
         return out;
@@ -159,22 +163,15 @@ export class Generator {
         return checks;
     }
 
-    public writeRuleAliasFn(name: string, expr: MATCH): Block {
-        return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
-            [
+    public writeRuleAliasFnBody(name: string, expr: MATCH): Block {
+        return [
                 `return ${matchRule(expr)};`,
-            ],
-            "}",
-        ];
+            ];
     }
 
     public writeChoiceParseFn(name: string, alt: ALT): Block {
-        const namedTypes: [string, string][] = this.getNamedTypes(alt);
-        const unnamedTypes: string[] = this.getUnnamedTypes(alt);
-        if (namedTypes.length === 0 && alt.matches.length === 1)
-            return this.writeRuleAliasFn(name, alt.matches[0].rule);
         return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
-            this.writeChoiceParseBody(name, namedTypes, unnamedTypes, alt),
+             this.writeChoiceParseFnBody(name, alt),
             "}",
         ];
     }
@@ -201,7 +198,10 @@ export class Generator {
         return types;
     }
 
-    public writeChoiceParseBody(name: string, namedTypes: [string, string][], unnamedTypes: string[], alt: ALT): Block {
+    public writeChoiceParseFnBody(name: string, alt: ALT): Block {
+        const namedTypes = this.getNamedTypes(alt);
+        if(namedTypes.length === 0 && alt.matches.length === 1)
+            return this.writeRuleAliasFnBody(name, alt.matches[0].rule);
         return [`return this.runner<${name}>($$dpth,`,
             [
                 "log => {",
@@ -228,13 +228,60 @@ export class Generator {
         ];
     }
 
-    public writeRuleParseFn(ruledef: Ruledef): Block {
+    private writeLeftRecRuleParseFn(name: string, body: Block): Block {
+        const memo = memoName(name);
+        const t: Block = [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
+        [
+            'const fn = () => {',
+            body,
+            '};',
+            'const pos = this.mark();',
+            `const memo = this.${memo}.get(pos.overallPos);`,
+            'if(memo !== undefined) {',
+            '    this.reset(memo[1]);',
+            '    return memo[0];',
+            '}',
+            `this.${memo}.set(pos.overallPos, [null, pos]);`,
+            `let lastRes: Nullable<${name}> = null;`,
+            'let lastPos: PosInfo = pos;',
+            'for(;;) {',
+            [
+                'this.reset(pos);',
+                'const res = fn();',
+                'const end = this.mark();',
+                'if(end.overallPos <= lastPos.overallPos)',
+                [
+                    'break;',
+                ],
+                'lastRes = res;',
+                'lastPos = end;',
+                `this.${memo}.set(pos.overallPos, [lastRes, lastPos]);`,
+            ],
+            '}',
+            'this.reset(lastPos);',
+            'return lastRes;',
+        ],
+    '}'];
+        return t;
+    }
+
+    public writeRuleParseFns(ruledef: Ruledef): Block {
         const nm = ruledef.name;
         const choices: Block = [];
         const nms: string[] = altNames(ruledef);
         nms.forEach((name, i) => {
             choices.push(...this.writeChoiceParseFn(name, ruledef.rule[i]));
         });
+
+        if(this.leftRecRules.has(nm)) {
+            const body = nms.length === 1 
+                ? this.writeChoiceParseFnBody(nms[0], ruledef.rule[0])
+                : this.writeUnionParseBody(nm, nms);
+            const fn = this.writeLeftRecRuleParseFn(nm, body);
+            if(nms.length === 1)
+                return fn;
+            return [...fn, ...choices];
+        }
         const union = ruledef.rule.length <= 1 ? []
             : [`public match${nm}($$dpth: number, $$cr?: ContextRecorder): Nullable<${nm}> {`,
                 this.writeUnionParseBody(nm, nms),
@@ -250,10 +297,10 @@ export class Generator {
         ];
     }
 
-    public writeRuleParseFns(gram: Grammar): Block {
+    public writeAllRuleParseFns(gram: Grammar): Block {
         const fns: Block = [];
         for (const ruledef of gram)
-            fns.push(...this.writeRuleParseFn(ruledef));
+            fns.push(...this.writeRuleParseFns(ruledef));
         const S: string = gram[0].name;
         return [...fns,
             "public test(): boolean {",
@@ -314,7 +361,7 @@ export class Generator {
         }
         const hdr: Block = this.header ? [this.header] : [];
         const parseBlock = expandTemplate(this.input, hdr, this.writeMemos(),
-            this.writeKinds(this.gram), this.writeRuleClasses(this.gram), this.writeRuleParseFns(this.gram),
+            this.writeKinds(this.gram), this.writeRuleClasses(this.gram), this.writeAllRuleParseFns(this.gram),
             this.writeParseResultClass(this.gram));
         return writeBlock(parseBlock).join("\n");
     }

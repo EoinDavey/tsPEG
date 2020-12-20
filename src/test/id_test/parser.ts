@@ -78,19 +78,42 @@ export class Parser {
         return this.regexAccept(String.raw`(?:d)`, $$dpth + 1, $$cr);
     }
     public matchrule($$dpth: number, $$cr?: ContextRecorder): Nullable<rule> {
-        return this.runner<rule>($$dpth,
-            log => {
-                if (log)
-                    log("rule");
-                let $scope$rule: Nullable<rule>;
-                let $$res: Nullable<rule> = null;
-                if (true
-                    && ($scope$rule = this.matchrule($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = new rule($scope$rule);
-                }
-                return $$res;
-            }, $$cr)();
+        const fn = () => {
+            return this.runner<rule>($$dpth,
+                log => {
+                    if (log)
+                        log("rule");
+                    let $scope$rule: Nullable<rule>;
+                    let $$res: Nullable<rule> = null;
+                    if (true
+                        && ($scope$rule = this.matchrule($$dpth + 1, $$cr)) !== null
+                    ) {
+                        $$res = new rule($scope$rule);
+                    }
+                    return $$res;
+                }, $$cr)();
+        };
+        const pos = this.mark();
+        const memo = this.$scope$rule$memo.get(pos.overallPos);
+        if(memo !== undefined) {
+            this.reset(memo[1]);
+            return memo[0];
+        }
+        this.$scope$rule$memo.set(pos.overallPos, [null, pos]);
+        let lastRes: Nullable<rule> = null;
+        let lastPos: PosInfo = pos;
+        for(;;) {
+            this.reset(pos);
+            const res = fn();
+            const end = this.mark();
+            if(end.overallPos <= lastPos.overallPos)
+                break;
+            lastRes = res;
+            lastPos = end;
+            this.$scope$rule$memo.set(pos.overallPos, [lastRes, lastPos]);
+        }
+        this.reset(lastPos);
+        return lastRes;
     }
     public matchrule2($$dpth: number, $$cr?: ContextRecorder): Nullable<rule2> {
         return this.runner<rule2>($$dpth,
