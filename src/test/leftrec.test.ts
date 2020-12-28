@@ -2,7 +2,7 @@ import { parse } from "../meta";
 import { Generator } from "../gen";
 import { getRuleFromGram } from "../util";
 import { disjointCycleSets, leftRecCycles, leftRecRules, nullableAtomSet,
-    ruleIsNullableInCtx } from "../leftrec";
+    ruleIsNullableInCtx, getRulesToMarkForBoundedRecursion } from "../leftrec";
 
 test("test left recursion detection", () => {
     const tcs: {inp: string, hasLeftRec: boolean, cycles: string[][]}[] = [
@@ -70,9 +70,12 @@ test("test left recursion detection", () => {
             b := c
             c := d
             d := e
-            e := test`,
+            e := f
+            f := g
+            g := h
+            h := test`,
             hasLeftRec: true,
-            cycles: [["test", "b", "c", "d", "e"]],
+            cycles: [["test", "b", "c", "d", "e", "f", "g", "h"]],
         },
     ];
     for(const tc of tcs) {
@@ -86,6 +89,13 @@ test("test left recursion detection", () => {
         const atoms = nullableAtomSet(g.gram);
         const cycles = leftRecCycles(g.gram, atoms);
         expect(cycles.sort()).toEqual(tc.cycles.sort());
+
+        // Ensure only one rule per cycle is marked
+        const marked = getRulesToMarkForBoundedRecursion(g.gram);
+        for(const cyc of cycles) {
+            const cnt = cyc.filter(x => marked.has(x)).length;
+            expect(cnt).toEqual(1);
+        }
     }
 });
 

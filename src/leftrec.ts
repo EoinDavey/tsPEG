@@ -212,3 +212,45 @@ export function disjointCycleSets(cycles: string[][]): string[][][] {
 
     return sets;
 }
+
+export function getRulesToMarkForBoundedRecursion(g: Grammar): Set<string> {
+    const marked: Set<string> = new Set();
+
+    const nullAtoms = nullableAtomSet(g);
+    const cycles = leftRecCycles(g, nullAtoms);
+    const sets = disjointCycleSets(cycles);
+
+    for(const st of sets) {
+        const allRulesSet: Set<string> = new Set(st.reduce((x, y) => x.concat(y)));
+        const allRules = [...allRulesSet];
+        const sz = allRules.length;
+        // Check that left recursion sets are small enough to brute force
+        // 2^18 == 262144
+        if(sz > 18)
+            throw new CheckError("Left recursion is too complex to solve");
+
+        // Brute force all subsets
+        const lim = 1 << sz;
+        for(let subsetIdx = 0; subsetIdx < lim; ++subsetIdx) {
+            // Check that each cycle in st has exactly one rule in subset
+            const subst: Set<string> = new Set();
+            for(let i = 0; i < sz; ++i)
+                if((subsetIdx & (1 << i)) !== 0)
+                    subst.add(allRules[i]);
+            let success = true;
+            for(const cyc of st) {
+                const cnt = cyc.filter(x => subst.has(x)).length;
+                if(cnt !== 1)
+                    success = false;
+            }
+            if(!success)
+                continue;
+
+            // Assignment found for st
+            for(const rule of subst)
+                marked.add(rule);
+            break;
+        }
+    }
+    return marked;
+}
