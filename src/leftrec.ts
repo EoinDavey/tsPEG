@@ -103,6 +103,10 @@ function leftRecGraph(gram: Grammar, nullableAtoms: Set<ATOM>): Map<string, Set<
 
 function leftRecClosure(gram: Grammar, nullableAtoms: Set<ATOM>): Map<string, Set<string>> {
     const grph = leftRecGraph(gram, nullableAtoms);
+    return transitiveClosure(grph);
+}
+
+function transitiveClosure<A>(grph: Map<A, Set<A>>): Map<A, Set<A>> {
     // Floyd Warshall transitive closure algorithm
     for(const [kName, kEdges] of grph.entries())
         for(const aEdges of grph.values())
@@ -120,4 +124,91 @@ export function leftRecRules(g: Grammar): Set<string> {
         if(v.has(k))
             s.add(k);
     return s;
+}
+
+function cycleEq(a: string[], b: string[]): boolean {
+    if(a.length !== b.length)
+        return false;
+    const bOffset = b.indexOf(a[0]);
+    if(bOffset === -1)
+        return false;
+    for(let i = 0; i < a.length; ++i)
+        if(a[i] !== b[(bOffset + i) % b.length])
+            return false;
+    return true;
+}
+
+function addCycle(cycles: string[][], cyc: string[]) {
+    for(const c of cycles)
+        if(cycleEq(c, cyc))
+            return;
+    cycles.push(cyc);
+}
+
+export function leftRecCycles(gram: Grammar, nullableAtoms: Set<ATOM>): string[][] {
+    const cycles: string[][] = [];
+    const grph = leftRecGraph(gram, nullableAtoms);
+
+    const vis: Set<string> = new Set();
+    const seq: string[] = [];
+
+    const cycleRec = (cur: string, tgt: string) => {
+        if(vis.has(cur)) {
+            if(cur === tgt)
+                addCycle(cycles, [...seq]);
+            return;
+        }
+        const edges = grph.get(cur);
+        if(edges === undefined)
+            return;
+        vis.add(cur);
+        seq.push(cur);
+        for(const k of edges)
+            cycleRec(k, tgt);
+        vis.delete(cur);
+        seq.pop();
+    };
+
+    for(const g of gram) {
+        vis.clear();
+        cycleRec(g.name, g.name);
+    }
+    return cycles;
+}
+
+export function disjointCycleSets(cycles: string[][]): string[][][] {
+    const p: Map<string[], string[]> = new Map();
+
+    const find = (a: string[]): string[] => {
+        const pa = p.get(a) ?? a;
+        const res = pa === a ? a : find(pa);
+        p.set(a, res);
+        return res;
+    };
+
+    const union = (a: string[], b: string[]) => {
+        p.set(find(a), find(b));
+    };
+
+    for(const a of cycles) {
+        const sa = new Set(a);
+        for(const b of cycles) {
+            const sb = new Set(b);
+            if([...a, ...b].filter(x => sa.has(x) && sb.has(x)).length !== 0)
+                union(a, b);
+        }
+    }
+
+    const sets: string[][][] = [];
+    for(const a of cycles) {
+        if(p.get(a) !== a)
+            continue;
+        const st: string[][] = [];
+        for(const b of cycles)
+            if(find(b) === a)
+                st.push(b);
+        sets.push(st);
+    }
+
+    return sets;
 }
