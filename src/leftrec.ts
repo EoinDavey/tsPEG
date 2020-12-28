@@ -5,10 +5,9 @@ import { CheckError } from "./checks";
 export function ruleIsNullableInCtx(r: Rule, nullableAtoms: Set<ATOM>): boolean {
     for(const alt of r) {
         let allNullable = true;
-        for(const matchspec of alt.matches) {
+        for(const matchspec of alt.matches)
             if(!matchIsNullableInCtx(matchspec.rule, nullableAtoms))
                 allNullable = false;
-        }
         if(allNullable)
             return true;
     }
@@ -58,10 +57,8 @@ function updateNullableAtomsInRule(rule: Rule, gram: Grammar, nullableAtoms: Set
                 if(reg.test("")) // Is nullable
                     nullableAtoms.add(at);
             }
-            if(at.kind === ASTKinds.ATOM_3) {
-                if(ruleIsNullableInCtx(at.sub.list, nullableAtoms))
-                    nullableAtoms.add(at);
-            }
+            if(at.kind === ASTKinds.ATOM_3 && ruleIsNullableInCtx(at.sub.list, nullableAtoms))
+                nullableAtoms.add(at);
         }
     }
 }
@@ -80,11 +77,8 @@ export function nullableAtomSet(gram: Grammar): Set<ATOM> {
     return nullable;
 }
 
-export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<Rule>, nullableAtoms: Set<ATOM>): boolean {
-    if(visited.has(r))
-        return false;
-    visited.add(r);
-    // Check if any alternative calls nm at left.
+function leftRecEdges(r: Rule, nullableAtoms: Set<ATOM>): Set<string> {
+    const out: Set<string> = new Set();
     for(const alt of r) {
         // Loop as long as matches are nullable
         for(const matchspec of alt.matches) {
@@ -93,27 +87,37 @@ export function callsRuleLeft(nm: string, r: Rule, gram: Grammar, visited: Set<R
             if(mtch.kind === ASTKinds.SPECIAL)
                 continue;
             const at = mtch.pre.at;
-            if(at.kind === ASTKinds.ATOM_1) {
-                const rule = getRuleFromGram(gram, at.name);
-                if(rule && (rule.name === nm || callsRuleLeft(nm, rule.rule, gram, visited, nullableAtoms)))
-                    return true;
-            } else if(at.kind === ASTKinds.ATOM_3) {
-                if(callsRuleLeft(nm, at.sub.list, gram, visited, nullableAtoms))
-                    return true;
-            }
+            if((at.kind === ASTKinds.ATOM_1 || at.kind === ASTKinds.ATOM_3) && at.name !== null)
+                out.add(at.name);
             // Break if no longer nullable
             if(!matchIsNullableInCtx(mtch, nullableAtoms))
                 break;
         }
     }
-    return false;
+    return out;
+}
+
+function leftRecGraph(gram: Grammar, nullableAtoms: Set<ATOM>): Map<string, Set<string>> {
+    return new Map(gram.map(r => [r.name, leftRecEdges(r.rule, nullableAtoms)]));
+}
+
+function leftRecClosure(gram: Grammar, nullableAtoms: Set<ATOM>): Map<string, Set<string>> {
+    const grph = leftRecGraph(gram, nullableAtoms);
+    // Floyd Warshall transitive closure algorithm
+    for(const [kName, kEdges] of grph.entries())
+        for(const aEdges of grph.values())
+            for(const bName of grph.keys())
+                if(aEdges.has(kName) && kEdges.has(bName))
+                    aEdges.add(bName);
+    return grph;
 }
 
 export function leftRecRules(g: Grammar): Set<string> {
     const s: Set<string> = new Set();
     const nullAtoms = nullableAtomSet(g);
-    for(const rule of g)
-        if(callsRuleLeft(rule.name, rule.rule, g, new Set(), nullAtoms))
-            s.add(rule.name);
+    const cls = leftRecClosure(g, nullAtoms);
+    for(const [k, v] of cls.entries())
+        if(v.has(k))
+            s.add(k);
     return s;
 }
