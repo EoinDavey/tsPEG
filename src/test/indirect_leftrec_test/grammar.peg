@@ -1,0 +1,4 @@
+// Indirect left recursion test
+
+A := B B | 'a'
+B := A | 'b'

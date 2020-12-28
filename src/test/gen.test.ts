@@ -210,7 +210,7 @@ test("subrule type/rule test", () => {
     const expectedRule = "this.matchrule_$0($$dpth + 1, $$cr)";
 
     const gen = new Generator(inp);
-    const subRef = gen.gram[0].rule[0].matches[1].rule;
+    const subRef = gen.expandedGram[0].rule[0].matches[1].rule;
     expect(matchType(subRef)).toEqual(expectedType);
     expect(matchRule(subRef)).toEqual(expectedRule);
 });
@@ -261,7 +261,7 @@ test("writeKinds test", () => {
     ];
     for(const tc of tcs) {
         const g = new Generator(tc.inp, tc.numEnums);
-        const gram = g.gram;
+        const gram = g.expandedGram;
         const got = writeBlock(g.writeKinds(gram)).join("\n");
         expect(got).toEqual(tc.writeKinds);
     }
@@ -450,7 +450,7 @@ test("writeRuleClasses Test", () => {
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
         const g = new Generator(tc.inp);
-        const gram = g.gram;
+        const gram = g.expandedGram;
         const got = writeBlock(g.writeRuleClasses(gram)).join("\n");
         expect(got).toEqual(tc.ruleClasses);
     }

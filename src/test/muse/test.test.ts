@@ -2,7 +2,7 @@ import { parse } from "./parser";
 
 // Just ensure they all parse
 
-test("test calculator", () => {
+test("test parser", () => {
     interface TestCase { inp: string }
     const tcs: TestCase[] = [
         {

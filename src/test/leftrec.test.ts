@@ -1,8 +1,7 @@
 import { parse } from "../meta";
 import { Generator } from "../gen";
 import { getRuleFromGram } from "../util";
-import { disjointCycleSets, leftRecCycles, leftRecRules, nullableAtomSet,
-    ruleIsNullableInCtx, getRulesToMarkForBoundedRecursion } from "../leftrec";
+import { disjointCycleSets, getRulesToMarkForBoundedRecursion, leftRecCycles, leftRecRules, nullableAtomSet, ruleIsNullableInCtx } from "../leftrec";
 
 test("test left recursion detection", () => {
     const tcs: {inp: string, hasLeftRec: boolean, cycles: string[][]}[] = [
@@ -22,7 +21,7 @@ test("test left recursion detection", () => {
             cycles: [["test"]],
         },
         { // direct left recursion not first alt
-            inp: "test := not_test | 'not_test' | test | not_test",
+            inp: "test := not_test | { 'not_test' | test | not_test }",
             hasLeftRec: true,
             cycles: [["test"]],
         },
@@ -67,12 +66,12 @@ test("test left recursion detection", () => {
         { // Multi stage indirect left recurse
             inp: `
             test := b
-            b := c
+            b := { c }
             c := d
             d := e
-            e := f
+            e := { f }
             f := g
-            g := h
+            g := { h }
             h := test`,
             hasLeftRec: true,
             cycles: [["test", "b", "c", "d", "e", "f", "g", "h"]],
@@ -83,15 +82,15 @@ test("test left recursion detection", () => {
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
         const g = new Generator(tc.inp);
-        const leftRecs = leftRecRules(g.gram);
+        const leftRecs = leftRecRules(g.unexpandedGram);
         expect(leftRecs.has("test")).toEqual(tc.hasLeftRec);
 
-        const atoms = nullableAtomSet(g.gram);
-        const cycles = leftRecCycles(g.gram, atoms);
+        const atoms = nullableAtomSet(g.unexpandedGram);
+        const cycles = leftRecCycles(g.unexpandedGram, atoms);
         expect(cycles.sort()).toEqual(tc.cycles.sort());
 
         // Ensure only one rule per cycle is marked
-        const marked = getRulesToMarkForBoundedRecursion(g.gram);
+        const marked = getRulesToMarkForBoundedRecursion(g.unexpandedGram);
         for(const cyc of cycles) {
             const cnt = cyc.filter(x => marked.has(x)).length;
             expect(cnt).toEqual(1);
@@ -146,7 +145,7 @@ test("test nullable rule detection", () => {
         const res = parse(tc.inp);
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
-        const gram = new Generator(tc.inp).gram;
+        const gram = new Generator(tc.inp).unexpandedGram;
         const atoms = nullableAtomSet(gram);
         for(const rule of tc.nullableRules)
             expect(ruleIsNullableInCtx(getRuleFromGram(gram, rule)!.rule, atoms)).toEqual(true);

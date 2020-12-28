@@ -4,7 +4,7 @@ import { Block, Grammar, Ruledef, altNames, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchType } from "./types";
 import { extractRules, matchRule } from "./rules";
-import { leftRecRules } from "./leftrec";
+import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -25,12 +25,13 @@ export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: st
 }
 
 export class Generator {
-    public gram: Grammar;
+    public expandedGram: Grammar;
+    public unexpandedGram: Grammar;
     private numEnums: boolean;
     private input: string;
     private checkers: Checker[] = [];
     private header: string | null;
-    private leftRecRules: Set<string>;
+    private boundedRecRules: Set<string>;
 
     public constructor(input: string, numEnums = false) {
         this.input = input;
@@ -41,12 +42,19 @@ export class Generator {
             throw res.err;
         if (!res.ast)
             throw new Error("No AST found");
-        this.gram = this.AST2Gram(res.ast);
+        this.expandedGram = this.astToExpandedGram(res.ast);
+        this.unexpandedGram = res.ast.rules.map(def => {
+            return {
+                name: def.name,
+                rule: def.rule.list,
+                pos: def.namestart,
+            };
+        });
         this.header = res.ast.header?.content ?? null;
-        this.leftRecRules = leftRecRules(this.gram);
+        this.boundedRecRules = getRulesToMarkForBoundedRecursion(this.unexpandedGram);
     }
 
-    private AST2Gram(g: GRAM): Grammar {
+    private astToExpandedGram(g: GRAM): Grammar {
         const gram = g.rules.map(def => extractRules(def.rule.list, def.name, def.namestart));
         return gram.reduce((x, y) => x.concat(y));
     }
@@ -69,8 +77,8 @@ export class Generator {
 
     public writeMemos(): Block {
         const out: Block = [];
-        for(const rule of this.gram) {
-            if(this.leftRecRules.has(rule.name)) {
+        for(const rule of this.expandedGram) {
+            if(this.boundedRecRules.has(rule.name)) {
                 out.push(`private ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
             }
         }
@@ -273,7 +281,7 @@ export class Generator {
             choices.push(...this.writeChoiceParseFn(name, ruledef.rule[i]));
         });
 
-        if(this.leftRecRules.has(nm)) {
+        if(this.boundedRecRules.has(nm)) {
             const body = nms.length === 1 
                 ? this.writeChoiceParseFnBody(nms[0], ruledef.rule[0])
                 : this.writeUnionParseBody(nm, nms);
@@ -355,14 +363,14 @@ export class Generator {
 
     public generate(): string {
         for (const checker of this.checkers) {
-            const err = checker.Check(this.gram, this.input);
+            const err = checker.Check(this.expandedGram, this.input);
             if (err)
                 throw err;
         }
         const hdr: Block = this.header ? [this.header] : [];
         const parseBlock = expandTemplate(this.input, hdr, this.writeMemos(),
-            this.writeKinds(this.gram), this.writeRuleClasses(this.gram), this.writeAllRuleParseFns(this.gram),
-            this.writeParseResultClass(this.gram));
+            this.writeKinds(this.expandedGram), this.writeRuleClasses(this.expandedGram), this.writeAllRuleParseFns(this.expandedGram),
+            this.writeParseResultClass(this.expandedGram));
         return writeBlock(parseBlock).join("\n");
     }
 }

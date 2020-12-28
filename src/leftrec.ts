@@ -87,8 +87,11 @@ function leftRecEdges(r: Rule, nullableAtoms: Set<ATOM>): Set<string> {
             if(mtch.kind === ASTKinds.SPECIAL)
                 continue;
             const at = mtch.pre.at;
-            if((at.kind === ASTKinds.ATOM_1 || at.kind === ASTKinds.ATOM_3) && at.name !== null)
+            if(at.kind === ASTKinds.ATOM_1)
                 out.add(at.name);
+            if(at.kind === ASTKinds.ATOM_3)
+                for(const edge of leftRecEdges(at.sub.list, nullableAtoms))
+                    out.add(edge);
             // Break if no longer nullable
             if(!matchIsNullableInCtx(mtch, nullableAtoms))
                 break;
