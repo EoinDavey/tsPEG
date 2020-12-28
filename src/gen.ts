@@ -25,7 +25,9 @@ export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: st
 }
 
 export class Generator {
+    // expandedGram is the grammar with all subrules expanded into their own Ruledefs
     public expandedGram: Grammar;
+    // unexpandedGram is the grammar with no subrules expanded.
     public unexpandedGram: Grammar;
     private numEnums: boolean;
     private input: string;
