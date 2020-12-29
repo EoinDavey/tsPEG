@@ -1,8 +1,10 @@
-import { ALT, ASTKinds, ATOM, GRAM, MATCH, PREOP, Parser, PosInfo }  from "./meta";
+import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Rule, Ruledef, altNames, escapeBackticks, writeBlock } from "./util";
-import { BannedNamesChecker, CheckError, Checker, NoRuleNameCollisionChecker,
-    RulesExistChecker } from "./checks";
+import { Block, Grammar, Ruledef, altNames, writeBlock } from "./util";
+import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
+import { matchType } from "./types";
+import { extractRules, matchRule } from "./rules";
+import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -14,135 +16,54 @@ function addScope(id: string): string {
     return "$scope$" + id;
 }
 
+function memoName(id: string): string {
+    return addScope(id + "$memo");
+}
+
 export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: string): string {
     return inputStr.substring(t.start.overallPos, t.end.overallPos);
 }
 
 export class Generator {
-    private subRules: Map<ATOM, string> = new Map();
+    // expandedGram is the grammar with all subrules expanded into their own Ruledefs
+    public expandedGram: Grammar;
+    // unexpandedGram is the grammar with no subrules expanded.
+    public unexpandedGram: Grammar;
     private numEnums: boolean;
     private input: string;
     private checkers: Checker[] = [];
+    private header: string | null;
+    private boundedRecRules: Set<string>;
 
     public constructor(input: string, numEnums = false) {
         this.input = input;
         this.numEnums = numEnums;
+        const p = new Parser(this.input);
+        const res = p.parse();
+        if (res.err)
+            throw res.err;
+        if (!res.ast)
+            throw new Error("No AST found");
+        this.expandedGram = this.astToExpandedGram(res.ast);
+        this.unexpandedGram = res.ast.rules.map(def => {
+            return {
+                name: def.name,
+                rule: def.rule.list,
+                pos: def.namestart,
+            };
+        });
+        this.header = res.ast.header?.content ?? null;
+        this.boundedRecRules = getRulesToMarkForBoundedRecursion(this.unexpandedGram);
     }
 
-    public AST2Gram(g: GRAM): Grammar {
-        const gram = g.rules.map(def => this.extractRules(def.rule.list, def.name, def.namestart));
+    private astToExpandedGram(g: GRAM): Grammar {
+        const gram = g.rules.map(def => extractRules(def.rule.list, def.name, def.namestart));
         return gram.reduce((x, y) => x.concat(y));
-    }
-
-    // extractRule does a traversal of the AST assigning names to
-    // subrules and storing them in this.subRules. It takes subrules and assigns
-    // them their own Ruledef in the grammar, effectively flattening the
-    // structure of the grammar.
-    public extractRules(rule: Rule, name: string, pos?: PosInfo): Ruledef[] {
-        let cnt = 0;
-        const rules: Ruledef[] = [{name, rule, pos}];
-        for (const alt of rule) {
-            for (const match of alt.matches) {
-                // Check if special rule
-                if(match.rule.kind === ASTKinds.SPECIAL)
-                    continue;
-                // Check if not a subrule
-                const at = match.rule.pre.at;
-                if (at === null || at.kind !== ASTKinds.ATOM_3)
-                    continue;
-                const subrule = at.sub;
-                const nm = `${name}_$${cnt}`;
-                this.subRules.set(at, nm);
-                const rdfs = this.extractRules(subrule.list, nm);
-                rules.push(...rdfs);
-                ++cnt;
-            }
-        }
-        return rules;
     }
 
     public addChecker(c: Checker): this {
         this.checkers.push(c);
         return this;
-    }
-
-    public preType(expr: PREOP): string {
-        if (expr.op && expr.op === "!") { // Negation types return null if matched, true otherwise
-            return "boolean";
-        }
-        return this.atomType(expr.at);
-    }
-
-    public preRule(expr: PREOP): string {
-        if (expr.op && expr.op === "&") {
-            return `this.noConsume<${this.atomType(expr.at)}>(() => ${this.atomRule(expr.at)})`;
-        }
-        if (expr.op && expr.op === "!") {
-            return `this.negate(() => ${this.atomRule(expr.at)})`;
-        }
-        return this.atomRule(expr.at);
-    }
-
-    public matchType(expr: MATCH): string {
-        // Check if special rule
-        if (expr.kind === ASTKinds.SPECIAL)
-            return "PosInfo";
-        if (expr.op) {
-            if (expr.op === "?") {
-                return `Nullable<${this.preType(expr.pre)}>`;
-            }
-            return `${this.preType(expr.pre)}[]`;
-        }
-        return this.preType(expr.pre);
-    }
-
-    public matchRule(expr: MATCH): string {
-        // Check if special rule
-        if (expr.kind === ASTKinds.SPECIAL) {
-            return "this.mark()";
-        }
-        if (expr.op && expr.op !== "?") {
-                return `this.loop<${this.preType(expr.pre)}>(() => ${this.preRule(expr.pre)}, ${expr.op === "+" ? "false" : "true"})`;
-        }
-        return this.preRule(expr.pre);
-    }
-
-    public atomRule(at: ATOM): string {
-        if (at.kind === ASTKinds.ATOM_1)
-            return `this.match${at.name}($$dpth + 1, $$cr)`;
-        if (at.kind === ASTKinds.ATOM_2) {
-            // Regex match
-            const mtch = at.match;
-            const reg = "(?:" + mtch.val + ")";
-            try {
-                // Ensure the original regex is valid
-                new RegExp(mtch.val);
-                // Ensure the RegExp wrapped in brackets is valid
-                new RegExp(reg);
-            } catch (err) {
-                throw new CheckError(`Couldnt' compile regex '${mtch.val}': ${err}`, mtch.start);
-            }
-            return `this.regexAccept(String.raw\`${escapeBackticks(reg)}\`, $$dpth + 1, $$cr)`;
-        }
-        const subname = this.subRules.get(at);
-        if (subname) {
-            return `this.match${subname}($$dpth + 1, $$cr)`;
-        }
-        return "ERR";
-    }
-
-    public atomType(at: ATOM): string {
-        if (at.kind === ASTKinds.ATOM_1) {
-            return at.name;
-        }
-        if (at.kind === ASTKinds.ATOM_2) {
-            return "string";
-        }
-        const subname = this.subRules.get(at);
-        if (subname) {
-            return subname;
-        }
-        throw new Error("Unknown subrule");
     }
 
     public writeKinds(gram: Grammar): Block {
@@ -156,18 +77,28 @@ export class Generator {
         ];
     }
 
+    public writeMemos(): Block {
+        const out: Block = [];
+        for(const rule of this.expandedGram) {
+            if(this.boundedRecRules.has(rule.name)) {
+                out.push(`private ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
+            }
+        }
+        return out;
+    }
+
     public writeChoice(name: string, alt: ALT): Block {
         const namedTypes: [string, string][] = [];
         for (const match of alt.matches) {
             if (match.named) {
                 const at = match.rule;
-                namedTypes.push([match.named.name, this.matchType(at)]);
+                namedTypes.push([match.named.name, matchType(at)]);
             }
         }
         // Rules with no named matches, no attrs and only one match are rule aliases
         if (namedTypes.length === 0 && alt.matches.length === 1 && !hasAttrs(alt)) {
             const at = alt.matches[0].rule;
-            return [`export type ${name} = ${this.matchType(at)};`];
+            return [`export type ${name} = ${matchType(at)};`];
         }
         // If we have computed properties, then we need a class, not an interface.
         if (hasAttrs(alt)) {
@@ -222,7 +153,7 @@ export class Generator {
         const checks: string[] = [];
         for (const match of alt.matches) {
             const expr = match.rule;
-            const rn = this.matchRule(expr);
+            const rn = matchRule(expr);
             if (match.named) {
                 // Optional match
                 if (expr.kind !== ASTKinds.SPECIAL && expr.optional) {
@@ -242,82 +173,144 @@ export class Generator {
         return checks;
     }
 
-    public writeRuleAliasFn(name: string, expr: MATCH): Block {
-        return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
-            [
-                `return ${this.matchRule(expr)};`,
-            ],
-            "}",
-        ];
+    public writeRuleAliasFnBody(name: string, expr: MATCH): Block {
+        return [
+                `return ${matchRule(expr)};`,
+            ];
     }
 
     public writeChoiceParseFn(name: string, alt: ALT): Block {
-        const namedTypes: [string, string][] = [];
-        const unnamedTypes: string[] = [];
-        for (const match of alt.matches) {
-            const expr = match.rule;
-            const rn = this.matchType(expr);
-            if (match.named)
-                namedTypes.push([match.named.name, rn]);
-            else
-                unnamedTypes.push(rn);
-        }
-        if (namedTypes.length === 0 && alt.matches.length === 1) {
-            return this.writeRuleAliasFn(name, alt.matches[0].rule);
-        }
         return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
-            [
-                `return this.runner<${name}>($$dpth,`,
-                [
-                    "(log) => {",
-                    [
-                        "if (log) {",
-                        [
-                            `log("${name}");`,
-                        ],
-                        "}",
-                        ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
-                        `let $$res: Nullable<${name}> = null;`,
-                        "if (true",
-                        this.writeParseIfStmt(alt),
-                        ") {",
-                        [
-                            hasAttrs(alt)
-                            ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
-                            : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
-                        ],
-                        "}",
-                        "return $$res;",
-                    ],
-                    "}, $$cr)();",
-                ],
-            ],
+             this.writeChoiceParseFnBody(name, alt),
             "}",
         ];
     }
 
-    public writeRuleParseFn(ruledef: Ruledef): Block {
+    public getNamedTypes(alt: ALT): [string, string][] {
+        const types: [string, string][] = [];
+        for (const match of alt.matches) {
+            if (!match.named)
+                continue;
+            const rn = matchType(match.rule);
+            types.push([match.named.name, rn]);
+        }
+        return types;
+    }
+
+    public getUnnamedTypes(alt: ALT): string[] {
+        const types: string[] = [];
+        for (const match of alt.matches) {
+            if (match.named)
+                continue;
+            const rn = matchType(match.rule);
+            types.push(rn);
+        }
+        return types;
+    }
+
+    public writeChoiceParseFnBody(name: string, alt: ALT): Block {
+        const namedTypes = this.getNamedTypes(alt);
+        if(namedTypes.length === 0 && alt.matches.length === 1)
+            return this.writeRuleAliasFnBody(name, alt.matches[0].rule);
+        return [`return this.runner<${name}>($$dpth,`,
+            [
+                "log => {",
+                [
+                    "if (log)",
+                    [
+                        `log("${name}");`,
+                    ],
+                    ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
+                    `let $$res: Nullable<${name}> = null;`,
+                    "if (true",
+                    this.writeParseIfStmt(alt),
+                    ") {",
+                    [
+                        hasAttrs(alt)
+                        ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
+                        : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
+                    ],
+                    "}",
+                    "return $$res;",
+                ],
+                "}, $$cr)();",
+            ],
+        ];
+    }
+
+    private writeLeftRecRuleParseFn(name: string, body: Block): Block {
+        const memo = memoName(name);
+        const t: Block = [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
+        [
+            'const fn = () => {',
+            body,
+            '};',
+            'const pos = this.mark();',
+            `const memo = this.${memo}.get(pos.overallPos);`,
+            'if(memo !== undefined) {',
+            '    this.reset(memo[1]);',
+            '    return memo[0];',
+            '}',
+            `this.${memo}.set(pos.overallPos, [null, pos]);`,
+            `let lastRes: Nullable<${name}> = null;`,
+            'let lastPos: PosInfo = pos;',
+            'for(;;) {',
+            [
+                'this.reset(pos);',
+                'const res = fn();',
+                'const end = this.mark();',
+                'if(end.overallPos <= lastPos.overallPos)',
+                [
+                    'break;',
+                ],
+                'lastRes = res;',
+                'lastPos = end;',
+                `this.${memo}.set(pos.overallPos, [lastRes, lastPos]);`,
+            ],
+            '}',
+            'this.reset(lastPos);',
+            'return lastRes;',
+        ],
+    '}'];
+        return t;
+    }
+
+    public writeRuleParseFns(ruledef: Ruledef): Block {
         const nm = ruledef.name;
         const choices: Block = [];
         const nms: string[] = altNames(ruledef);
         nms.forEach((name, i) => {
             choices.push(...this.writeChoiceParseFn(name, ruledef.rule[i]));
         });
+
+        if(this.boundedRecRules.has(nm)) {
+            const body = nms.length === 1 
+                ? this.writeChoiceParseFnBody(nms[0], ruledef.rule[0])
+                : this.writeUnionParseBody(nm, nms);
+            const fn = this.writeLeftRecRuleParseFn(nm, body);
+            if(nms.length === 1)
+                return fn;
+            return [...fn, ...choices];
+        }
         const union = ruledef.rule.length <= 1 ? []
             : [`public match${nm}($$dpth: number, $$cr?: ContextRecorder): Nullable<${nm}> {`,
-                [
-                    `return this.choice<${nm}>([`,
-                    nms.map((x) => `() => this.match${x}($$dpth + 1, $$cr),`),
-                    `]);`,
-                ],
+                this.writeUnionParseBody(nm, nms),
                 `}`];
         return [...union, ...choices];
     }
 
-    public writeRuleParseFns(gram: Grammar): Block {
+    public writeUnionParseBody(name: string, alts: string[]): Block {
+        return [
+            `return this.choice<${name}>([`,
+            alts.map(x => `() => this.match${x}($$dpth + 1, $$cr),`),
+            `]);`,
+        ];
+    }
+
+    public writeAllRuleParseFns(gram: Grammar): Block {
         const fns: Block = [];
         for (const ruledef of gram)
-            fns.push(...this.writeRuleParseFn(ruledef));
+            fns.push(...this.writeRuleParseFns(ruledef));
         const S: string = gram[0].name;
         return [...fns,
             "public test(): boolean {",
@@ -371,21 +364,15 @@ export class Generator {
     }
 
     public generate(): string {
-        const p = new Parser(this.input);
-        const res = p.parse();
-        if (res.err)
-            throw res.err;
-        if (!res.ast)
-            throw new Error("No AST found");
-        const gram = this.AST2Gram(res.ast);
         for (const checker of this.checkers) {
-            const err = checker.Check(gram, this.input);
+            const err = checker.Check(this.expandedGram, this.input);
             if (err)
                 throw err;
         }
-        const hdr: Block = res.ast.header ? [res.ast.header.content] : [];
-        const parseBlock = expandTemplate(this.input, hdr, this.writeKinds(gram), this.writeRuleClasses(gram),
-            this.writeRuleParseFns(gram), this.writeParseResultClass(gram));
+        const hdr: Block = this.header ? [this.header] : [];
+        const parseBlock = expandTemplate(this.input, hdr, this.writeMemos(),
+            this.writeKinds(this.expandedGram), this.writeRuleClasses(this.expandedGram), this.writeAllRuleParseFns(this.expandedGram),
+            this.writeParseResultClass(this.expandedGram));
         return writeBlock(parseBlock).join("\n");
     }
 }

@@ -1,0 +1,19 @@
+// Left recursion test
+
+SUM  := l=SUM op='\+|-' r=FAC
+        .value = number {
+            return this.op === "+" ? l.value + r.value : l.value - r.value;
+        }
+        | FAC
+FAC  := l=FAC op='\*|/' r=ATOM
+        .value = number {
+            return this.op === "*" ? l.value * r.value : l.value / r.value;
+        }
+        | ATOM
+ATOM := _ val=INT _
+        .value = number { return this.val.value; }
+        | _ '\(' val=SUM '\)' _
+        .value = number { return this.val.value; }
+INT  := val='[0-9]+'
+        .value = number { return parseInt(this.val); }
+_    := '\s*'

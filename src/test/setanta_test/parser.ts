@@ -808,10 +808,9 @@ export class Parser {
     }
     public matchProgram($$dpth: number, $$cr?: ContextRecorder): Nullable<Program> {
         return this.runner<Program>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Program");
-                }
                 let $scope$stmts: Nullable<AsgnStmt[]>;
                 let $$res: Nullable<Program> = null;
                 if (true
@@ -917,10 +916,9 @@ export class Parser {
     }
     public matchIfStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt> {
         return this.runner<IfStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("IfStmt");
-                }
                 let $scope$expr: Nullable<Expr>;
                 let $scope$stmt: Nullable<NonAsgnStmt>;
                 let $scope$elsebranch: Nullable<Nullable<IfStmt_$0>>;
@@ -941,10 +939,9 @@ export class Parser {
     }
     public matchIfStmt_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt_$0> {
         return this.runner<IfStmt_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("IfStmt_$0");
-                }
                 let $scope$stmt: Nullable<NonAsgnStmt>;
                 let $$res: Nullable<IfStmt_$0> = null;
                 if (true
@@ -960,10 +957,9 @@ export class Parser {
     }
     public matchBlockStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<BlockStmt> {
         return this.runner<BlockStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("BlockStmt");
-                }
                 let $scope$blk: Nullable<AsgnStmt[]>;
                 let $$res: Nullable<BlockStmt> = null;
                 if (true
@@ -980,10 +976,9 @@ export class Parser {
     }
     public matchNuairStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<NuairStmt> {
         return this.runner<NuairStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("NuairStmt");
-                }
                 let $scope$expr: Nullable<Expr>;
                 let $scope$stmt: Nullable<NonAsgnStmt>;
                 let $$res: Nullable<NuairStmt> = null;
@@ -1001,10 +996,9 @@ export class Parser {
     }
     public matchLeStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<LeStmt> {
         return this.runner<LeStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("LeStmt");
-                }
                 let $scope$id: Nullable<ID>;
                 let $scope$strt: Nullable<Expr>;
                 let $scope$end: Nullable<Expr>;
@@ -1036,10 +1030,9 @@ export class Parser {
     }
     public matchLeStmt_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<LeStmt_$0> {
         return this.runner<LeStmt_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("LeStmt_$0");
-                }
                 let $scope$step: Nullable<Expr>;
                 let $$res: Nullable<LeStmt_$0> = null;
                 if (true
@@ -1054,10 +1047,9 @@ export class Parser {
     }
     public matchDefnStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<DefnStmt> {
         return this.runner<DefnStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("DefnStmt");
-                }
                 let $scope$idstart: Nullable<PosInfo>;
                 let $scope$id: Nullable<ID>;
                 let $scope$idend: Nullable<PosInfo>;
@@ -1080,10 +1072,9 @@ export class Parser {
     }
     public matchAssgnStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<AssgnStmt> {
         return this.runner<AssgnStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("AssgnStmt");
-                }
                 let $scope$lstart: Nullable<PosInfo>;
                 let $scope$lhs: Nullable<Postfix>;
                 let $scope$lend: Nullable<PosInfo>;
@@ -1107,10 +1098,9 @@ export class Parser {
     }
     public matchGniomhStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<GniomhStmt> {
         return this.runner<GniomhStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("GniomhStmt");
-                }
                 let $scope$id: Nullable<ID>;
                 let $scope$args: Nullable<Nullable<CSIDs>>;
                 let $scope$stmts: Nullable<AsgnStmt[]>;
@@ -1138,10 +1128,9 @@ export class Parser {
     }
     public matchCtlchStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<CtlchStmt> {
         return this.runner<CtlchStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("CtlchStmt");
-                }
                 let $scope$id: Nullable<ID>;
                 let $scope$tuis: Nullable<Nullable<CtlchStmt_$0>>;
                 let $scope$gniomhs: Nullable<GniomhStmt[]>;
@@ -1165,10 +1154,9 @@ export class Parser {
     }
     public matchCtlchStmt_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<CtlchStmt_$0> {
         return this.runner<CtlchStmt_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("CtlchStmt_$0");
-                }
                 let $scope$parentstart: Nullable<PosInfo>;
                 let $scope$id: Nullable<ID>;
                 let $scope$parentend: Nullable<PosInfo>;
@@ -1188,10 +1176,9 @@ export class Parser {
     }
     public matchBrisStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<BrisStmt> {
         return this.runner<BrisStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("BrisStmt");
-                }
                 let $$res: Nullable<BrisStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -1204,10 +1191,9 @@ export class Parser {
     }
     public matchCCStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<CCStmt> {
         return this.runner<CCStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("CCStmt");
-                }
                 let $$res: Nullable<CCStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -1220,10 +1206,9 @@ export class Parser {
     }
     public matchToradhStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<ToradhStmt> {
         return this.runner<ToradhStmt>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ToradhStmt");
-                }
                 let $scope$exp: Nullable<Nullable<Expr>>;
                 let $$res: Nullable<ToradhStmt> = null;
                 if (true
@@ -1242,10 +1227,9 @@ export class Parser {
     }
     public matchAnd($$dpth: number, $$cr?: ContextRecorder): Nullable<And> {
         return this.runner<And>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("And");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Or>;
                 let $scope$tail: Nullable<And_$0[]>;
@@ -1264,10 +1248,9 @@ export class Parser {
     }
     public matchAnd_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<And_$0> {
         return this.runner<And_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("And_$0");
-                }
                 let $scope$trm: Nullable<Or>;
                 let $$res: Nullable<And_$0> = null;
                 if (true
@@ -1282,10 +1265,9 @@ export class Parser {
     }
     public matchOr($$dpth: number, $$cr?: ContextRecorder): Nullable<Or> {
         return this.runner<Or>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Or");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Eq>;
                 let $scope$tail: Nullable<Or_$0[]>;
@@ -1304,10 +1286,9 @@ export class Parser {
     }
     public matchOr_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Or_$0> {
         return this.runner<Or_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Or_$0");
-                }
                 let $scope$trm: Nullable<Eq>;
                 let $$res: Nullable<Or_$0> = null;
                 if (true
@@ -1322,10 +1303,9 @@ export class Parser {
     }
     public matchEq($$dpth: number, $$cr?: ContextRecorder): Nullable<Eq> {
         return this.runner<Eq>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Eq");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Comp>;
                 let $scope$tail: Nullable<Eq_$0[]>;
@@ -1344,10 +1324,9 @@ export class Parser {
     }
     public matchEq_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Eq_$0> {
         return this.runner<Eq_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Eq_$0");
-                }
                 let $scope$op: Nullable<string>;
                 let $scope$trm: Nullable<Comp>;
                 let $$res: Nullable<Eq_$0> = null;
@@ -1363,10 +1342,9 @@ export class Parser {
     }
     public matchComp($$dpth: number, $$cr?: ContextRecorder): Nullable<Comp> {
         return this.runner<Comp>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Comp");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Sum>;
                 let $scope$tail: Nullable<Comp_$0[]>;
@@ -1385,10 +1363,9 @@ export class Parser {
     }
     public matchComp_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Comp_$0> {
         return this.runner<Comp_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Comp_$0");
-                }
                 let $scope$op: Nullable<Compare>;
                 let $scope$trm: Nullable<Sum>;
                 let $$res: Nullable<Comp_$0> = null;
@@ -1404,10 +1381,9 @@ export class Parser {
     }
     public matchSum($$dpth: number, $$cr?: ContextRecorder): Nullable<Sum> {
         return this.runner<Sum>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Sum");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Product>;
                 let $scope$tail: Nullable<Sum_$0[]>;
@@ -1426,10 +1402,9 @@ export class Parser {
     }
     public matchSum_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Sum_$0> {
         return this.runner<Sum_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Sum_$0");
-                }
                 let $scope$op: Nullable<PlusMinus>;
                 let $scope$trm: Nullable<Product>;
                 let $$res: Nullable<Sum_$0> = null;
@@ -1445,10 +1420,9 @@ export class Parser {
     }
     public matchProduct($$dpth: number, $$cr?: ContextRecorder): Nullable<Product> {
         return this.runner<Product>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Product");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Prefix>;
                 let $scope$tail: Nullable<Product_$0[]>;
@@ -1467,10 +1441,9 @@ export class Parser {
     }
     public matchProduct_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Product_$0> {
         return this.runner<Product_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Product_$0");
-                }
                 let $scope$op: Nullable<MulDiv>;
                 let $scope$trm: Nullable<Prefix>;
                 let $$res: Nullable<Product_$0> = null;
@@ -1486,10 +1459,9 @@ export class Parser {
     }
     public matchPrefix($$dpth: number, $$cr?: ContextRecorder): Nullable<Prefix> {
         return this.runner<Prefix>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Prefix");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$op: Nullable<Nullable<string>>;
                 let $scope$pf: Nullable<Postfix>;
@@ -1509,10 +1481,9 @@ export class Parser {
     }
     public matchPostfix($$dpth: number, $$cr?: ContextRecorder): Nullable<Postfix> {
         return this.runner<Postfix>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Postfix");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$at: Nullable<ObjLookups>;
                 let $scope$ops: Nullable<PostOp[]>;
@@ -1531,10 +1502,9 @@ export class Parser {
     }
     public matchObjLookups($$dpth: number, $$cr?: ContextRecorder): Nullable<ObjLookups> {
         return this.runner<ObjLookups>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ObjLookups");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$attrs: Nullable<ObjLookups_$0[]>;
                 let $scope$root: Nullable<Atom>;
@@ -1553,10 +1523,9 @@ export class Parser {
     }
     public matchObjLookups_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<ObjLookups_$0> {
         return this.runner<ObjLookups_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ObjLookups_$0");
-                }
                 let $scope$id: Nullable<ID>;
                 let $$res: Nullable<ObjLookups_$0> = null;
                 if (true
@@ -1577,10 +1546,9 @@ export class Parser {
     }
     public matchPostOp_1($$dpth: number, $$cr?: ContextRecorder): Nullable<PostOp_1> {
         return this.runner<PostOp_1>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("PostOp_1");
-                }
                 let $scope$args: Nullable<Nullable<CSArgs>>;
                 let $$res: Nullable<PostOp_1> = null;
                 if (true
@@ -1596,10 +1564,9 @@ export class Parser {
     }
     public matchPostOp_2($$dpth: number, $$cr?: ContextRecorder): Nullable<PostOp_2> {
         return this.runner<PostOp_2>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("PostOp_2");
-                }
                 let $scope$expr: Nullable<Expr>;
                 let $$res: Nullable<PostOp_2> = null;
                 if (true
@@ -1627,10 +1594,9 @@ export class Parser {
     }
     public matchAtom_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_1> {
         return this.runner<Atom_1>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Atom_1");
-                }
                 let $scope$trm: Nullable<Expr>;
                 let $$res: Nullable<Atom_1> = null;
                 if (true
@@ -1668,10 +1634,9 @@ export class Parser {
     }
     public matchGniomhExpr($$dpth: number, $$cr?: ContextRecorder): Nullable<GniomhExpr> {
         return this.runner<GniomhExpr>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("GniomhExpr");
-                }
                 let $scope$args: Nullable<Nullable<CSIDs>>;
                 let $scope$stmts: Nullable<AsgnStmt[]>;
                 let $$res: Nullable<GniomhExpr> = null;
@@ -1696,10 +1661,9 @@ export class Parser {
     }
     public matchListLit($$dpth: number, $$cr?: ContextRecorder): Nullable<ListLit> {
         return this.runner<ListLit>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ListLit");
-                }
                 let $scope$els: Nullable<Nullable<CSArgs>>;
                 let $$res: Nullable<ListLit> = null;
                 if (true
@@ -1716,10 +1680,9 @@ export class Parser {
     }
     public matchCSArgs($$dpth: number, $$cr?: ContextRecorder): Nullable<CSArgs> {
         return this.runner<CSArgs>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("CSArgs");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Expr>;
                 let $scope$tail: Nullable<CSArgs_$0[]>;
@@ -1738,10 +1701,9 @@ export class Parser {
     }
     public matchCSArgs_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<CSArgs_$0> {
         return this.runner<CSArgs_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("CSArgs_$0");
-                }
                 let $scope$exp: Nullable<Expr>;
                 let $$res: Nullable<CSArgs_$0> = null;
                 if (true
@@ -1756,10 +1718,9 @@ export class Parser {
     }
     public matchCSIDs($$dpth: number, $$cr?: ContextRecorder): Nullable<CSIDs> {
         return this.runner<CSIDs>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("CSIDs");
-                }
                 let $scope$head: Nullable<ID>;
                 let $scope$tail: Nullable<CSIDs_$0[]>;
                 let $$res: Nullable<CSIDs> = null;
@@ -1774,10 +1735,9 @@ export class Parser {
     }
     public matchCSIDs_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<CSIDs_$0> {
         return this.runner<CSIDs_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("CSIDs_$0");
-                }
                 let $scope$id: Nullable<ID>;
                 let $$res: Nullable<CSIDs_$0> = null;
                 if (true
@@ -1792,10 +1752,9 @@ export class Parser {
     }
     public matchID($$dpth: number, $$cr?: ContextRecorder): Nullable<ID> {
         return this.runner<ID>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ID");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$id: Nullable<string>;
                 let $scope$end: Nullable<PosInfo>;
@@ -1814,10 +1773,9 @@ export class Parser {
     }
     public matchID_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<ID_$0> {
         return this.runner<ID_$0>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("ID_$0");
-                }
                 let $$res: Nullable<ID_$0> = null;
                 if (true
                     && this.matchKeyword($$dpth + 1, $$cr) !== null
@@ -1830,10 +1788,9 @@ export class Parser {
     }
     public matchBool($$dpth: number, $$cr?: ContextRecorder): Nullable<Bool> {
         return this.runner<Bool>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Bool");
-                }
                 let $scope$bool: Nullable<string>;
                 let $$res: Nullable<Bool> = null;
                 if (true
@@ -1847,10 +1804,9 @@ export class Parser {
     }
     public matchNeamhni($$dpth: number, $$cr?: ContextRecorder): Nullable<Neamhni> {
         return this.runner<Neamhni>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Neamhni");
-                }
                 let $$res: Nullable<Neamhni> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -1863,10 +1819,9 @@ export class Parser {
     }
     public matchInt($$dpth: number, $$cr?: ContextRecorder): Nullable<Int> {
         return this.runner<Int>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Int");
-                }
                 let $scope$int: Nullable<string>;
                 let $$res: Nullable<Int> = null;
                 if (true
@@ -1880,10 +1835,9 @@ export class Parser {
     }
     public matchTeacs($$dpth: number, $$cr?: ContextRecorder): Nullable<Teacs> {
         return this.runner<Teacs>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Teacs");
-                }
                 let $scope$lit: Nullable<Teacs_$0>;
                 let $$res: Nullable<Teacs> = null;
                 if (true
@@ -1903,10 +1857,9 @@ export class Parser {
     }
     public matchTeacs_$0_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Teacs_$0_1> {
         return this.runner<Teacs_$0_1>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Teacs_$0_1");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$val: Nullable<string>;
                 let $scope$end: Nullable<PosInfo>;
@@ -1925,10 +1878,9 @@ export class Parser {
     }
     public matchTeacs_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<Teacs_$0_2> {
         return this.runner<Teacs_$0_2>($$dpth,
-            (log) => {
-                if (log) {
+            log => {
+                if (log)
                     log("Teacs_$0_2");
-                }
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$val: Nullable<string>;
                 let $scope$end: Nullable<PosInfo>;

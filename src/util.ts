@@ -1,4 +1,5 @@
 import { ALT, PosInfo } from "./meta";
+import { CheckError } from "./checks";
 
 export type Rule = ALT[];
 export type Grammar = Ruledef[];
@@ -56,4 +57,19 @@ export function unescapeSeqs(s: string): string {
 // for use in inserting into a call to String.raw``
 export function escapeBackticks(s: string): string {
     return s.replace('`', '\\`');
+}
+
+export function getRuleFromGram(gram: Grammar, name: string): Ruledef | null {
+    for(const rule of gram)
+        if(rule.name === name)
+            return rule;
+    return null;
+}
+
+export function assertValidRegex(s: string, start?: PosInfo): void {
+    try {
+        new RegExp(s);
+    } catch (err) {
+        throw new CheckError(`Couldnt' compile regex '${s}': ${err}`, start);
+    }
 }
