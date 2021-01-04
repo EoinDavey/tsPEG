@@ -217,11 +217,20 @@ export function expandTemplate(opts: TemplateOpts): Block {
         "readonly offset: number;",
     ],
     "}",
+    "export interface RegexMatch {",
+    [
+        "readonly kind: \"RegexMatch\";",
+        "readonly negated: boolean;",
+        "readonly literal: string;",
+    ],
+    "}",
+    "export type EOFMatch = { kind: \"EOF\" };",
+    "export type MatchAttempt = RegexMatch | EOFMatch;",
     "export class SyntaxErr {",
     [
         "public pos: PosInfo;",
-        "public expmatches: string[];",
-        "constructor(pos: PosInfo, expmatches: Set<string>) {",
+        "public expmatches: MatchAttempt[];",
+        "constructor(pos: PosInfo, expmatches: Set<MatchAttempt>) {",
         [
             "this.pos = pos;",
             "this.expmatches = [...expmatches];",
@@ -230,7 +239,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
         "public toString(): string {",
         [
             // eslint-disable-next-line no-template-curly-in-string
-            "return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Expected one of ${this.expmatches.map((x) => ` '${x}'`)}`;",
+            "return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Expected one of ${this.expmatches.map(x => x.kind === \"EOF\" ? \" EOF\" : ` ${x.negated ? 'not ': ''}'${x.literal}'`)}`;",
         ],
         "}",
     ],
@@ -238,7 +247,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
     "class ErrorTracker implements ContextRecorder {",
     [
         "private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};",
-        "private pmatches: Set<string> = new Set();",
+        "private pmatches: Set<MatchAttempt> = new Set();",
         "public record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]) {",
         [
             "if ((result === null) === negating)",
@@ -251,19 +260,10 @@ export function expandTemplate(opts: TemplateOpts): Block {
                 "this.pmatches.clear();",
             ],
             "}",
-            "if (this.mxpos.overallPos === pos.overallPos && extraInfo.length >= 2) {",
+            "if (this.mxpos.overallPos === pos.overallPos && extraInfo.length >= 2)",
             [
-                "if (extraInfo[0] === \"$$StrMatch\")",
-                [
-                    "this.pmatches.add(extraInfo[1]);",
-                ],
-                "if (extraInfo[0] === \"$$!StrMatch\")",
-                [
-                    // eslint-disable-next-line no-template-curly-in-string
-                    "this.pmatches.add(`not ${extraInfo[1]}`);",
-                ],
+                "this.pmatches.add({kind: \"RegexMatch\", negated: negating, literal: extraInfo[1]});",
             ],
-            "}",
         ],
         "}",
         "public getErr(): SyntaxErr | null {",
