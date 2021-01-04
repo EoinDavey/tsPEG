@@ -370,9 +370,15 @@ export class Generator {
                 throw err;
         }
         const hdr: Block = this.header ? [this.header] : [];
-        const parseBlock = expandTemplate(this.input, hdr, this.writeMemos(),
-            this.writeKinds(this.expandedGram), this.writeRuleClasses(this.expandedGram), this.writeAllRuleParseFns(this.expandedGram),
-            this.writeParseResultClass(this.expandedGram));
+        const parseBlock = expandTemplate({
+            inputStr: this.input,
+            header: hdr,
+            memos: this.writeMemos(),
+            kinds: this.writeKinds(this.expandedGram),
+            ruleClasses: this.writeRuleClasses(this.expandedGram),
+            ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
+            parseResult: this.writeParseResultClass(this.expandedGram),
+        });
         return writeBlock(parseBlock).join("\n");
     }
 }
