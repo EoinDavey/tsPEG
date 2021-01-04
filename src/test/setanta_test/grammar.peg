@@ -1,6 +1,6 @@
 ---
 import { Context } from "setanta/node_build/ctx";
-import { callFunc, idxList, Value } from "setanta/node_build/values";
+import { PossibleResolution, callFunc, idxList, Value } from "setanta/node_build/values";
 import { unescapeChars } from "setanta/node_build/teacs";
 import * as Asserts from "setanta/node_build/asserts";
 import * as Checks from "setanta/node_build/checks";
@@ -9,6 +9,8 @@ import { orBinOp, orQuickBinOp, andBinOp, andQuickBinOp,
 import { objLookupsEval, postfixArgsEval, csArgsEval, prefEval, EvalFn } from "setanta/node_build/evals";
 import { qEvalToEval } from "setanta/node_build/evals";
 import * as Quick from "setanta/node_build/quickevals";
+import { ASTVisitor } from "setanta/node_build/visitor";
+type Acceptor = <T>(visitor: ASTVisitor<T>) => T;
 ---
 Program     := stmts=AsgnStmt* _
 AsgnStmt    := IfStmt
@@ -33,48 +35,65 @@ NonAsgnStmt := IfStmt
              | AssgnStmt
              | Expr
 IfStmt      := _ 'm[áa]' &gap expr=Expr &gap stmt=NonAsgnStmt elsebranch={_ 'n[oó]' &gap stmt=NonAsgnStmt}?
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitIfStmt(this); }
 BlockStmt   := _ '{' blk=AsgnStmt* _ '}'
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitBlockStmt(this); }
 NuairStmt   := _ 'nuair-a' expr=Expr &gap stmt=NonAsgnStmt
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitNuairStmt(this); }
 LeStmt      := _ 'le' &gap id=ID _ 'idir' _ '\('strt=Expr _ ',' end=Expr step={_ ',' step=Expr}? _ '\)' stmt=NonAsgnStmt
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitLeStmt(this); }
 DefnStmt    := _ idstart=@ id=ID idend=@ _ ':=' _ expr=Expr
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitDefnStmt(this); }
 AssgnStmt   := _ lstart=@ lhs=Postfix lend=@ _ op=AsgnOp _ expr=Expr
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitAssgnStmt(this); }
 GniomhStmt  := _ 'gn[íi]omh' &gap id=ID _ '\(' args=CSIDs? _ '\)' _ '{'
     stmts=AsgnStmt*
 _ '}'
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitGniomhStmt(this); }
 CtlchStmt   := _ 'creatlach' &gap id=ID tuis={_ 'ó' &gap parentstart=@ id=ID parentend=@}? _ '{'
     gniomhs=GniomhStmt*
 _ '}'
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitCtlchStmt(this); }
 BrisStmt    := _ 'bris'
 CCStmt      := _ 'chun-cinn'
 ToradhStmt  := _ 'toradh' &gap exp=Expr?
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitToradhStmt(this); }
 Expr        := And
 And         := start=@ head=Or tail={_ '\&' trm=Or}* end=@
                .evalfn = EvalFn { return andBinOp(this); }
                .qeval = Quick.MaybeEv { return andQuickBinOp(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitAnd(this); }
 Or          := start=@ head=Eq tail={_ '\|' trm=Eq}* end=@
                .evalfn = EvalFn { return orBinOp(this) }
                .qeval = Quick.MaybeEv { return orQuickBinOp(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitOr(this); }
 Eq          := start=@ head=Comp tail={_ op='[!=]=' trm=Comp}* end=@
                .evalfn = EvalFn { return binOpEvalFn(this) }
                .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitEq(this); }
 Comp        := start=@ head=Sum tail={_ op=Compare trm=Sum}* end=@
                .evalfn = EvalFn { return binOpEvalFn(this) }
                .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitComp(this); }
 Sum         := start=@ head=Product tail={_ op=PlusMinus trm=Product}* end=@
                .evalfn = EvalFn { return binOpEvalFn(this) }
                .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitSum(this); }
 Product     := start=@ head=Prefix tail={_ op=MulDiv trm=Prefix}* end=@
                .evalfn = EvalFn { return binOpEvalFn(this); }
                .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitProduct(this); }
 Prefix      := _ start=@ op='-|!'? pf=Postfix end=@
                .evalfn = EvalFn { return prefEval(this); }
                .qeval = Quick.MaybeEv { return Quick.qPrefEval(this); }
 Postfix     := start=@ at=ObjLookups ops=PostOp* end=@
                .evalfn = EvalFn { return postfixArgsEval(this); }
                .qeval = Quick.MaybeEv { return Quick.qPostfixArgsEval(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitPostfix(this); }
 ObjLookups  := start=@ attrs={id=ID '@' !wspace}* root=Atom end=@
                .evalfn = EvalFn { return objLookupsEval(this); }
                .qeval = Quick.MaybeEv { return Quick.qObjLookupsEval(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitObjLookups(this); }
 PostOp      := '\(' args=CSArgs? _ '\)' | '\[' expr=Expr _ '\]'
 Atom        :=  _ '\(' trm=Expr _ '\)'
                .evalfn = EvalFn { return (env: Context) => this.trm.evalfn(env); }
@@ -82,6 +101,7 @@ Atom        :=  _ '\(' trm=Expr _ '\)'
                     const childF = this.trm.qeval;
                     return childF === null ? null : childF.bind(this.trm);
                }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitExpr(this.trm); }
              | ID
              | Teacs
              | Int
@@ -94,19 +114,24 @@ GniomhExpr  := _ 'gn[íi]omh' _ '\(' args=CSIDs? _ '\)' _ '{'
 _ '}'
                .evalfn = EvalFn { return qEvalToEval(Quick.qGníomhEval(this)); }
                .qeval = Quick.EvalFn { return Quick.qGníomhEval(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitGniomhExpr(this); }
 ListLit     := _ '\[' els=CSArgs? _ '\]'
                .evalfn = EvalFn {
                    return (env: Context) => this.els ? this.els.evalfn(env) : Promise.resolve([]);
                }
                .qeval = Quick.MaybeEv { return Quick.qListLitEval(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitListLit(this); }
 CSArgs      := start=@ head=Expr tail={_ ',' exp=Expr}* end=@
                .evalfn = (env:Context) => Promise<Value[]> { return csArgsEval(this); }
                .qeval = ((env:Context) => Value[]) | null { return Quick.qCSArgsEval(this); }
+               .exprs = Expr[] { return [this.head].concat(this.tail.map((x) => x.exp)); }
 CSIDs       := head=ID tail={_ ',' id=ID}*
-               .ids = string[] { return [this.head.id].concat(this.tail.map((x) => x.id.id)); }
+               .ids = ID[] { return [this.head].concat(this.tail.map((x) => x.id)); }
 ID          := _ !{Keyword gap} start=@ id='[a-zA-Z_áéíóúÁÉÍÓÚ][a-zA-Z_áéíóúÁÉÍÓÚ0-9]*' end=@
-               .evalfn = EvalFn { return qEvalToEval(Quick.qIdEval(this.id, this.start, this.end)); }
-               .qeval = Quick.EvalFn { return Quick.qIdEval(this.id, this.start, this.end); }
+               .evalfn = EvalFn { return qEvalToEval(Quick.qIdEval(this)); }
+               .qeval = Quick.EvalFn { return Quick.qIdEval(this); }
+               .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitID(this); }
+               .depth = PossibleResolution { return {resolved: false}; }
 Bool        := _ bool='f[ií]or|br[eé]ag'
                .evalfn = EvalFn { return qEvalToEval(Quick.qBoolEval(this.bool)); }
                .qeval = Quick.EvalFn { return Quick.qBoolEval(this.bool); }
@@ -124,7 +149,7 @@ _           := wspace*
 wspace      := '(?:\s|>--(?:(?!--<).)*(--<|\n|$))'
 gap         := wspace | '[^a-zA-Z0-9áéíóúÁÉÍÓÚ]' | '$'
 PlusMinus   := '\+|-'
-AsgnOp      := '=|\+=|\*=|-=|%=|\/='
+AsgnOp      := '=|\+=|\*=|-=|%=|\/=|\/\/='
 MulDiv      := '\*|\/\/|%|\/'
 Compare     := '<=|>=|<|>'
 Keyword     := 'm[áa]' | 'n[oó]' | 'nuair-a' | 'f[ií]or|br[eé]ag'

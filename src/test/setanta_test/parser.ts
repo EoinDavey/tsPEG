@@ -2,7 +2,7 @@
 * INPUT GRAMMAR:
 * ---
 * import { Context } from "setanta/node_build/ctx";
-* import { callFunc, idxList, Value } from "setanta/node_build/values";
+* import { PossibleResolution, callFunc, idxList, Value } from "setanta/node_build/values";
 * import { unescapeChars } from "setanta/node_build/teacs";
 * import * as Asserts from "setanta/node_build/asserts";
 * import * as Checks from "setanta/node_build/checks";
@@ -11,6 +11,8 @@
 * import { objLookupsEval, postfixArgsEval, csArgsEval, prefEval, EvalFn } from "setanta/node_build/evals";
 * import { qEvalToEval } from "setanta/node_build/evals";
 * import * as Quick from "setanta/node_build/quickevals";
+* import { ASTVisitor } from "setanta/node_build/visitor";
+* type Acceptor = <T>(visitor: ASTVisitor<T>) => T;
 * ---
 * Program     := stmts=AsgnStmt* _
 * AsgnStmt    := IfStmt
@@ -35,48 +37,65 @@
 *              | AssgnStmt
 *              | Expr
 * IfStmt      := _ 'm[áa]' &gap expr=Expr &gap stmt=NonAsgnStmt elsebranch={_ 'n[oó]' &gap stmt=NonAsgnStmt}?
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitIfStmt(this); }
 * BlockStmt   := _ '{' blk=AsgnStmt* _ '}'
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitBlockStmt(this); }
 * NuairStmt   := _ 'nuair-a' expr=Expr &gap stmt=NonAsgnStmt
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitNuairStmt(this); }
 * LeStmt      := _ 'le' &gap id=ID _ 'idir' _ '\('strt=Expr _ ',' end=Expr step={_ ',' step=Expr}? _ '\)' stmt=NonAsgnStmt
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitLeStmt(this); }
 * DefnStmt    := _ idstart=@ id=ID idend=@ _ ':=' _ expr=Expr
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitDefnStmt(this); }
 * AssgnStmt   := _ lstart=@ lhs=Postfix lend=@ _ op=AsgnOp _ expr=Expr
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitAssgnStmt(this); }
 * GniomhStmt  := _ 'gn[íi]omh' &gap id=ID _ '\(' args=CSIDs? _ '\)' _ '{'
 *     stmts=AsgnStmt*
 * _ '}'
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitGniomhStmt(this); }
 * CtlchStmt   := _ 'creatlach' &gap id=ID tuis={_ 'ó' &gap parentstart=@ id=ID parentend=@}? _ '{'
 *     gniomhs=GniomhStmt*
 * _ '}'
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitCtlchStmt(this); }
 * BrisStmt    := _ 'bris'
 * CCStmt      := _ 'chun-cinn'
 * ToradhStmt  := _ 'toradh' &gap exp=Expr?
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitToradhStmt(this); }
 * Expr        := And
 * And         := start=@ head=Or tail={_ '\&' trm=Or}* end=@
 *                .evalfn = EvalFn { return andBinOp(this); }
 *                .qeval = Quick.MaybeEv { return andQuickBinOp(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitAnd(this); }
 * Or          := start=@ head=Eq tail={_ '\|' trm=Eq}* end=@
 *                .evalfn = EvalFn { return orBinOp(this) }
 *                .qeval = Quick.MaybeEv { return orQuickBinOp(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitOr(this); }
 * Eq          := start=@ head=Comp tail={_ op='[!=]=' trm=Comp}* end=@
 *                .evalfn = EvalFn { return binOpEvalFn(this) }
 *                .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitEq(this); }
 * Comp        := start=@ head=Sum tail={_ op=Compare trm=Sum}* end=@
 *                .evalfn = EvalFn { return binOpEvalFn(this) }
 *                .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitComp(this); }
 * Sum         := start=@ head=Product tail={_ op=PlusMinus trm=Product}* end=@
 *                .evalfn = EvalFn { return binOpEvalFn(this) }
 *                .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitSum(this); }
 * Product     := start=@ head=Prefix tail={_ op=MulDiv trm=Prefix}* end=@
 *                .evalfn = EvalFn { return binOpEvalFn(this); }
 *                .qeval = Quick.MaybeEv { return binOpQuickEvalFn(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitProduct(this); }
 * Prefix      := _ start=@ op='-|!'? pf=Postfix end=@
 *                .evalfn = EvalFn { return prefEval(this); }
 *                .qeval = Quick.MaybeEv { return Quick.qPrefEval(this); }
 * Postfix     := start=@ at=ObjLookups ops=PostOp* end=@
 *                .evalfn = EvalFn { return postfixArgsEval(this); }
 *                .qeval = Quick.MaybeEv { return Quick.qPostfixArgsEval(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitPostfix(this); }
 * ObjLookups  := start=@ attrs={id=ID '@' !wspace}* root=Atom end=@
 *                .evalfn = EvalFn { return objLookupsEval(this); }
 *                .qeval = Quick.MaybeEv { return Quick.qObjLookupsEval(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitObjLookups(this); }
 * PostOp      := '\(' args=CSArgs? _ '\)' | '\[' expr=Expr _ '\]'
 * Atom        :=  _ '\(' trm=Expr _ '\)'
 *                .evalfn = EvalFn { return (env: Context) => this.trm.evalfn(env); }
@@ -84,6 +103,7 @@
 *                     const childF = this.trm.qeval;
 *                     return childF === null ? null : childF.bind(this.trm);
 *                }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitExpr(this.trm); }
 *              | ID
 *              | Teacs
 *              | Int
@@ -96,19 +116,24 @@
 * _ '}'
 *                .evalfn = EvalFn { return qEvalToEval(Quick.qGníomhEval(this)); }
 *                .qeval = Quick.EvalFn { return Quick.qGníomhEval(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitGniomhExpr(this); }
 * ListLit     := _ '\[' els=CSArgs? _ '\]'
 *                .evalfn = EvalFn {
 *                    return (env: Context) => this.els ? this.els.evalfn(env) : Promise.resolve([]);
 *                }
 *                .qeval = Quick.MaybeEv { return Quick.qListLitEval(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitListLit(this); }
 * CSArgs      := start=@ head=Expr tail={_ ',' exp=Expr}* end=@
 *                .evalfn = (env:Context) => Promise<Value[]> { return csArgsEval(this); }
 *                .qeval = ((env:Context) => Value[]) | null { return Quick.qCSArgsEval(this); }
+*                .exprs = Expr[] { return [this.head].concat(this.tail.map((x) => x.exp)); }
 * CSIDs       := head=ID tail={_ ',' id=ID}*
-*                .ids = string[] { return [this.head.id].concat(this.tail.map((x) => x.id.id)); }
+*                .ids = ID[] { return [this.head].concat(this.tail.map((x) => x.id)); }
 * ID          := _ !{Keyword gap} start=@ id='[a-zA-Z_áéíóúÁÉÍÓÚ][a-zA-Z_áéíóúÁÉÍÓÚ0-9]*' end=@
-*                .evalfn = EvalFn { return qEvalToEval(Quick.qIdEval(this.id, this.start, this.end)); }
-*                .qeval = Quick.EvalFn { return Quick.qIdEval(this.id, this.start, this.end); }
+*                .evalfn = EvalFn { return qEvalToEval(Quick.qIdEval(this)); }
+*                .qeval = Quick.EvalFn { return Quick.qIdEval(this); }
+*                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitID(this); }
+*                .depth = PossibleResolution { return {resolved: false}; }
 * Bool        := _ bool='f[ií]or|br[eé]ag'
 *                .evalfn = EvalFn { return qEvalToEval(Quick.qBoolEval(this.bool)); }
 *                .qeval = Quick.EvalFn { return Quick.qBoolEval(this.bool); }
@@ -126,7 +151,7 @@
 * wspace      := '(?:\s|>--(?:(?!--<).)*(--<|\n|$))'
 * gap         := wspace | '[^a-zA-Z0-9áéíóúÁÉÍÓÚ]' | '$'
 * PlusMinus   := '\+|-'
-* AsgnOp      := '=|\+=|\*=|-=|%=|\/='
+* AsgnOp      := '=|\+=|\*=|-=|%=|\/=|\/\/='
 * MulDiv      := '\*|\/\/|%|\/'
 * Compare     := '<=|>=|<|>'
 * Keyword     := 'm[áa]' | 'n[oó]' | 'nuair-a' | 'f[ií]or|br[eé]ag'
@@ -134,7 +159,7 @@
 */
 
 import { Context } from "setanta/node_build/ctx";
-import { callFunc, idxList, Value } from "setanta/node_build/values";
+import { PossibleResolution, callFunc, idxList, Value } from "setanta/node_build/values";
 import { unescapeChars } from "setanta/node_build/teacs";
 import * as Asserts from "setanta/node_build/asserts";
 import * as Checks from "setanta/node_build/checks";
@@ -143,6 +168,8 @@ import { orBinOp, orQuickBinOp, andBinOp, andQuickBinOp,
 import { objLookupsEval, postfixArgsEval, csArgsEval, prefEval, EvalFn } from "setanta/node_build/evals";
 import { qEvalToEval } from "setanta/node_build/evals";
 import * as Quick from "setanta/node_build/quickevals";
+import { ASTVisitor } from "setanta/node_build/visitor";
+type Acceptor = <T>(visitor: ASTVisitor<T>) => T;
 
 type Nullable<T> = T | null;
 type $$RuleType<T> = () => Nullable<T>;
@@ -150,101 +177,101 @@ interface ASTNodeIntf {
     kind: ASTKinds;
 }
 export enum ASTKinds {
-    Program,
-    AsgnStmt_1,
-    AsgnStmt_2,
-    AsgnStmt_3,
-    AsgnStmt_4,
-    AsgnStmt_5,
-    AsgnStmt_6,
-    AsgnStmt_7,
-    AsgnStmt_8,
-    AsgnStmt_9,
-    AsgnStmt_10,
-    AsgnStmt_11,
-    AsgnStmt_12,
-    NonAsgnStmt_1,
-    NonAsgnStmt_2,
-    NonAsgnStmt_3,
-    NonAsgnStmt_4,
-    NonAsgnStmt_5,
-    NonAsgnStmt_6,
-    NonAsgnStmt_7,
-    NonAsgnStmt_8,
-    NonAsgnStmt_9,
-    IfStmt,
-    IfStmt_$0,
-    BlockStmt,
-    NuairStmt,
-    LeStmt,
-    LeStmt_$0,
-    DefnStmt,
-    AssgnStmt,
-    GniomhStmt,
-    CtlchStmt,
-    CtlchStmt_$0,
-    BrisStmt,
-    CCStmt,
-    ToradhStmt,
-    Expr,
-    And,
-    And_$0,
-    Or,
-    Or_$0,
-    Eq,
-    Eq_$0,
-    Comp,
-    Comp_$0,
-    Sum,
-    Sum_$0,
-    Product,
-    Product_$0,
-    Prefix,
-    Postfix,
-    ObjLookups,
-    ObjLookups_$0,
-    PostOp_1,
-    PostOp_2,
-    Atom_1,
-    Atom_2,
-    Atom_3,
-    Atom_4,
-    Atom_5,
-    Atom_6,
-    Atom_7,
-    Atom_8,
-    GniomhExpr,
-    ListLit,
-    CSArgs,
-    CSArgs_$0,
-    CSIDs,
-    CSIDs_$0,
-    ID,
-    ID_$0,
-    Bool,
-    Neamhni,
-    Int,
-    Teacs,
-    Teacs_$0_1,
-    Teacs_$0_2,
-    _,
-    wspace,
-    gap_1,
-    gap_2,
-    gap_3,
-    PlusMinus,
-    AsgnOp,
-    MulDiv,
-    Compare,
-    Keyword_1,
-    Keyword_2,
-    Keyword_3,
-    Keyword_4,
-    Keyword_5,
-    Keyword_6,
-    Keyword_7,
-    Keyword_8,
-    Keyword_9,
+    Program = "Program",
+    AsgnStmt_1 = "AsgnStmt_1",
+    AsgnStmt_2 = "AsgnStmt_2",
+    AsgnStmt_3 = "AsgnStmt_3",
+    AsgnStmt_4 = "AsgnStmt_4",
+    AsgnStmt_5 = "AsgnStmt_5",
+    AsgnStmt_6 = "AsgnStmt_6",
+    AsgnStmt_7 = "AsgnStmt_7",
+    AsgnStmt_8 = "AsgnStmt_8",
+    AsgnStmt_9 = "AsgnStmt_9",
+    AsgnStmt_10 = "AsgnStmt_10",
+    AsgnStmt_11 = "AsgnStmt_11",
+    AsgnStmt_12 = "AsgnStmt_12",
+    NonAsgnStmt_1 = "NonAsgnStmt_1",
+    NonAsgnStmt_2 = "NonAsgnStmt_2",
+    NonAsgnStmt_3 = "NonAsgnStmt_3",
+    NonAsgnStmt_4 = "NonAsgnStmt_4",
+    NonAsgnStmt_5 = "NonAsgnStmt_5",
+    NonAsgnStmt_6 = "NonAsgnStmt_6",
+    NonAsgnStmt_7 = "NonAsgnStmt_7",
+    NonAsgnStmt_8 = "NonAsgnStmt_8",
+    NonAsgnStmt_9 = "NonAsgnStmt_9",
+    IfStmt = "IfStmt",
+    IfStmt_$0 = "IfStmt_$0",
+    BlockStmt = "BlockStmt",
+    NuairStmt = "NuairStmt",
+    LeStmt = "LeStmt",
+    LeStmt_$0 = "LeStmt_$0",
+    DefnStmt = "DefnStmt",
+    AssgnStmt = "AssgnStmt",
+    GniomhStmt = "GniomhStmt",
+    CtlchStmt = "CtlchStmt",
+    CtlchStmt_$0 = "CtlchStmt_$0",
+    BrisStmt = "BrisStmt",
+    CCStmt = "CCStmt",
+    ToradhStmt = "ToradhStmt",
+    Expr = "Expr",
+    And = "And",
+    And_$0 = "And_$0",
+    Or = "Or",
+    Or_$0 = "Or_$0",
+    Eq = "Eq",
+    Eq_$0 = "Eq_$0",
+    Comp = "Comp",
+    Comp_$0 = "Comp_$0",
+    Sum = "Sum",
+    Sum_$0 = "Sum_$0",
+    Product = "Product",
+    Product_$0 = "Product_$0",
+    Prefix = "Prefix",
+    Postfix = "Postfix",
+    ObjLookups = "ObjLookups",
+    ObjLookups_$0 = "ObjLookups_$0",
+    PostOp_1 = "PostOp_1",
+    PostOp_2 = "PostOp_2",
+    Atom_1 = "Atom_1",
+    Atom_2 = "Atom_2",
+    Atom_3 = "Atom_3",
+    Atom_4 = "Atom_4",
+    Atom_5 = "Atom_5",
+    Atom_6 = "Atom_6",
+    Atom_7 = "Atom_7",
+    Atom_8 = "Atom_8",
+    GniomhExpr = "GniomhExpr",
+    ListLit = "ListLit",
+    CSArgs = "CSArgs",
+    CSArgs_$0 = "CSArgs_$0",
+    CSIDs = "CSIDs",
+    CSIDs_$0 = "CSIDs_$0",
+    ID = "ID",
+    ID_$0 = "ID_$0",
+    Bool = "Bool",
+    Neamhni = "Neamhni",
+    Int = "Int",
+    Teacs = "Teacs",
+    Teacs_$0_1 = "Teacs_$0_1",
+    Teacs_$0_2 = "Teacs_$0_2",
+    _ = "_",
+    wspace = "wspace",
+    gap_1 = "gap_1",
+    gap_2 = "gap_2",
+    gap_3 = "gap_3",
+    PlusMinus = "PlusMinus",
+    AsgnOp = "AsgnOp",
+    MulDiv = "MulDiv",
+    Compare = "Compare",
+    Keyword_1 = "Keyword_1",
+    Keyword_2 = "Keyword_2",
+    Keyword_3 = "Keyword_3",
+    Keyword_4 = "Keyword_4",
+    Keyword_5 = "Keyword_5",
+    Keyword_6 = "Keyword_6",
+    Keyword_7 = "Keyword_7",
+    Keyword_8 = "Keyword_8",
+    Keyword_9 = "Keyword_9",
 }
 export interface Program {
     kind: ASTKinds.Program;
@@ -273,63 +300,137 @@ export type NonAsgnStmt_6 = ToradhStmt;
 export type NonAsgnStmt_7 = BlockStmt;
 export type NonAsgnStmt_8 = AssgnStmt;
 export type NonAsgnStmt_9 = Expr;
-export interface IfStmt {
-    kind: ASTKinds.IfStmt;
-    expr: Expr;
-    stmt: NonAsgnStmt;
-    elsebranch: Nullable<IfStmt_$0>;
+export class IfStmt {
+    public kind: ASTKinds.IfStmt = ASTKinds.IfStmt;
+    public expr: Expr;
+    public stmt: NonAsgnStmt;
+    public elsebranch: Nullable<IfStmt_$0>;
+    public accept: Acceptor;
+    constructor(expr: Expr, stmt: NonAsgnStmt, elsebranch: Nullable<IfStmt_$0>){
+        this.expr = expr;
+        this.stmt = stmt;
+        this.elsebranch = elsebranch;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitIfStmt(this);
+        })();
+    }
 }
 export interface IfStmt_$0 {
     kind: ASTKinds.IfStmt_$0;
     stmt: NonAsgnStmt;
 }
-export interface BlockStmt {
-    kind: ASTKinds.BlockStmt;
-    blk: AsgnStmt[];
+export class BlockStmt {
+    public kind: ASTKinds.BlockStmt = ASTKinds.BlockStmt;
+    public blk: AsgnStmt[];
+    public accept: Acceptor;
+    constructor(blk: AsgnStmt[]){
+        this.blk = blk;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitBlockStmt(this);
+        })();
+    }
 }
-export interface NuairStmt {
-    kind: ASTKinds.NuairStmt;
-    expr: Expr;
-    stmt: NonAsgnStmt;
+export class NuairStmt {
+    public kind: ASTKinds.NuairStmt = ASTKinds.NuairStmt;
+    public expr: Expr;
+    public stmt: NonAsgnStmt;
+    public accept: Acceptor;
+    constructor(expr: Expr, stmt: NonAsgnStmt){
+        this.expr = expr;
+        this.stmt = stmt;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitNuairStmt(this);
+        })();
+    }
 }
-export interface LeStmt {
-    kind: ASTKinds.LeStmt;
-    id: ID;
-    strt: Expr;
-    end: Expr;
-    step: Nullable<LeStmt_$0>;
-    stmt: NonAsgnStmt;
+export class LeStmt {
+    public kind: ASTKinds.LeStmt = ASTKinds.LeStmt;
+    public id: ID;
+    public strt: Expr;
+    public end: Expr;
+    public step: Nullable<LeStmt_$0>;
+    public stmt: NonAsgnStmt;
+    public accept: Acceptor;
+    constructor(id: ID, strt: Expr, end: Expr, step: Nullable<LeStmt_$0>, stmt: NonAsgnStmt){
+        this.id = id;
+        this.strt = strt;
+        this.end = end;
+        this.step = step;
+        this.stmt = stmt;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitLeStmt(this);
+        })();
+    }
 }
 export interface LeStmt_$0 {
     kind: ASTKinds.LeStmt_$0;
     step: Expr;
 }
-export interface DefnStmt {
-    kind: ASTKinds.DefnStmt;
-    idstart: PosInfo;
-    id: ID;
-    idend: PosInfo;
-    expr: Expr;
+export class DefnStmt {
+    public kind: ASTKinds.DefnStmt = ASTKinds.DefnStmt;
+    public idstart: PosInfo;
+    public id: ID;
+    public idend: PosInfo;
+    public expr: Expr;
+    public accept: Acceptor;
+    constructor(idstart: PosInfo, id: ID, idend: PosInfo, expr: Expr){
+        this.idstart = idstart;
+        this.id = id;
+        this.idend = idend;
+        this.expr = expr;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitDefnStmt(this);
+        })();
+    }
 }
-export interface AssgnStmt {
-    kind: ASTKinds.AssgnStmt;
-    lstart: PosInfo;
-    lhs: Postfix;
-    lend: PosInfo;
-    op: AsgnOp;
-    expr: Expr;
+export class AssgnStmt {
+    public kind: ASTKinds.AssgnStmt = ASTKinds.AssgnStmt;
+    public lstart: PosInfo;
+    public lhs: Postfix;
+    public lend: PosInfo;
+    public op: AsgnOp;
+    public expr: Expr;
+    public accept: Acceptor;
+    constructor(lstart: PosInfo, lhs: Postfix, lend: PosInfo, op: AsgnOp, expr: Expr){
+        this.lstart = lstart;
+        this.lhs = lhs;
+        this.lend = lend;
+        this.op = op;
+        this.expr = expr;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitAssgnStmt(this);
+        })();
+    }
 }
-export interface GniomhStmt {
-    kind: ASTKinds.GniomhStmt;
-    id: ID;
-    args: Nullable<CSIDs>;
-    stmts: AsgnStmt[];
+export class GniomhStmt {
+    public kind: ASTKinds.GniomhStmt = ASTKinds.GniomhStmt;
+    public id: ID;
+    public args: Nullable<CSIDs>;
+    public stmts: AsgnStmt[];
+    public accept: Acceptor;
+    constructor(id: ID, args: Nullable<CSIDs>, stmts: AsgnStmt[]){
+        this.id = id;
+        this.args = args;
+        this.stmts = stmts;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitGniomhStmt(this);
+        })();
+    }
 }
-export interface CtlchStmt {
-    kind: ASTKinds.CtlchStmt;
-    id: ID;
-    tuis: Nullable<CtlchStmt_$0>;
-    gniomhs: GniomhStmt[];
+export class CtlchStmt {
+    public kind: ASTKinds.CtlchStmt = ASTKinds.CtlchStmt;
+    public id: ID;
+    public tuis: Nullable<CtlchStmt_$0>;
+    public gniomhs: GniomhStmt[];
+    public accept: Acceptor;
+    constructor(id: ID, tuis: Nullable<CtlchStmt_$0>, gniomhs: GniomhStmt[]){
+        this.id = id;
+        this.tuis = tuis;
+        this.gniomhs = gniomhs;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitCtlchStmt(this);
+        })();
+    }
 }
 export interface CtlchStmt_$0 {
     kind: ASTKinds.CtlchStmt_$0;
@@ -343,9 +444,16 @@ export interface BrisStmt {
 export interface CCStmt {
     kind: ASTKinds.CCStmt;
 }
-export interface ToradhStmt {
-    kind: ASTKinds.ToradhStmt;
-    exp: Nullable<Expr>;
+export class ToradhStmt {
+    public kind: ASTKinds.ToradhStmt = ASTKinds.ToradhStmt;
+    public exp: Nullable<Expr>;
+    public accept: Acceptor;
+    constructor(exp: Nullable<Expr>){
+        this.exp = exp;
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitToradhStmt(this);
+        })();
+    }
 }
 export type Expr = And;
 export class And {
@@ -356,6 +464,7 @@ export class And {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(start: PosInfo, head: Or, tail: And_$0[], end: PosInfo){
         this.start = start;
         this.head = head;
@@ -366,6 +475,9 @@ export class And {
         })();
         this.qeval = ((): Quick.MaybeEv => {
         return andQuickBinOp(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitAnd(this);
         })();
     }
 }
@@ -381,6 +493,7 @@ export class Or {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(start: PosInfo, head: Eq, tail: Or_$0[], end: PosInfo){
         this.start = start;
         this.head = head;
@@ -391,6 +504,9 @@ export class Or {
         })();
         this.qeval = ((): Quick.MaybeEv => {
         return orQuickBinOp(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitOr(this);
         })();
     }
 }
@@ -406,6 +522,7 @@ export class Eq {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(start: PosInfo, head: Comp, tail: Eq_$0[], end: PosInfo){
         this.start = start;
         this.head = head;
@@ -416,6 +533,9 @@ export class Eq {
         })();
         this.qeval = ((): Quick.MaybeEv => {
         return binOpQuickEvalFn(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitEq(this);
         })();
     }
 }
@@ -432,6 +552,7 @@ export class Comp {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(start: PosInfo, head: Sum, tail: Comp_$0[], end: PosInfo){
         this.start = start;
         this.head = head;
@@ -442,6 +563,9 @@ export class Comp {
         })();
         this.qeval = ((): Quick.MaybeEv => {
         return binOpQuickEvalFn(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitComp(this);
         })();
     }
 }
@@ -458,6 +582,7 @@ export class Sum {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(start: PosInfo, head: Product, tail: Sum_$0[], end: PosInfo){
         this.start = start;
         this.head = head;
@@ -468,6 +593,9 @@ export class Sum {
         })();
         this.qeval = ((): Quick.MaybeEv => {
         return binOpQuickEvalFn(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitSum(this);
         })();
     }
 }
@@ -484,6 +612,7 @@ export class Product {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(start: PosInfo, head: Prefix, tail: Product_$0[], end: PosInfo){
         this.start = start;
         this.head = head;
@@ -494,6 +623,9 @@ export class Product {
         })();
         this.qeval = ((): Quick.MaybeEv => {
         return binOpQuickEvalFn(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitProduct(this);
         })();
     }
 }
@@ -531,6 +663,7 @@ export class Postfix {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(start: PosInfo, at: ObjLookups, ops: PostOp[], end: PosInfo){
         this.start = start;
         this.at = at;
@@ -542,6 +675,9 @@ export class Postfix {
         this.qeval = ((): Quick.MaybeEv => {
         return Quick.qPostfixArgsEval(this);
         })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitPostfix(this);
+        })();
     }
 }
 export class ObjLookups {
@@ -552,6 +688,7 @@ export class ObjLookups {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(start: PosInfo, attrs: ObjLookups_$0[], root: Atom, end: PosInfo){
         this.start = start;
         this.attrs = attrs;
@@ -562,6 +699,9 @@ export class ObjLookups {
         })();
         this.qeval = ((): Quick.MaybeEv => {
         return Quick.qObjLookupsEval(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitObjLookups(this);
         })();
     }
 }
@@ -584,6 +724,7 @@ export class Atom_1 {
     public trm: Expr;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(trm: Expr){
         this.trm = trm;
         this.evalfn = ((): EvalFn => {
@@ -592,6 +733,9 @@ export class Atom_1 {
         this.qeval = ((): Quick.MaybeEv => {
         const childF = this.trm.qeval;
                     return childF === null ? null : childF.bind(this.trm);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitExpr(this.trm);
         })();
     }
 }
@@ -608,6 +752,7 @@ export class GniomhExpr {
     public stmts: AsgnStmt[];
     public evalfn: EvalFn;
     public qeval: Quick.EvalFn;
+    public accept: Acceptor;
     constructor(args: Nullable<CSIDs>, stmts: AsgnStmt[]){
         this.args = args;
         this.stmts = stmts;
@@ -617,6 +762,9 @@ export class GniomhExpr {
         this.qeval = ((): Quick.EvalFn => {
         return Quick.qGníomhEval(this);
         })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitGniomhExpr(this);
+        })();
     }
 }
 export class ListLit {
@@ -624,6 +772,7 @@ export class ListLit {
     public els: Nullable<CSArgs>;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
+    public accept: Acceptor;
     constructor(els: Nullable<CSArgs>){
         this.els = els;
         this.evalfn = ((): EvalFn => {
@@ -631,6 +780,9 @@ export class ListLit {
         })();
         this.qeval = ((): Quick.MaybeEv => {
         return Quick.qListLitEval(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitListLit(this);
         })();
     }
 }
@@ -642,6 +794,7 @@ export class CSArgs {
     public end: PosInfo;
     public evalfn: (env:Context) => Promise<Value[]>;
     public qeval: ((env:Context) => Value[]) | null;
+    public exprs: Expr[];
     constructor(start: PosInfo, head: Expr, tail: CSArgs_$0[], end: PosInfo){
         this.start = start;
         this.head = head;
@@ -653,6 +806,9 @@ export class CSArgs {
         this.qeval = ((): ((env:Context) => Value[]) | null => {
         return Quick.qCSArgsEval(this);
         })();
+        this.exprs = ((): Expr[] => {
+        return [this.head].concat(this.tail.map((x) => x.exp));
+        })();
     }
 }
 export interface CSArgs_$0 {
@@ -663,12 +819,12 @@ export class CSIDs {
     public kind: ASTKinds.CSIDs = ASTKinds.CSIDs;
     public head: ID;
     public tail: CSIDs_$0[];
-    public ids: string[];
+    public ids: ID[];
     constructor(head: ID, tail: CSIDs_$0[]){
         this.head = head;
         this.tail = tail;
-        this.ids = ((): string[] => {
-        return [this.head.id].concat(this.tail.map((x) => x.id.id));
+        this.ids = ((): ID[] => {
+        return [this.head].concat(this.tail.map((x) => x.id));
         })();
     }
 }
@@ -683,15 +839,23 @@ export class ID {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.EvalFn;
+    public accept: Acceptor;
+    public depth: PossibleResolution;
     constructor(start: PosInfo, id: string, end: PosInfo){
         this.start = start;
         this.id = id;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return qEvalToEval(Quick.qIdEval(this.id, this.start, this.end));
+        return qEvalToEval(Quick.qIdEval(this));
         })();
         this.qeval = ((): Quick.EvalFn => {
-        return Quick.qIdEval(this.id, this.start, this.end);
+        return Quick.qIdEval(this);
+        })();
+        this.accept = ((): Acceptor => {
+        return <T>(v: ASTVisitor<T>) => v.visitID(this);
+        })();
+        this.depth = ((): PossibleResolution => {
+        return {resolved: false};
         })();
     }
 }
@@ -925,7 +1089,7 @@ export class Parser {
                     && ($scope$stmt = this.matchNonAsgnStmt($$dpth + 1, $$cr)) !== null
                     && (($scope$elsebranch = this.matchIfStmt_$0($$dpth + 1, $$cr)) || true)
                 ) {
-                    $$res = {kind: ASTKinds.IfStmt, expr: $scope$expr, stmt: $scope$stmt, elsebranch: $scope$elsebranch};
+                    $$res = new IfStmt($scope$expr, $scope$stmt, $scope$elsebranch);
                 }
                 return $$res;
             })();
@@ -958,7 +1122,7 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, $$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = {kind: ASTKinds.BlockStmt, blk: $scope$blk};
+                    $$res = new BlockStmt($scope$blk);
                 }
                 return $$res;
             })();
@@ -976,7 +1140,7 @@ export class Parser {
                     && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
                     && ($scope$stmt = this.matchNonAsgnStmt($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.NuairStmt, expr: $scope$expr, stmt: $scope$stmt};
+                    $$res = new NuairStmt($scope$expr, $scope$stmt);
                 }
                 return $$res;
             })();
@@ -1008,7 +1172,7 @@ export class Parser {
                     && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
                     && ($scope$stmt = this.matchNonAsgnStmt($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.LeStmt, id: $scope$id, strt: $scope$strt, end: $scope$end, step: $scope$step, stmt: $scope$stmt};
+                    $$res = new LeStmt($scope$id, $scope$strt, $scope$end, $scope$step, $scope$stmt);
                 }
                 return $$res;
             })();
@@ -1046,7 +1210,7 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$expr = this.matchExpr($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.DefnStmt, idstart: $scope$idstart, id: $scope$id, idend: $scope$idend, expr: $scope$expr};
+                    $$res = new DefnStmt($scope$idstart, $scope$id, $scope$idend, $scope$expr);
                 }
                 return $$res;
             })();
@@ -1070,7 +1234,7 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$expr = this.matchExpr($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.AssgnStmt, lstart: $scope$lstart, lhs: $scope$lhs, lend: $scope$lend, op: $scope$op, expr: $scope$expr};
+                    $$res = new AssgnStmt($scope$lstart, $scope$lhs, $scope$lend, $scope$op, $scope$expr);
                 }
                 return $$res;
             })();
@@ -1098,7 +1262,7 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, $$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = {kind: ASTKinds.GniomhStmt, id: $scope$id, args: $scope$args, stmts: $scope$stmts};
+                    $$res = new GniomhStmt($scope$id, $scope$args, $scope$stmts);
                 }
                 return $$res;
             })();
@@ -1122,7 +1286,7 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, $$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = {kind: ASTKinds.CtlchStmt, id: $scope$id, tuis: $scope$tuis, gniomhs: $scope$gniomhs};
+                    $$res = new CtlchStmt($scope$id, $scope$tuis, $scope$gniomhs);
                 }
                 return $$res;
             })();
@@ -1184,7 +1348,7 @@ export class Parser {
                     && this.noConsume<gap>(() => this.matchgap($$dpth + 1, $$cr)) !== null
                     && (($scope$exp = this.matchExpr($$dpth + 1, $$cr)) || true)
                 ) {
-                    $$res = {kind: ASTKinds.ToradhStmt, exp: $scope$exp};
+                    $$res = new ToradhStmt($scope$exp);
                 }
                 return $$res;
             })();
@@ -1824,7 +1988,7 @@ export class Parser {
         return this.regexAccept(String.raw`(?:\+|-)`, $$dpth + 1, $$cr);
     }
     public matchAsgnOp($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnOp> {
-        return this.regexAccept(String.raw`(?:=|\+=|\*=|-=|%=|\/=)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:=|\+=|\*=|-=|%=|\/=|\/\/=)`, $$dpth + 1, $$cr);
     }
     public matchMulDiv($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv> {
         return this.regexAccept(String.raw`(?:\*|\/\/|%|\/)`, $$dpth + 1, $$cr);
