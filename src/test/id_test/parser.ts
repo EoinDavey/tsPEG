@@ -162,7 +162,7 @@ export class Parser {
         const rec = new ErrorTracker();
         this.matchlowercase(0, rec);
         return new ParseResult(res,
-            rec.getErr() ?? new SyntaxErr(this.mark(), new Set(["$EOF"]), new Set([])));
+            rec.getErr() ?? new SyntaxErr(this.mark(), new Set(["$EOF"])));
     }
     public mark(): PosInfo {
         return this.pos;
@@ -278,51 +278,35 @@ export interface PosInfo {
 }
 export class SyntaxErr {
     public pos: PosInfo;
-    public exprules: string[];
     public expmatches: string[];
-    constructor(pos: PosInfo, exprules: Set<string>, expmatches: Set<string>) {
+    constructor(pos: PosInfo, expmatches: Set<string>) {
         this.pos = pos;
-        this.exprules = [...exprules];
         this.expmatches = [...expmatches];
     }
     public toString(): string {
-        return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Tried to match rules ${this.exprules.join(", ")}. Expected one of ${this.expmatches.map((x) => ` '${x}'`)}`;
+        return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Expected one of ${this.expmatches.map((x) => ` '${x}'`)}`;
     }
 }
 class ErrorTracker implements ContextRecorder {
     private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};
-    private mnd: number = -1;
-    private prules: Set<string> = new Set();
     private pmatches: Set<string> = new Set();
     public record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]) {
-        if ((result === null) === negating) {
+        if ((result === null) === negating)
             return;
-        }
         if (pos.overallPos > this.mxpos.overallPos) {
             this.mxpos = pos;
-            this.mnd = depth;
             this.pmatches.clear();
-            this.prules.clear();
-        } else if (pos.overallPos === this.mxpos.overallPos && depth < this.mnd) {
-            this.mnd = depth;
-            this.prules.clear();
         }
         if (this.mxpos.overallPos === pos.overallPos && extraInfo.length >= 2) {
-            if (extraInfo[0] === "$$StrMatch") {
+            if (extraInfo[0] === "$$StrMatch")
                 this.pmatches.add(extraInfo[1]);
-            }
-            if (extraInfo[0] === "$$!StrMatch") {
+            if (extraInfo[0] === "$$!StrMatch")
                 this.pmatches.add(`not ${extraInfo[1]}`);
-            }
-        }
-        if (this.mxpos.overallPos === pos.overallPos && this.mnd === depth) {
-            extraInfo.forEach((x) => { if (x !== "$$StrMatch" && x !== "$$!StrMatch") { this.prules.add(x); } });
         }
     }
     public getErr(): SyntaxErr | null {
-        if (this.mxpos.overallPos !== -1) {
-            return new SyntaxErr(this.mxpos, this.prules, this.pmatches);
-        }
+        if (this.mxpos.overallPos !== -1)
+            return new SyntaxErr(this.mxpos, this.pmatches);
         return null;
     }
 }

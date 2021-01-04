@@ -220,19 +220,17 @@ export function expandTemplate(opts: TemplateOpts): Block {
     "export class SyntaxErr {",
     [
         "public pos: PosInfo;",
-        "public exprules: string[];",
         "public expmatches: string[];",
-        "constructor(pos: PosInfo, exprules: Set<string>, expmatches: Set<string>) {",
+        "constructor(pos: PosInfo, expmatches: Set<string>) {",
         [
             "this.pos = pos;",
-            "this.exprules = [...exprules];",
             "this.expmatches = [...expmatches];",
         ],
         "}",
         "public toString(): string {",
         [
             // eslint-disable-next-line no-template-curly-in-string
-            "return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Tried to match rules ${this.exprules.join(\", \")}. Expected one of ${this.expmatches.map((x) => ` '${x}'`)}`;",
+            "return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Expected one of ${this.expmatches.map((x) => ` '${x}'`)}`;",
         ],
         "}",
     ],
@@ -240,58 +238,40 @@ export function expandTemplate(opts: TemplateOpts): Block {
     "class ErrorTracker implements ContextRecorder {",
     [
         "private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};",
-        "private mnd: number = -1;",
-        "private prules: Set<string> = new Set();",
         "private pmatches: Set<string> = new Set();",
         "public record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]) {",
         [
-            "if ((result === null) === negating) {",
+            "if ((result === null) === negating)",
             [
                 "return;",
             ],
-            "}",
             "if (pos.overallPos > this.mxpos.overallPos) {",
             [
                 "this.mxpos = pos;",
-                "this.mnd = depth;",
                 "this.pmatches.clear();",
-                "this.prules.clear();",
-            ],
-            "} else if (pos.overallPos === this.mxpos.overallPos && depth < this.mnd) {",
-            [
-                "this.mnd = depth;",
-                "this.prules.clear();",
             ],
             "}",
             "if (this.mxpos.overallPos === pos.overallPos && extraInfo.length >= 2) {",
             [
-                "if (extraInfo[0] === \"$$StrMatch\") {",
+                "if (extraInfo[0] === \"$$StrMatch\")",
                 [
                     "this.pmatches.add(extraInfo[1]);",
                 ],
-                "}",
-                "if (extraInfo[0] === \"$$!StrMatch\") {",
+                "if (extraInfo[0] === \"$$!StrMatch\")",
                 [
                     // eslint-disable-next-line no-template-curly-in-string
                     "this.pmatches.add(`not ${extraInfo[1]}`);",
                 ],
-                "}",
-            ],
-            "}",
-            "if (this.mxpos.overallPos === pos.overallPos && this.mnd === depth) {",
-            [
-                "extraInfo.forEach((x) => { if (x !== \"$$StrMatch\" && x !== \"$$!StrMatch\") { this.prules.add(x); } });",
             ],
             "}",
         ],
         "}",
         "public getErr(): SyntaxErr | null {",
         [
-            "if (this.mxpos.overallPos !== -1) {",
+            "if (this.mxpos.overallPos !== -1)",
             [
-                "return new SyntaxErr(this.mxpos, this.prules, this.pmatches);",
+                "return new SyntaxErr(this.mxpos, this.pmatches);",
             ],
-            "}",
             "return null;",
         ],
         "}",
