@@ -1,4 +1,4 @@
-import { MATCH, Parser, RegexMatch, parse } from "../meta";
+import { MATCH, Parser, parse } from "../meta";
 import { Generator } from "../gen";
 import { writeBlock } from "../util";
 import { extractRules, matchRule } from "../rules";
@@ -75,7 +75,7 @@ test("Parser Test", () => {
         },
         {
             inp: "rule :=",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@"],
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\$"],
         },
         {
             inp: "rule := 'unterminated",
@@ -83,18 +83,18 @@ test("Parser Test", () => {
         },
         {
             inp: "rule := 'unmatched-op' | ",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@"],
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\$"],
         },
         {
             inp: "rule := 'can\\'t repeat @ special rule' @*",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\.", "\\|"],
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "$EOF", "\\&|!", "\\'", "{", "@", "\\.", "\\|", "\\$"],
         },
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
         if (res.err !== null) {
             expect(tc.expmatches).not.toBeUndefined();
-            expect(tc.expmatches!.sort()).toEqual(res.err.expmatches.map(x => (x as RegexMatch).literal).sort());
+            expect(tc.expmatches!.sort()).toEqual(res.err.expmatches.map(x => x.kind === "RegexMatch" ? x.literal : "$EOF").sort());
             continue;
         }
         if (tc.expmatches !== undefined) {

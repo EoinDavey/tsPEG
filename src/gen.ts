@@ -1,6 +1,6 @@
 import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Ruledef, altNames, writeBlock, usesEOF } from "./util";
+import { Block, Grammar, Ruledef, altNames, usesEOF, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchType } from "./types";
 import { extractRules, matchRule } from "./rules";
@@ -331,7 +331,7 @@ export class Generator {
                 "this.reset(mrk);",
                 "const rec = new ErrorTracker();",
                 `this.match${S}(0, rec);`,
-                "return new ParseResult(res, rec.getErr());"
+                "return new ParseResult(res, rec.getErr());",
             ],
             "}",
         ];
