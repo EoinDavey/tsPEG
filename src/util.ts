@@ -1,4 +1,4 @@
-import { ALT, PosInfo } from "./meta";
+import { ALT, ASTKinds, PosInfo } from "./meta";
 import { CheckError } from "./checks";
 
 export type Rule = ALT[];
@@ -72,4 +72,20 @@ export function assertValidRegex(s: string, start?: PosInfo): void {
     } catch (err) {
         throw new CheckError(`Couldnt' compile regex '${s}': ${err}`, start);
     }
+}
+
+export function usesEOF(gram: Grammar): boolean {
+    for(const rd of gram) {
+        for(const alt of rd.rule) {
+            for(const matchspec of alt.matches) {
+                const match = matchspec.rule;
+                if(match.kind === ASTKinds.SPECIAL)
+                    continue;
+                const at = match.pre.at;
+                if(at.kind === ASTKinds.EOF)
+                    return true;
+            }
+        }
+    }
+    return false;
 }

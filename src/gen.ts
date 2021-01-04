@@ -1,6 +1,6 @@
 import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo }  from "./meta";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Ruledef, altNames, writeBlock } from "./util";
+import { Block, Grammar, Ruledef, altNames, writeBlock, usesEOF } from "./util";
 import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchType } from "./types";
 import { extractRules, matchRule } from "./rules";
@@ -66,8 +66,10 @@ export class Generator {
         return this;
     }
 
-    public writeKinds(gram: Grammar): Block {
-        const astKinds = ([] as string[]).concat(...gram.map(altNames));
+    public writeKinds(): Block {
+        const astKinds = ([] as string[]).concat(...this.expandedGram.map(altNames));
+        if(usesEOF(this.expandedGram))
+            astKinds.push("$EOF");
         return [
             "export enum ASTKinds {",
             this.numEnums
@@ -313,7 +315,7 @@ export class Generator {
             [
                 "const mrk = this.mark();",
                 `const res = this.match${S}(0);`,
-                "const ans = res !== null && this.finished();",
+                "const ans = res !== null;",
                 "this.reset(mrk);",
                 "return ans;",
             ],
@@ -322,20 +324,14 @@ export class Generator {
             [
                 "const mrk = this.mark();",
                 `const res = this.match${S}(0);`,
-                "if (res && this.finished()) {",
+                "if (res)",
                 [
                     "return new ParseResult(res, null);",
                 ],
-                "}",
                 "this.reset(mrk);",
                 "const rec = new ErrorTracker();",
                 `this.match${S}(0, rec);`,
-                "return new ParseResult(res,",
-                [
-                    // If no parser error, but not finished, then we must have not consumed all input.
-                    // In this case return special error rule $EOF
-                    "rec.getErr() ?? new SyntaxErr(this.mark(), [{kind: \"EOF\", negated: false}]));",
-                ],
+                "return new ParseResult(res, rec.getErr());"
             ],
             "}",
         ];
@@ -360,6 +356,7 @@ export class Generator {
     }
 
     public generate(): string {
+        // TODO Support throwing more checks than one.
         for (const checker of this.checkers) {
             const err = checker.Check(this.expandedGram, this.input);
             if (err)
@@ -370,10 +367,11 @@ export class Generator {
             inputStr: this.input,
             header: hdr,
             memos: this.writeMemos(),
-            kinds: this.writeKinds(this.expandedGram),
+            kinds: this.writeKinds(),
             ruleClasses: this.writeRuleClasses(this.expandedGram),
             ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
             parseResult: this.writeParseResultClass(this.expandedGram),
+            usesEOF: usesEOF(this.expandedGram),
         });
         return writeBlock(parseBlock).join("\n");
     }

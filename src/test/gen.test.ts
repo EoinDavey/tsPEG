@@ -261,8 +261,7 @@ test("writeKinds test", () => {
     ];
     for(const tc of tcs) {
         const g = new Generator(tc.inp, tc.numEnums);
-        const gram = g.expandedGram;
-        const got = writeBlock(g.writeKinds(gram)).join("\n");
+        const got = writeBlock(g.writeKinds()).join("\n");
         expect(got).toEqual(tc.writeKinds);
     }
 });

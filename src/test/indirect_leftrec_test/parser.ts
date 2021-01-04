@@ -98,21 +98,19 @@ export class Parser {
     public test(): boolean {
         const mrk = this.mark();
         const res = this.matchA(0);
-        const ans = res !== null && this.finished();
+        const ans = res !== null;
         this.reset(mrk);
         return ans;
     }
     public parse(): ParseResult {
         const mrk = this.mark();
         const res = this.matchA(0);
-        if (res && this.finished()) {
+        if (res)
             return new ParseResult(res, null);
-        }
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.matchA(0, rec);
-        return new ParseResult(res,
-            rec.getErr() ?? new SyntaxErr(this.mark(), [{kind: "EOF", negated: false}]));
+        return new ParseResult(res, rec.getErr());
     }
     public mark(): PosInfo {
         return this.pos;
@@ -252,6 +250,7 @@ class ErrorTracker {
         if (pos.overallPos > this.mxpos.overallPos) {
             this.mxpos = pos;
             this.pmatches = [];
+            this.regexset.clear()
         }
         if (this.mxpos.overallPos === pos.overallPos) {
             if(att.kind === "RegexMatch") {

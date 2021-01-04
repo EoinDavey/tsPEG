@@ -24,6 +24,8 @@ export function atomType(at: ATOM): string {
         return at.name;
     if (at.kind === ASTKinds.ATOM_2)
         return "string";
+    if(at.kind === ASTKinds.EOF)
+        return '{kind: ASTKinds.$EOF}';
     const subname = at.name;
     if (subname)
         return subname;

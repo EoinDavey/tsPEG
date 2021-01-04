@@ -22,6 +22,8 @@ export function preRule(expr: PREOP): string {
 export function atomRule(at: ATOM): string {
     if (at.kind === ASTKinds.ATOM_1)
         return `this.match${at.name}($$dpth + 1, $$cr)`;
+    if(at.kind === ASTKinds.EOF)
+        return 'this.match$EOF($$cr)';
     if (at.kind === ASTKinds.ATOM_2) {
         // Ensure the regex is valid
         const mtch = at.match;
