@@ -334,7 +334,7 @@ export class Generator {
                 [
                     // If no parser error, but not finished, then we must have not consumed all input.
                     // In this case return special error rule $EOF
-                    "rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: \"EOF\", negated: false}])));",
+                    "rec.getErr() ?? new SyntaxErr(this.mark(), [{kind: \"EOF\", negated: false}]));",
                 ],
             ],
             "}",

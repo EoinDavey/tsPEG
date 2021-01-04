@@ -1,4 +1,4 @@
-import { parse } from "./parser";
+import { RegexMatch, parse } from "./parser";
 
 // Just ensure they all parse
 
@@ -331,4 +331,18 @@ le i idir (2, 100) {
         expect(res.err).toBeNull();
         expect(res.ast).not.toBeNull();
     }
+});
+
+test("Expect simple syntax error", () => {
+    const prog = `x := [1, 2`;
+    const res = parse(prog);
+    expect(res.err).not.toBeNull();
+    const expmatches = res.err!.expmatches;
+    const regs: string[] = [];
+    for(const match of expmatches) {
+        expect(match.kind).toEqual("RegexMatch");
+        regs.push((match as RegexMatch).literal);
+    }
+    expect(regs).toContain("\\]");
+    expect(regs).toContain(",");
 });

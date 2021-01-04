@@ -46,7 +46,7 @@ export class Parser {
         const rec = new ErrorTracker();
         this.matchRULE(0, rec);
         return new ParseResult(res,
-            rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: "EOF", negated: false}])));
+            rec.getErr() ?? new SyntaxErr(this.mark(), [{kind: "EOF", negated: false}]));
     }
     public mark(): PosInfo {
         return this.pos;
@@ -168,7 +168,7 @@ export type MatchAttempt = RegexMatch | EOFMatch;
 export class SyntaxErr {
     public pos: PosInfo;
     public expmatches: MatchAttempt[];
-    constructor(pos: PosInfo, expmatches: Set<MatchAttempt>) {
+    constructor(pos: PosInfo, expmatches: MatchAttempt[]) {
         this.pos = pos;
         this.expmatches = [...expmatches];
     }
@@ -178,16 +178,24 @@ export class SyntaxErr {
 }
 class ErrorTracker {
     private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};
-    private pmatches: Set<MatchAttempt> = new Set();
+    private regexset: Set<string> = new Set();
+    private pmatches: MatchAttempt[] = [];
     public record(pos: PosInfo, result: any, att: MatchAttempt) {
         if ((result === null) === att.negated)
             return;
         if (pos.overallPos > this.mxpos.overallPos) {
             this.mxpos = pos;
-            this.pmatches.clear();
+            this.pmatches = [];
         }
-        if (this.mxpos.overallPos === pos.overallPos)
-            this.pmatches.add(att);
+        if (this.mxpos.overallPos === pos.overallPos) {
+            if(att.kind === "RegexMatch") {
+                if(!this.regexset.has(att.literal))
+                    this.pmatches.push(att);
+                this.regexset.add(att.literal);
+            } else {
+                this.pmatches.push(att);
+            }
+        }
     }
     public getErr(): SyntaxErr | null {
         if (this.mxpos.overallPos !== -1)

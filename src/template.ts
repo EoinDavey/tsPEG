@@ -221,7 +221,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
     [
         "public pos: PosInfo;",
         "public expmatches: MatchAttempt[];",
-        "constructor(pos: PosInfo, expmatches: Set<MatchAttempt>) {",
+        "constructor(pos: PosInfo, expmatches: MatchAttempt[]) {",
         [
             "this.pos = pos;",
             "this.expmatches = [...expmatches];",
@@ -238,7 +238,8 @@ export function expandTemplate(opts: TemplateOpts): Block {
     "class ErrorTracker {",
     [
         "private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};",
-        "private pmatches: Set<MatchAttempt> = new Set();",
+        "private regexset: Set<string> = new Set();",
+        "private pmatches: MatchAttempt[] = [];",
         "public record(pos: PosInfo, result: any, att: MatchAttempt) {",
         [
             "if ((result === null) === att.negated)",
@@ -248,13 +249,26 @@ export function expandTemplate(opts: TemplateOpts): Block {
             "if (pos.overallPos > this.mxpos.overallPos) {",
             [
                 "this.mxpos = pos;",
-                "this.pmatches.clear();",
+                "this.pmatches = [];",
             ],
             "}",
-            "if (this.mxpos.overallPos === pos.overallPos)",
+            "if (this.mxpos.overallPos === pos.overallPos) {",
             [
-                "this.pmatches.add(att);",
+                "if(att.kind === \"RegexMatch\") {",
+                [
+                    "if(!this.regexset.has(att.literal))",
+                    [
+                        "this.pmatches.push(att);",
+                    ],
+                    "this.regexset.add(att.literal);",
+                ],
+                "} else {",
+                [
+                    "this.pmatches.push(att);",
+                ],
+                "}",
             ],
+            "}",
         ],
         "}",
         "public getErr(): SyntaxErr | null {",

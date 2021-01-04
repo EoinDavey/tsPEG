@@ -1,4 +1,4 @@
-import { MATCH, Parser, parse } from "../meta";
+import { MATCH, Parser, RegexMatch, parse } from "../meta";
 import { Generator } from "../gen";
 import { writeBlock } from "../util";
 import { extractRules, matchRule } from "../rules";
@@ -94,7 +94,7 @@ test("Parser Test", () => {
         const res = parse(tc.inp);
         if (res.err !== null) {
             expect(tc.expmatches).not.toBeUndefined();
-            expect(tc.expmatches!.sort()).toEqual(res.err.expmatches.sort());
+            expect(tc.expmatches!.sort()).toEqual(res.err.expmatches.map(x => (x as RegexMatch).literal).sort());
             continue;
         }
         if (tc.expmatches !== undefined) {
