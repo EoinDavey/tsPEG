@@ -6,6 +6,11 @@
 
 - Added support for left recursion (#17)
 
+### Changed
+
+- Add `$` symbol for matching EOF
+- Parsers no longer fail if EOF is not met (unless specified with `$`)
+
 ## 2.1.0 - 2020/09/29
 
 ### Added
