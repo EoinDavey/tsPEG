@@ -20,10 +20,7 @@
 * _    := '\s*'
 */
 type Nullable<T> = T | null;
-type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
-export interface ContextRecorder {
-    record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]): void;
-}
+type $$RuleType<T> = () => Nullable<T>;
 interface ASTNodeIntf {
     kind: ASTKinds;
 }
@@ -122,7 +119,7 @@ export class Parser {
     }
     private $scope$SUM$memo: Map<number, [Nullable<SUM>, PosInfo]> = new Map();
     private $scope$FAC$memo: Map<number, [Nullable<FAC>, PosInfo]> = new Map();
-    public matchSUM($$dpth: number, $$cr?: ContextRecorder): Nullable<SUM> {
+    public matchSUM($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM> {
         const fn = () => {
             return this.choice<SUM>([
                 () => this.matchSUM_1($$dpth + 1, $$cr),
@@ -151,11 +148,9 @@ export class Parser {
         this.reset(lastPos);
         return lastRes;
     }
-    public matchSUM_1($$dpth: number, $$cr?: ContextRecorder): Nullable<SUM_1> {
+    public matchSUM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM_1> {
         return this.runner<SUM_1>($$dpth,
-            log => {
-                if (log)
-                    log("SUM_1");
+            () => {
                 let $scope$l: Nullable<SUM>;
                 let $scope$op: Nullable<string>;
                 let $scope$r: Nullable<FAC>;
@@ -168,12 +163,12 @@ export class Parser {
                     $$res = new SUM_1($scope$l, $scope$op, $scope$r);
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchSUM_2($$dpth: number, $$cr?: ContextRecorder): Nullable<SUM_2> {
+    public matchSUM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM_2> {
         return this.matchFAC($$dpth + 1, $$cr);
     }
-    public matchFAC($$dpth: number, $$cr?: ContextRecorder): Nullable<FAC> {
+    public matchFAC($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC> {
         const fn = () => {
             return this.choice<FAC>([
                 () => this.matchFAC_1($$dpth + 1, $$cr),
@@ -202,11 +197,9 @@ export class Parser {
         this.reset(lastPos);
         return lastRes;
     }
-    public matchFAC_1($$dpth: number, $$cr?: ContextRecorder): Nullable<FAC_1> {
+    public matchFAC_1($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC_1> {
         return this.runner<FAC_1>($$dpth,
-            log => {
-                if (log)
-                    log("FAC_1");
+            () => {
                 let $scope$l: Nullable<FAC>;
                 let $scope$op: Nullable<string>;
                 let $scope$r: Nullable<ATOM>;
@@ -219,22 +212,20 @@ export class Parser {
                     $$res = new FAC_1($scope$l, $scope$op, $scope$r);
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchFAC_2($$dpth: number, $$cr?: ContextRecorder): Nullable<FAC_2> {
+    public matchFAC_2($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC_2> {
         return this.matchATOM($$dpth + 1, $$cr);
     }
-    public matchATOM($$dpth: number, $$cr?: ContextRecorder): Nullable<ATOM> {
+    public matchATOM($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM> {
         return this.choice<ATOM>([
             () => this.matchATOM_1($$dpth + 1, $$cr),
             () => this.matchATOM_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchATOM_1($$dpth: number, $$cr?: ContextRecorder): Nullable<ATOM_1> {
+    public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
         return this.runner<ATOM_1>($$dpth,
-            log => {
-                if (log)
-                    log("ATOM_1");
+            () => {
                 let $scope$val: Nullable<INT>;
                 let $$res: Nullable<ATOM_1> = null;
                 if (true
@@ -245,13 +236,11 @@ export class Parser {
                     $$res = new ATOM_1($scope$val);
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchATOM_2($$dpth: number, $$cr?: ContextRecorder): Nullable<ATOM_2> {
+    public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
         return this.runner<ATOM_2>($$dpth,
-            log => {
-                if (log)
-                    log("ATOM_2");
+            () => {
                 let $scope$val: Nullable<SUM>;
                 let $$res: Nullable<ATOM_2> = null;
                 if (true
@@ -264,13 +253,11 @@ export class Parser {
                     $$res = new ATOM_2($scope$val);
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchINT($$dpth: number, $$cr?: ContextRecorder): Nullable<INT> {
+    public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
         return this.runner<INT>($$dpth,
-            log => {
-                if (log)
-                    log("INT");
+            () => {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<INT> = null;
                 if (true
@@ -279,9 +266,9 @@ export class Parser {
                     $$res = new INT($scope$val);
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public match_($$dpth: number, $$cr?: ContextRecorder): Nullable<_> {
+    public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
         return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
     }
     public test(): boolean {
@@ -301,7 +288,7 @@ export class Parser {
         const rec = new ErrorTracker();
         this.matchSUM(0, rec);
         return new ParseResult(res,
-            rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: "EOF"}])));
+            rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: "EOF", negated: false}])));
     }
     public mark(): PosInfo {
         return this.pos;
@@ -322,18 +309,12 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>($$dpth: number, fn: $$RuleType<T>, cr?: ContextRecorder): $$RuleType<T> {
+    private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {
         return () => {
             const mrk = this.mark();
-            const res = cr ? (() => {
-                const extraInfo: string[] = [];
-                const result = fn((msg: string) => extraInfo.push(msg));
-                cr.record(mrk, $$dpth, result, this.negating, extraInfo);
-                return result;
-            })() : fn();
-            if (res !== null) {
+            const res = fn()
+            if (res !== null)
                 return res;
-            }
             this.reset(mrk);
             return null;
         };
@@ -347,40 +328,44 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match: string, dpth: number, cr?: ContextRecorder): Nullable<string> {
+    private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         return this.runner<string>(dpth,
-            (log) => {
-                if (log) {
-                    if (this.negating) {
-                        log("$$!StrMatch");
-                    } else {
-                        log("$$StrMatch");
-                    }
-                    // We substring from 3 to len - 1 to strip off the
-                    // non-capture group syntax added as a WebKit workaround
-                    log(match.substring(3, match.length - 1));
-                }
+            () => {
                 const reg = new RegExp(match, "y");
-                reg.lastIndex = this.mark().overallPos;
-                const res = reg.exec(this.input);
-                if (res) {
-                    let lineJmp = 0;
-                    let lind = -1;
-                    for (let i = 0; i < res[0].length; ++i) {
-                        if (res[0][i] === "\n") {
-                            ++lineJmp;
-                            lind = i;
-                        }
-                    }
-                    this.pos = {
-                        overallPos: reg.lastIndex,
-                        line: this.pos.line + lineJmp,
-                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
-                    };
-                    return res[0];
+                const mrk = this.mark();
+                reg.lastIndex = mrk.overallPos;
+                const res = this.tryConsume(reg);
+                if(cr) {
+                    cr.record(mrk, res, {
+                        kind: "RegexMatch",
+                        // We substring from 3 to len - 1 to strip off the
+                        // non-capture group syntax added as a WebKit workaround
+                        literal: match.substring(3, match.length - 1),
+                        negated: this.negating,
+                    });
                 }
-                return null;
-            }, cr)();
+                return res;
+            })();
+    }
+    private tryConsume(reg: RegExp): Nullable<string> {
+        const res = reg.exec(this.input);
+        if (res) {
+            let lineJmp = 0;
+            let lind = -1;
+            for (let i = 0; i < res[0].length; ++i) {
+                if (res[0][i] === "\n") {
+                    ++lineJmp;
+                    lind = i;
+                }
+            }
+            this.pos = {
+                overallPos: reg.lastIndex,
+                line: this.pos.line + lineJmp,
+                offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
+            };
+            return res[0];
+        }
+        return null;
     }
     private noConsume<T>(fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
@@ -420,7 +405,7 @@ export interface RegexMatch {
     readonly negated: boolean;
     readonly literal: string;
 }
-export type EOFMatch = { kind: "EOF" };
+export type EOFMatch = { kind: "EOF"; negated: boolean };
 export type MatchAttempt = RegexMatch | EOFMatch;
 export class SyntaxErr {
     public pos: PosInfo;
@@ -433,18 +418,18 @@ export class SyntaxErr {
         return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Expected one of ${this.expmatches.map(x => x.kind === "EOF" ? " EOF" : ` ${x.negated ? 'not ': ''}'${x.literal}'`)}`;
     }
 }
-class ErrorTracker implements ContextRecorder {
+class ErrorTracker {
     private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};
     private pmatches: Set<MatchAttempt> = new Set();
-    public record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]) {
-        if ((result === null) === negating)
+    public record(pos: PosInfo, result: any, att: MatchAttempt) {
+        if ((result === null) === att.negated)
             return;
         if (pos.overallPos > this.mxpos.overallPos) {
             this.mxpos = pos;
             this.pmatches.clear();
         }
-        if (this.mxpos.overallPos === pos.overallPos && extraInfo.length >= 2)
-            this.pmatches.add({kind: "RegexMatch", negated: negating, literal: extraInfo[1]});
+        if (this.mxpos.overallPos === pos.overallPos)
+            this.pmatches.add(att);
     }
     public getErr(): SyntaxErr | null {
         if (this.mxpos.overallPos !== -1)

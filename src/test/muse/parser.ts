@@ -32,10 +32,7 @@
 * _ := '\s'*
 */
 type Nullable<T> = T | null;
-type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
-export interface ContextRecorder {
-    record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]): void;
-}
+type $$RuleType<T> = () => Nullable<T>;
 interface ASTNodeIntf {
     kind: ASTKinds;
 }
@@ -205,11 +202,9 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    public matchProgram($$dpth: number, $$cr?: ContextRecorder): Nullable<Program> {
+    public matchProgram($$dpth: number, $$cr?: ErrorTracker): Nullable<Program> {
         return this.runner<Program>($$dpth,
-            log => {
-                if (log)
-                    log("Program");
+            () => {
                 let $$res: Nullable<Program> = null;
                 if (true
                     && this.loop<Melody>(() => this.matchMelody($$dpth + 1, $$cr), true) !== null
@@ -218,13 +213,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Program, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchMelody($$dpth: number, $$cr?: ContextRecorder): Nullable<Melody> {
+    public matchMelody($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody> {
         return this.runner<Melody>($$dpth,
-            log => {
-                if (log)
-                    log("Melody");
+            () => {
                 let $$res: Nullable<Melody> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -241,13 +234,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Melody, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchMelody_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Melody_$0> {
+    public matchMelody_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody_$0> {
         return this.runner<Melody_$0>($$dpth,
-            log => {
-                if (log)
-                    log("Melody_$0");
+            () => {
                 let $$res: Nullable<Melody_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -256,9 +247,9 @@ export class Parser {
                     $$res = {kind: ASTKinds.Melody_$0, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<Stmt> {
+    public matchStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt> {
         return this.choice<Stmt>([
             () => this.matchStmt_1($$dpth + 1, $$cr),
             () => this.matchStmt_2($$dpth + 1, $$cr),
@@ -266,23 +257,21 @@ export class Parser {
             () => this.matchStmt_4($$dpth + 1, $$cr),
         ]);
     }
-    public matchStmt_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Stmt_1> {
+    public matchStmt_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_1> {
         return this.matchKeyStmt($$dpth + 1, $$cr);
     }
-    public matchStmt_2($$dpth: number, $$cr?: ContextRecorder): Nullable<Stmt_2> {
+    public matchStmt_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_2> {
         return this.matchAssignStmt($$dpth + 1, $$cr);
     }
-    public matchStmt_3($$dpth: number, $$cr?: ContextRecorder): Nullable<Stmt_3> {
+    public matchStmt_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_3> {
         return this.matchForStmt($$dpth + 1, $$cr);
     }
-    public matchStmt_4($$dpth: number, $$cr?: ContextRecorder): Nullable<Stmt_4> {
+    public matchStmt_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_4> {
         return this.matchIfStmt($$dpth + 1, $$cr);
     }
-    public matchKeyStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<KeyStmt> {
+    public matchKeyStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<KeyStmt> {
         return this.runner<KeyStmt>($$dpth,
-            log => {
-                if (log)
-                    log("KeyStmt");
+            () => {
                 let $$res: Nullable<KeyStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -293,13 +282,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.KeyStmt, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchAssignStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<AssignStmt> {
+    public matchAssignStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<AssignStmt> {
         return this.runner<AssignStmt>($$dpth,
-            log => {
-                if (log)
-                    log("AssignStmt");
+            () => {
                 let $$res: Nullable<AssignStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -312,13 +299,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.AssignStmt, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchForStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<ForStmt> {
+    public matchForStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<ForStmt> {
         return this.runner<ForStmt>($$dpth,
-            log => {
-                if (log)
-                    log("ForStmt");
+            () => {
                 let $$res: Nullable<ForStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -340,13 +325,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.ForStmt, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchIfStmt($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt> {
+    public matchIfStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt> {
         return this.runner<IfStmt>($$dpth,
-            log => {
-                if (log)
-                    log("IfStmt");
+            () => {
                 let $$res: Nullable<IfStmt> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -361,19 +344,17 @@ export class Parser {
                     $$res = {kind: ASTKinds.IfStmt, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchIfStmt_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt_$0> {
+    public matchIfStmt_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0> {
         return this.choice<IfStmt_$0>([
             () => this.matchIfStmt_$0_1($$dpth + 1, $$cr),
             () => this.matchIfStmt_$0_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchIfStmt_$0_1($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt_$0_1> {
+    public matchIfStmt_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_1> {
         return this.runner<IfStmt_$0_1>($$dpth,
-            log => {
-                if (log)
-                    log("IfStmt_$0_1");
+            () => {
                 let $$res: Nullable<IfStmt_$0_1> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -382,13 +363,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.IfStmt_$0_1, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchIfStmt_$0_2($$dpth: number, $$cr?: ContextRecorder): Nullable<IfStmt_$0_2> {
+    public matchIfStmt_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_2> {
         return this.runner<IfStmt_$0_2>($$dpth,
-            log => {
-                if (log)
-                    log("IfStmt_$0_2");
+            () => {
                 let $$res: Nullable<IfStmt_$0_2> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -400,13 +379,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.IfStmt_$0_2, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchFuncExpr($$dpth: number, $$cr?: ContextRecorder): Nullable<FuncExpr> {
+    public matchFuncExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr> {
         return this.runner<FuncExpr>($$dpth,
-            log => {
-                if (log)
-                    log("FuncExpr");
+            () => {
                 let $$res: Nullable<FuncExpr> = null;
                 if (true
                     && this.matchExpr($$dpth + 1, $$cr) !== null
@@ -415,13 +392,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.FuncExpr, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchFuncExpr_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<FuncExpr_$0> {
+    public matchFuncExpr_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr_$0> {
         return this.runner<FuncExpr_$0>($$dpth,
-            log => {
-                if (log)
-                    log("FuncExpr_$0");
+            () => {
                 let $$res: Nullable<FuncExpr_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -432,16 +407,14 @@ export class Parser {
                     $$res = {kind: ASTKinds.FuncExpr_$0, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchExpr($$dpth: number, $$cr?: ContextRecorder): Nullable<Expr> {
+    public matchExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<Expr> {
         return this.matchEq($$dpth + 1, $$cr);
     }
-    public matchEq($$dpth: number, $$cr?: ContextRecorder): Nullable<Eq> {
+    public matchEq($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq> {
         return this.runner<Eq>($$dpth,
-            log => {
-                if (log)
-                    log("Eq");
+            () => {
                 let $$res: Nullable<Eq> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -451,13 +424,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Eq, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchEq_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Eq_$0> {
+    public matchEq_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq_$0> {
         return this.runner<Eq_$0>($$dpth,
-            log => {
-                if (log)
-                    log("Eq_$0");
+            () => {
                 let $$res: Nullable<Eq_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -467,13 +438,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Eq_$0, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchComp($$dpth: number, $$cr?: ContextRecorder): Nullable<Comp> {
+    public matchComp($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp> {
         return this.runner<Comp>($$dpth,
-            log => {
-                if (log)
-                    log("Comp");
+            () => {
                 let $$res: Nullable<Comp> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -483,13 +452,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Comp, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchComp_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Comp_$0> {
+    public matchComp_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp_$0> {
         return this.runner<Comp_$0>($$dpth,
-            log => {
-                if (log)
-                    log("Comp_$0");
+            () => {
                 let $$res: Nullable<Comp_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -500,13 +467,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Comp_$0, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchSum($$dpth: number, $$cr?: ContextRecorder): Nullable<Sum> {
+    public matchSum($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum> {
         return this.runner<Sum>($$dpth,
-            log => {
-                if (log)
-                    log("Sum");
+            () => {
                 let $$res: Nullable<Sum> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -516,13 +481,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Sum, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchSum_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Sum_$0> {
+    public matchSum_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum_$0> {
         return this.runner<Sum_$0>($$dpth,
-            log => {
-                if (log)
-                    log("Sum_$0");
+            () => {
                 let $$res: Nullable<Sum_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -533,13 +496,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Sum_$0, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchProduct($$dpth: number, $$cr?: ContextRecorder): Nullable<Product> {
+    public matchProduct($$dpth: number, $$cr?: ErrorTracker): Nullable<Product> {
         return this.runner<Product>($$dpth,
-            log => {
-                if (log)
-                    log("Product");
+            () => {
                 let $$res: Nullable<Product> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -549,13 +510,11 @@ export class Parser {
                     $$res = {kind: ASTKinds.Product, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchProduct_$0($$dpth: number, $$cr?: ContextRecorder): Nullable<Product_$0> {
+    public matchProduct_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Product_$0> {
         return this.runner<Product_$0>($$dpth,
-            log => {
-                if (log)
-                    log("Product_$0");
+            () => {
                 let $$res: Nullable<Product_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -566,9 +525,9 @@ export class Parser {
                     $$res = {kind: ASTKinds.Product_$0, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchAtom($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom> {
+    public matchAtom($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom> {
         return this.choice<Atom>([
             () => this.matchAtom_1($$dpth + 1, $$cr),
             () => this.matchAtom_2($$dpth + 1, $$cr),
@@ -576,20 +535,18 @@ export class Parser {
             () => this.matchAtom_4($$dpth + 1, $$cr),
         ]);
     }
-    public matchAtom_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_1> {
+    public matchAtom_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_1> {
         return this.matchNoteLit($$dpth + 1, $$cr);
     }
-    public matchAtom_2($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_2> {
+    public matchAtom_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_2> {
         return this.matchKID($$dpth + 1, $$cr);
     }
-    public matchAtom_3($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_3> {
+    public matchAtom_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_3> {
         return this.matchINT($$dpth + 1, $$cr);
     }
-    public matchAtom_4($$dpth: number, $$cr?: ContextRecorder): Nullable<Atom_4> {
+    public matchAtom_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_4> {
         return this.runner<Atom_4>($$dpth,
-            log => {
-                if (log)
-                    log("Atom_4");
+            () => {
                 let $$res: Nullable<Atom_4> = null;
                 if (true
                     && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
@@ -600,37 +557,37 @@ export class Parser {
                     $$res = {kind: ASTKinds.Atom_4, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchPlusMinus($$dpth: number, $$cr?: ContextRecorder): Nullable<PlusMinus> {
+    public matchPlusMinus($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus> {
         return this.choice<PlusMinus>([
             () => this.matchPlusMinus_1($$dpth + 1, $$cr),
             () => this.matchPlusMinus_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchPlusMinus_1($$dpth: number, $$cr?: ContextRecorder): Nullable<PlusMinus_1> {
+    public matchPlusMinus_1($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus_1> {
         return this.regexAccept(String.raw`(?:\+)`, $$dpth + 1, $$cr);
     }
-    public matchPlusMinus_2($$dpth: number, $$cr?: ContextRecorder): Nullable<PlusMinus_2> {
+    public matchPlusMinus_2($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus_2> {
         return this.regexAccept(String.raw`(?:-)`, $$dpth + 1, $$cr);
     }
-    public matchMulDiv($$dpth: number, $$cr?: ContextRecorder): Nullable<MulDiv> {
+    public matchMulDiv($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv> {
         return this.choice<MulDiv>([
             () => this.matchMulDiv_1($$dpth + 1, $$cr),
             () => this.matchMulDiv_2($$dpth + 1, $$cr),
             () => this.matchMulDiv_3($$dpth + 1, $$cr),
         ]);
     }
-    public matchMulDiv_1($$dpth: number, $$cr?: ContextRecorder): Nullable<MulDiv_1> {
+    public matchMulDiv_1($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_1> {
         return this.regexAccept(String.raw`(?:\*)`, $$dpth + 1, $$cr);
     }
-    public matchMulDiv_2($$dpth: number, $$cr?: ContextRecorder): Nullable<MulDiv_2> {
+    public matchMulDiv_2($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_2> {
         return this.regexAccept(String.raw`(?:\/)`, $$dpth + 1, $$cr);
     }
-    public matchMulDiv_3($$dpth: number, $$cr?: ContextRecorder): Nullable<MulDiv_3> {
+    public matchMulDiv_3($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_3> {
         return this.regexAccept(String.raw`(?:%)`, $$dpth + 1, $$cr);
     }
-    public matchCompare($$dpth: number, $$cr?: ContextRecorder): Nullable<Compare> {
+    public matchCompare($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare> {
         return this.choice<Compare>([
             () => this.matchCompare_1($$dpth + 1, $$cr),
             () => this.matchCompare_2($$dpth + 1, $$cr),
@@ -638,25 +595,25 @@ export class Parser {
             () => this.matchCompare_4($$dpth + 1, $$cr),
         ]);
     }
-    public matchCompare_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Compare_1> {
+    public matchCompare_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_1> {
         return this.regexAccept(String.raw`(?:<=)`, $$dpth + 1, $$cr);
     }
-    public matchCompare_2($$dpth: number, $$cr?: ContextRecorder): Nullable<Compare_2> {
+    public matchCompare_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_2> {
         return this.regexAccept(String.raw`(?:>=)`, $$dpth + 1, $$cr);
     }
-    public matchCompare_3($$dpth: number, $$cr?: ContextRecorder): Nullable<Compare_3> {
+    public matchCompare_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_3> {
         return this.regexAccept(String.raw`(?:<)`, $$dpth + 1, $$cr);
     }
-    public matchCompare_4($$dpth: number, $$cr?: ContextRecorder): Nullable<Compare_4> {
+    public matchCompare_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_4> {
         return this.regexAccept(String.raw`(?:>)`, $$dpth + 1, $$cr);
     }
-    public matchNoteLit($$dpth: number, $$cr?: ContextRecorder): Nullable<NoteLit> {
+    public matchNoteLit($$dpth: number, $$cr?: ErrorTracker): Nullable<NoteLit> {
         return this.regexAccept(String.raw`(?:[A-G][#b]?\d)`, $$dpth + 1, $$cr);
     }
-    public matchINT($$dpth: number, $$cr?: ContextRecorder): Nullable<INT> {
+    public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
         return this.regexAccept(String.raw`(?:[0-9]+)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword> {
+    public matchKeyword($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword> {
         return this.choice<Keyword>([
             () => this.matchKeyword_1($$dpth + 1, $$cr),
             () => this.matchKeyword_2($$dpth + 1, $$cr),
@@ -666,41 +623,39 @@ export class Parser {
             () => this.matchKeyword_6($$dpth + 1, $$cr),
         ]);
     }
-    public matchKeyword_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_1> {
+    public matchKeyword_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_1> {
         return this.regexAccept(String.raw`(?:start)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_2($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_2> {
+    public matchKeyword_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_2> {
         return this.regexAccept(String.raw`(?:end)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_3($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_3> {
+    public matchKeyword_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_3> {
         return this.regexAccept(String.raw`(?:for)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_4($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_4> {
+    public matchKeyword_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_4> {
         return this.regexAccept(String.raw`(?:else)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_5($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_5> {
+    public matchKeyword_5($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_5> {
         return this.regexAccept(String.raw`(?:if)`, $$dpth + 1, $$cr);
     }
-    public matchKeyword_6($$dpth: number, $$cr?: ContextRecorder): Nullable<Keyword_6> {
+    public matchKeyword_6($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_6> {
         return this.regexAccept(String.raw`(?:then)`, $$dpth + 1, $$cr);
     }
-    public matchFuncs($$dpth: number, $$cr?: ContextRecorder): Nullable<Funcs> {
+    public matchFuncs($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs> {
         return this.choice<Funcs>([
             () => this.matchFuncs_1($$dpth + 1, $$cr),
             () => this.matchFuncs_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchFuncs_1($$dpth: number, $$cr?: ContextRecorder): Nullable<Funcs_1> {
+    public matchFuncs_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs_1> {
         return this.regexAccept(String.raw`(?:play)`, $$dpth + 1, $$cr);
     }
-    public matchFuncs_2($$dpth: number, $$cr?: ContextRecorder): Nullable<Funcs_2> {
+    public matchFuncs_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs_2> {
         return this.regexAccept(String.raw`(?:wait)`, $$dpth + 1, $$cr);
     }
-    public matchKID($$dpth: number, $$cr?: ContextRecorder): Nullable<KID> {
+    public matchKID($$dpth: number, $$cr?: ErrorTracker): Nullable<KID> {
         return this.runner<KID>($$dpth,
-            log => {
-                if (log)
-                    log("KID");
+            () => {
                 let $$res: Nullable<KID> = null;
                 if (true
                     && this.negate(() => this.matchKeyword($$dpth + 1, $$cr)) !== null
@@ -709,12 +664,12 @@ export class Parser {
                     $$res = {kind: ASTKinds.KID, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchID($$dpth: number, $$cr?: ContextRecorder): Nullable<ID> {
+    public matchID($$dpth: number, $$cr?: ErrorTracker): Nullable<ID> {
         return this.regexAccept(String.raw`(?:[a-zA-Z_]+)`, $$dpth + 1, $$cr);
     }
-    public match_($$dpth: number, $$cr?: ContextRecorder): Nullable<_> {
+    public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
         return this.loop<string>(() => this.regexAccept(String.raw`(?:\s)`, $$dpth + 1, $$cr), true);
     }
     public test(): boolean {
@@ -734,7 +689,7 @@ export class Parser {
         const rec = new ErrorTracker();
         this.matchProgram(0, rec);
         return new ParseResult(res,
-            rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: "EOF"}])));
+            rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: "EOF", negated: false}])));
     }
     public mark(): PosInfo {
         return this.pos;
@@ -755,18 +710,12 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>($$dpth: number, fn: $$RuleType<T>, cr?: ContextRecorder): $$RuleType<T> {
+    private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {
         return () => {
             const mrk = this.mark();
-            const res = cr ? (() => {
-                const extraInfo: string[] = [];
-                const result = fn((msg: string) => extraInfo.push(msg));
-                cr.record(mrk, $$dpth, result, this.negating, extraInfo);
-                return result;
-            })() : fn();
-            if (res !== null) {
+            const res = fn()
+            if (res !== null)
                 return res;
-            }
             this.reset(mrk);
             return null;
         };
@@ -780,40 +729,44 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match: string, dpth: number, cr?: ContextRecorder): Nullable<string> {
+    private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         return this.runner<string>(dpth,
-            (log) => {
-                if (log) {
-                    if (this.negating) {
-                        log("$$!StrMatch");
-                    } else {
-                        log("$$StrMatch");
-                    }
-                    // We substring from 3 to len - 1 to strip off the
-                    // non-capture group syntax added as a WebKit workaround
-                    log(match.substring(3, match.length - 1));
-                }
+            () => {
                 const reg = new RegExp(match, "y");
-                reg.lastIndex = this.mark().overallPos;
-                const res = reg.exec(this.input);
-                if (res) {
-                    let lineJmp = 0;
-                    let lind = -1;
-                    for (let i = 0; i < res[0].length; ++i) {
-                        if (res[0][i] === "\n") {
-                            ++lineJmp;
-                            lind = i;
-                        }
-                    }
-                    this.pos = {
-                        overallPos: reg.lastIndex,
-                        line: this.pos.line + lineJmp,
-                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
-                    };
-                    return res[0];
+                const mrk = this.mark();
+                reg.lastIndex = mrk.overallPos;
+                const res = this.tryConsume(reg);
+                if(cr) {
+                    cr.record(mrk, res, {
+                        kind: "RegexMatch",
+                        // We substring from 3 to len - 1 to strip off the
+                        // non-capture group syntax added as a WebKit workaround
+                        literal: match.substring(3, match.length - 1),
+                        negated: this.negating,
+                    });
                 }
-                return null;
-            }, cr)();
+                return res;
+            })();
+    }
+    private tryConsume(reg: RegExp): Nullable<string> {
+        const res = reg.exec(this.input);
+        if (res) {
+            let lineJmp = 0;
+            let lind = -1;
+            for (let i = 0; i < res[0].length; ++i) {
+                if (res[0][i] === "\n") {
+                    ++lineJmp;
+                    lind = i;
+                }
+            }
+            this.pos = {
+                overallPos: reg.lastIndex,
+                line: this.pos.line + lineJmp,
+                offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
+            };
+            return res[0];
+        }
+        return null;
     }
     private noConsume<T>(fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
@@ -853,7 +806,7 @@ export interface RegexMatch {
     readonly negated: boolean;
     readonly literal: string;
 }
-export type EOFMatch = { kind: "EOF" };
+export type EOFMatch = { kind: "EOF"; negated: boolean };
 export type MatchAttempt = RegexMatch | EOFMatch;
 export class SyntaxErr {
     public pos: PosInfo;
@@ -866,18 +819,18 @@ export class SyntaxErr {
         return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Expected one of ${this.expmatches.map(x => x.kind === "EOF" ? " EOF" : ` ${x.negated ? 'not ': ''}'${x.literal}'`)}`;
     }
 }
-class ErrorTracker implements ContextRecorder {
+class ErrorTracker {
     private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};
     private pmatches: Set<MatchAttempt> = new Set();
-    public record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]) {
-        if ((result === null) === negating)
+    public record(pos: PosInfo, result: any, att: MatchAttempt) {
+        if ((result === null) === att.negated)
             return;
         if (pos.overallPos > this.mxpos.overallPos) {
             this.mxpos = pos;
             this.pmatches.clear();
         }
-        if (this.mxpos.overallPos === pos.overallPos && extraInfo.length >= 2)
-            this.pmatches.add({kind: "RegexMatch", negated: negating, literal: extraInfo[1]});
+        if (this.mxpos.overallPos === pos.overallPos)
+            this.pmatches.add(att);
     }
     public getErr(): SyntaxErr | null {
         if (this.mxpos.overallPos !== -1)

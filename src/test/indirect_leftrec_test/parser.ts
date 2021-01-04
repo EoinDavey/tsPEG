@@ -5,10 +5,7 @@
 * B := A | 'b'
 */
 type Nullable<T> = T | null;
-type $$RuleType<T> = (log?: (msg: string) => void) => Nullable<T>;
-export interface ContextRecorder {
-    record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]): void;
-}
+type $$RuleType<T> = () => Nullable<T>;
 interface ASTNodeIntf {
     kind: ASTKinds;
 }
@@ -41,7 +38,7 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     private $scope$A$memo: Map<number, [Nullable<A>, PosInfo]> = new Map();
-    public matchA($$dpth: number, $$cr?: ContextRecorder): Nullable<A> {
+    public matchA($$dpth: number, $$cr?: ErrorTracker): Nullable<A> {
         const fn = () => {
             return this.choice<A>([
                 () => this.matchA_1($$dpth + 1, $$cr),
@@ -70,11 +67,9 @@ export class Parser {
         this.reset(lastPos);
         return lastRes;
     }
-    public matchA_1($$dpth: number, $$cr?: ContextRecorder): Nullable<A_1> {
+    public matchA_1($$dpth: number, $$cr?: ErrorTracker): Nullable<A_1> {
         return this.runner<A_1>($$dpth,
-            log => {
-                if (log)
-                    log("A_1");
+            () => {
                 let $$res: Nullable<A_1> = null;
                 if (true
                     && this.matchB($$dpth + 1, $$cr) !== null
@@ -83,21 +78,21 @@ export class Parser {
                     $$res = {kind: ASTKinds.A_1, };
                 }
                 return $$res;
-            }, $$cr)();
+            })();
     }
-    public matchA_2($$dpth: number, $$cr?: ContextRecorder): Nullable<A_2> {
+    public matchA_2($$dpth: number, $$cr?: ErrorTracker): Nullable<A_2> {
         return this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr);
     }
-    public matchB($$dpth: number, $$cr?: ContextRecorder): Nullable<B> {
+    public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
         return this.choice<B>([
             () => this.matchB_1($$dpth + 1, $$cr),
             () => this.matchB_2($$dpth + 1, $$cr),
         ]);
     }
-    public matchB_1($$dpth: number, $$cr?: ContextRecorder): Nullable<B_1> {
+    public matchB_1($$dpth: number, $$cr?: ErrorTracker): Nullable<B_1> {
         return this.matchA($$dpth + 1, $$cr);
     }
-    public matchB_2($$dpth: number, $$cr?: ContextRecorder): Nullable<B_2> {
+    public matchB_2($$dpth: number, $$cr?: ErrorTracker): Nullable<B_2> {
         return this.regexAccept(String.raw`(?:b)`, $$dpth + 1, $$cr);
     }
     public test(): boolean {
@@ -117,7 +112,7 @@ export class Parser {
         const rec = new ErrorTracker();
         this.matchA(0, rec);
         return new ParseResult(res,
-            rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: "EOF"}])));
+            rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: "EOF", negated: false}])));
     }
     public mark(): PosInfo {
         return this.pos;
@@ -138,18 +133,12 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>($$dpth: number, fn: $$RuleType<T>, cr?: ContextRecorder): $$RuleType<T> {
+    private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {
         return () => {
             const mrk = this.mark();
-            const res = cr ? (() => {
-                const extraInfo: string[] = [];
-                const result = fn((msg: string) => extraInfo.push(msg));
-                cr.record(mrk, $$dpth, result, this.negating, extraInfo);
-                return result;
-            })() : fn();
-            if (res !== null) {
+            const res = fn()
+            if (res !== null)
                 return res;
-            }
             this.reset(mrk);
             return null;
         };
@@ -163,40 +152,44 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match: string, dpth: number, cr?: ContextRecorder): Nullable<string> {
+    private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         return this.runner<string>(dpth,
-            (log) => {
-                if (log) {
-                    if (this.negating) {
-                        log("$$!StrMatch");
-                    } else {
-                        log("$$StrMatch");
-                    }
-                    // We substring from 3 to len - 1 to strip off the
-                    // non-capture group syntax added as a WebKit workaround
-                    log(match.substring(3, match.length - 1));
-                }
+            () => {
                 const reg = new RegExp(match, "y");
-                reg.lastIndex = this.mark().overallPos;
-                const res = reg.exec(this.input);
-                if (res) {
-                    let lineJmp = 0;
-                    let lind = -1;
-                    for (let i = 0; i < res[0].length; ++i) {
-                        if (res[0][i] === "\n") {
-                            ++lineJmp;
-                            lind = i;
-                        }
-                    }
-                    this.pos = {
-                        overallPos: reg.lastIndex,
-                        line: this.pos.line + lineJmp,
-                        offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
-                    };
-                    return res[0];
+                const mrk = this.mark();
+                reg.lastIndex = mrk.overallPos;
+                const res = this.tryConsume(reg);
+                if(cr) {
+                    cr.record(mrk, res, {
+                        kind: "RegexMatch",
+                        // We substring from 3 to len - 1 to strip off the
+                        // non-capture group syntax added as a WebKit workaround
+                        literal: match.substring(3, match.length - 1),
+                        negated: this.negating,
+                    });
                 }
-                return null;
-            }, cr)();
+                return res;
+            })();
+    }
+    private tryConsume(reg: RegExp): Nullable<string> {
+        const res = reg.exec(this.input);
+        if (res) {
+            let lineJmp = 0;
+            let lind = -1;
+            for (let i = 0; i < res[0].length; ++i) {
+                if (res[0][i] === "\n") {
+                    ++lineJmp;
+                    lind = i;
+                }
+            }
+            this.pos = {
+                overallPos: reg.lastIndex,
+                line: this.pos.line + lineJmp,
+                offset: lind === -1 ? this.pos.offset + res[0].length : (res[0].length - lind - 1)
+            };
+            return res[0];
+        }
+        return null;
     }
     private noConsume<T>(fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
@@ -236,7 +229,7 @@ export interface RegexMatch {
     readonly negated: boolean;
     readonly literal: string;
 }
-export type EOFMatch = { kind: "EOF" };
+export type EOFMatch = { kind: "EOF"; negated: boolean };
 export type MatchAttempt = RegexMatch | EOFMatch;
 export class SyntaxErr {
     public pos: PosInfo;
@@ -249,18 +242,18 @@ export class SyntaxErr {
         return `Syntax Error at line ${this.pos.line}:${this.pos.offset}. Expected one of ${this.expmatches.map(x => x.kind === "EOF" ? " EOF" : ` ${x.negated ? 'not ': ''}'${x.literal}'`)}`;
     }
 }
-class ErrorTracker implements ContextRecorder {
+class ErrorTracker {
     private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};
     private pmatches: Set<MatchAttempt> = new Set();
-    public record(pos: PosInfo, depth: number, result: any, negating: boolean, extraInfo: string[]) {
-        if ((result === null) === negating)
+    public record(pos: PosInfo, result: any, att: MatchAttempt) {
+        if ((result === null) === att.negated)
             return;
         if (pos.overallPos > this.mxpos.overallPos) {
             this.mxpos = pos;
             this.pmatches.clear();
         }
-        if (this.mxpos.overallPos === pos.overallPos && extraInfo.length >= 2)
-            this.pmatches.add({kind: "RegexMatch", negated: negating, literal: extraInfo[1]});
+        if (this.mxpos.overallPos === pos.overallPos)
+            this.pmatches.add(att);
     }
     public getErr(): SyntaxErr | null {
         if (this.mxpos.overallPos !== -1)

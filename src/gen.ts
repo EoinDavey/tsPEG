@@ -180,7 +180,7 @@ export class Generator {
     }
 
     public writeChoiceParseFn(name: string, alt: ALT): Block {
-        return [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
+        return [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
              this.writeChoiceParseFnBody(name, alt),
             "}",
         ];
@@ -214,12 +214,8 @@ export class Generator {
             return this.writeRuleAliasFnBody(name, alt.matches[0].rule);
         return [`return this.runner<${name}>($$dpth,`,
             [
-                "log => {",
+                "() => {",
                 [
-                    "if (log)",
-                    [
-                        `log("${name}");`,
-                    ],
                     ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
                     `let $$res: Nullable<${name}> = null;`,
                     "if (true",
@@ -233,14 +229,14 @@ export class Generator {
                     "}",
                     "return $$res;",
                 ],
-                "}, $$cr)();",
+                "})();",
             ],
         ];
     }
 
     private writeLeftRecRuleParseFn(name: string, body: Block): Block {
         const memo = memoName(name);
-        const t: Block = [`public match${name}($$dpth: number, $$cr?: ContextRecorder): Nullable<${name}> {`,
+        const t: Block = [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
         [
             'const fn = () => {',
             body,
@@ -293,7 +289,7 @@ export class Generator {
             return [...fn, ...choices];
         }
         const union = ruledef.rule.length <= 1 ? []
-            : [`public match${nm}($$dpth: number, $$cr?: ContextRecorder): Nullable<${nm}> {`,
+            : [`public match${nm}($$dpth: number, $$cr?: ErrorTracker): Nullable<${nm}> {`,
                 this.writeUnionParseBody(nm, nms),
                 `}`];
         return [...union, ...choices];
@@ -338,7 +334,7 @@ export class Generator {
                 [
                     // If no parser error, but not finished, then we must have not consumed all input.
                     // In this case return special error rule $EOF
-                    "rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: \"EOF\"}])));",
+                    "rec.getErr() ?? new SyntaxErr(this.mark(), new Set([{kind: \"EOF\", negated: false}])));",
                 ],
             ],
             "}",
