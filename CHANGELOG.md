@@ -11,6 +11,11 @@
 - Add `$` symbol for matching EOF.
 - Parsers no longer fail if EOF is not met (unless specified with `$`).
 - `ParseResult` objects now return a list of `SyntaxErr`s.
+- `SyntaxErr` objects now return more detailed `MatchAttempts` rather than just strings.
+
+### Removed
+
+- Removed useless expected rules computation (never worked properly).
 
 ## 2.1.0 - 2020/09/29
 
