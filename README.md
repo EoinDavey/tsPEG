@@ -36,11 +36,11 @@ The parser exports a `parse` function that accepts an input string, and returns 
 ```TypeScript
 class ParseResult {
     ast: START | null;
-    err: SyntaxErr | null;
+    errs: SyntaxErr[];
 }
 ```
 
-If the err field is non-null, then a syntax error was found, otherwise the AST is stored in the `ast` field.
+If the `errs` field is non-empty, then syntax errors were found, otherwise the AST is stored in the `ast` field.
 
 ## Grammar Syntax
 
@@ -76,9 +76,9 @@ Putting this grammar into a file called "grammar.peg" and running `tspeg grammar
 
 ![Example 1](assets/example1.png)
 
-As you can see we get `null` error for 'Hello World', and 'Hello Mars', this means the match was successful. But when we try 'Hello Jupiter' we get an error object, and it lists the location of the error, and the expected matches at that location, namely 'Mars' or 'World'. You can see more about errors in the [Syntax Error section.](#syntax-errors)
+As you can see we get no errors for 'Hello World', and 'Hello Mars', this means the match was successful. But when we try 'Hello Jupiter' we get do get an error in the error list. It lists the location of the error, and the expected matches at that location, namely it expected to have a regex match for 'Mars' or 'World'. You can see more about errors in the [Syntax Error section.](#syntax-errors)
 
-Notably the `ast` field of the parse result is empty. This is because we haven't told *tsPEG* what elements of the grammar we would like to be returned. When we write a rule definition, we can specify the fields we'd like to save in the AST by assigning them with an `=` sign. For example, say we want to match a string that's the sum of 2 numbers, e.g. "2+3", "123+456", we'd like to save both side of the sum in our AST, we can do this by writing a grammar like the following. *Note that we had to write '\\+' to escape the '+' symbol as the '+' symbol has special meaning in regex*.
+Notably the `ast` field of the parse result is empty for 'Hello World' and 'Hello Mars', it only contains a `kind` field that tell us which rule was matched. ([See more on kinds](#kind-checking)). This is because we haven't told *tsPEG* what elements of the grammar we would like to be returned. When we write a rule definition, we can specify the fields we'd like to save in the AST by assigning them with an `=` sign. For example, say we want to match a string that's the sum of 2 numbers, e.g. "2+3", "123+456", we'd like to save both side of the sum in our AST, we can do this by writing a grammar like the following. *Note that we had to write '\\+' to escape the '+' symbol as the '+' symbol has special meaning in regex*.
 
 ```
 sum := left=num '\+' right=num
@@ -148,17 +148,35 @@ We want the part in the middle to be optional, so we wrap it in `{` and `}` and 
 
 ## Syntax Errors
 
-A `SyntaxErr` object is composed of two fields, a `pos` field with the position of the error, and `expmatches` which contains a list of expected matches.
+A `SyntaxErr` object is composed of two fields, a `pos` field with the position of the error, and `expmatches` which contains a list of expected matches. It also supports a `toString` method to return a readable text error message. (In production though it is recommended to use a more ad-hoc custom method).
+
+Matches can be either a `RegexMatch`, or an `EOF` match. These can be disambiguated by checking the `kind` field (not the same as the AST `kind` fields). Each type contains a field "negated" denoting whether the match was expected to be successful or unsuccessful (e.g. if the `!` operator was used). The definitions for each are below:
+
+See details of the `PosInfo` object in the [Position Tracking section.](#position-tracking).
 
 ```TypeScript
-class SyntaxErr {
-    pos: PosInfo;
-    expmatches: string[];
+interface RegexMatch {
+    kind: "RegexMatch";
+    negated: boolean;
+    literal: string;
 }
-class PosInfo {
+
+type EOFMatch = { kind: "EOF"; negated: boolean };
+
+type MatchAttempt = RegexMatch | EOFMatch;
+
+interface PosInfo {
     overallPos: number;
     line: number;
     offset: number;
+}
+
+class SyntaxErr {
+    public pos: PosInfo;
+    public expmatches: MatchAttempt[];
+    public toString(): string {
+        // ...
+    }
 }
 ```
 
