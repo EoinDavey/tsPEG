@@ -9,7 +9,7 @@ script:
   - npm run test
 
 deploy:
-  cleanup: false
+  skip_cleanup: true
   provider: npm
   email: eoind@vey.ie
   on:
