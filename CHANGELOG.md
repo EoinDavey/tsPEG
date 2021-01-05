@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0 - 2021/01/05
+## 3.0.1 - 2021/01/05
 
 ### Added
 
@@ -16,6 +16,10 @@
 ### Removed
 
 - Removed useless expected rules computation (never worked properly).
+
+## 3.0.0
+
+Unpublished due to CI failures, can't be undone. All 3.0.0 changes are in 3.0.1
 
 ## 2.1.0 - 2020/09/29
 
