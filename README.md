@@ -150,7 +150,11 @@ We want the part in the middle to be optional, so we wrap it in `{` and `}` and 
 
 A `SyntaxErr` object is composed of two fields, a `pos` field with the position of the error, and `expmatches` which contains a list of expected matches. It also supports a `toString` method to return a readable text error message. (In production though it is recommended to use a more ad-hoc custom method).
 
-Matches can be either a `RegexMatch`, or an `EOF` match. These can be disambiguated by checking the `kind` field (not the same as the AST `kind` fields). Each type contains a field "negated" denoting whether the match was expected to be successful or unsuccessful (e.g. if the `!` operator was used). The definitions for each are below:
+Matches can be either a `RegexMatch`, or an `EOFMatch`. These can be disambiguated by checking the `kind` field (not the same as the AST `kind` fields). Each type contains a field "negated" denoting whether the match was expected to be successful or unsuccessful (e.g. if the `!` operator was used).
+
+`RegexMatch` objects are for attempts at matching regex literals, these are the most common. `EOFMatch` objects are for attempts at matching the `EOF` (`$`) match (See the [section on EOF matching](#eof-matching)).
+
+The definitions for each are below:
 
 See details of the `PosInfo` object in the [Position Tracking section.](#position-tracking).
 
@@ -314,3 +318,31 @@ interface sum {
     right: string
 }
 ```
+
+## EOF Matching
+
+tsPEG supports another special match expression `$` that matches the end of the input (traditionally referred to as `EOF` for End-Of-File).
+
+The `$` match will succeed only if we are at the end of the input. This can be used to ensure that all of the input is consumed.
+
+### Example
+
+Consider this grammar:
+
+```
+hello := 'Hello World'
+```
+
+This grammar will successfully match the string "Hello World" as expected, *but* it will also match the string "Hello World, Goodbye Moon". It will match the "Hello World" at the start of sentence and not try to go any further.
+
+![No EOF Symbol](assets/no_eof_symb.png)
+
+To fix this issue we can use the `$` symbol to require that the parser only succeeds if the EOF has been reached.
+
+```
+hello := 'Hello World' $
+```
+
+If the EOF is not matched by the parser you will get an `EOFMatch` object in your expected matches in the returned `SyntaxErr`.
+
+![With EOF Symbol](assets/with_eof_symb.png)
