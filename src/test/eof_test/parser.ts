@@ -53,11 +53,12 @@ export class Parser {
         const mrk = this.mark();
         const res = this.matchRULE(0);
         if (res)
-            return new ParseResult(res, null);
+            return {ast: res, errs: []};
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.matchRULE(0, rec);
-        return new ParseResult(res, rec.getErr());
+        const err = rec.getErr()
+        return {ast: res, errs: err !== null ? [err] : []}
     }
     public mark(): PosInfo {
         return this.pos;
@@ -151,24 +152,20 @@ export class Parser {
         this.reset(mrk);
         return res === null ? true : null;
     }
-        private match$EOF(et?: ErrorTracker): Nullable<{kind: ASTKinds.$EOF}> {
-            const res: {kind: ASTKinds.$EOF} | null = this.finished() ? { kind: ASTKinds.$EOF } : null;
-            if(et)
-                et.record(this.mark(), res, { kind: "EOF", negated: this.negating });
-            return res;
-        }
+    private match$EOF(et?: ErrorTracker): Nullable<{kind: ASTKinds.$EOF}> {
+        const res: {kind: ASTKinds.$EOF} | null = this.finished() ? { kind: ASTKinds.$EOF } : null;
+        if(et)
+            et.record(this.mark(), res, { kind: "EOF", negated: this.negating });
+        return res;
+    }
 }
 export function parse(s: string): ParseResult {
     const p = new Parser(s);
     return p.parse();
 }
-export class ParseResult {
-    public ast: Nullable<RULE>;
-    public err: Nullable<SyntaxErr>;
-    constructor(ast: Nullable<RULE>, err: Nullable<SyntaxErr>) {
-        this.ast = ast;
-        this.err = err;
-    }
+export interface ParseResult {
+    ast: Nullable<RULE>;
+    errs: SyntaxErr[];
 }
 export interface PosInfo {
     readonly overallPos: number;

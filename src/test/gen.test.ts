@@ -92,14 +92,14 @@ test("Parser Test", () => {
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
-        if (res.err !== null) {
+        if (res.errs.length > 0 || tc.expmatches !== undefined) {
             expect(tc.expmatches).not.toBeUndefined();
-            expect(tc.expmatches!.sort()).toEqual(res.err.expmatches.map(x => x.kind === "RegexMatch" ? x.literal : "$EOF").sort());
-            continue;
-        }
-        if (tc.expmatches !== undefined) {
-            expect(res.err).not.toBeNull();
-            expect(tc.expmatches.sort()).toEqual(res.err!.expmatches.sort());
+            expect(res.errs).not.toEqual([]);
+            const allMatches: string[] = ([] as string[])
+                .concat(...res.errs
+                    .map(x => x.expmatches
+                        .map(m => m.kind === "RegexMatch" ? m.literal : "$EOF")));
+            expect(tc.expmatches!.sort()).toEqual(allMatches.sort());
             continue;
         }
         expect(res.ast).not.toBeNull();
@@ -132,7 +132,7 @@ test("extractRule test", () => {
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
-        expect(res.err).toBeNull();
+        expect(res.errs).toEqual([]);
         expect(res.ast).not.toBeNull();
         const names : string[] = res.ast!.rules.map(x => extractRules(x.rule.list, x.name))
             .reduce((x, y) => x.concat(y))
@@ -446,7 +446,7 @@ test("writeRuleClasses Test", () => {
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
-        expect(res.err).toBeNull();
+        expect(res.errs).toEqual([]);
         expect(res.ast).not.toBeNull();
         const g = new Generator(tc.inp);
         const gram = g.expandedGram;

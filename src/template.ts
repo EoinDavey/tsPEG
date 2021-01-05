@@ -190,7 +190,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
             "return res === null ? true : null;",
         ],
         "}",
-        (opts.usesEOF
+        ...(opts.usesEOF
             ? ["private match$EOF(et?: ErrorTracker): Nullable<{kind: ASTKinds.$EOF}> {",
             [
                 "const res: {kind: ASTKinds.$EOF} | null = this.finished() ? { kind: ASTKinds.$EOF } : null;",

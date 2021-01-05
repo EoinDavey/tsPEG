@@ -2047,11 +2047,12 @@ export class Parser {
         const mrk = this.mark();
         const res = this.matchProgram(0);
         if (res)
-            return new ParseResult(res, null);
+            return {ast: res, errs: []};
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.matchProgram(0, rec);
-        return new ParseResult(res, rec.getErr());
+        const err = rec.getErr()
+        return {ast: res, errs: err !== null ? [err] : []}
     }
     public mark(): PosInfo {
         return this.pos;
@@ -2150,13 +2151,9 @@ export function parse(s: string): ParseResult {
     const p = new Parser(s);
     return p.parse();
 }
-export class ParseResult {
-    public ast: Nullable<Program>;
-    public err: Nullable<SyntaxErr>;
-    constructor(ast: Nullable<Program>, err: Nullable<SyntaxErr>) {
-        this.ast = ast;
-        this.err = err;
-    }
+export interface ParseResult {
+    ast: Nullable<Program>;
+    errs: SyntaxErr[];
 }
 export interface PosInfo {
     readonly overallPos: number;

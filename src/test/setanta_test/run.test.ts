@@ -10,7 +10,7 @@ le i idir (0, 20)
 res := fib[fad@fib - 1]
 `;
     const res = parse(fibProg);
-    expect(res.err).toBeNull();
+    expect(res.errs).toEqual([]);
     expect(res.ast).not.toBeNull();
     const i = new Interpreter();
 

@@ -79,7 +79,7 @@ test("test left recursion detection", () => {
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
-        expect(res.err).toBeNull();
+        expect(res.errs).toEqual([]);
         expect(res.ast).not.toBeNull();
         const g = new Generator(tc.inp);
         const leftRecs = leftRecRules(g.unexpandedGram);
@@ -143,7 +143,7 @@ test("test nullable rule detection", () => {
     ];
     for(const tc of tcs) {
         const res = parse(tc.inp);
-        expect(res.err).toBeNull();
+        expect(res.errs).toEqual([]);
         expect(res.ast).not.toBeNull();
         const gram = new Generator(tc.inp).unexpandedGram;
         const atoms = nullableAtomSet(gram);

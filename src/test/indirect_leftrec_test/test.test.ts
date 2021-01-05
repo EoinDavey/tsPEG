@@ -9,7 +9,7 @@ test("test parser", () => {
     ];
     for (const tc of tcs) {
         const res = parse(tc);
-        expect(res.err).toBeNull();
+        expect(res.errs).toEqual([]);
         expect(res.ast).not.toBeNull();
     }
 });

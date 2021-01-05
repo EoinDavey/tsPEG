@@ -1,4 +1,4 @@
-import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo }  from "./meta";
+import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo, SyntaxErr }  from "./meta";
 import { expandTemplate } from "./template";
 import { Block, Grammar, Ruledef, altNames, usesEOF, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
@@ -24,6 +24,12 @@ export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: st
     return inputStr.substring(t.start.overallPos, t.end.overallPos);
 }
 
+// We use a class so we can do an instanceof check
+export class SyntaxErrs {
+    constructor(public errs: SyntaxErr[]) {
+    }
+}
+
 export class Generator {
     // expandedGram is the grammar with all subrules expanded into their own Ruledefs
     public expandedGram: Grammar;
@@ -40,8 +46,8 @@ export class Generator {
         this.numEnums = numEnums;
         const p = new Parser(this.input);
         const res = p.parse();
-        if (res.err)
-            throw res.err;
+        if (res.errs.length > 0)
+            throw new SyntaxErrs(res.errs);
         if (!res.ast)
             throw new Error("No AST found");
         this.expandedGram = this.astToExpandedGram(res.ast);
@@ -326,12 +332,13 @@ export class Generator {
                 `const res = this.match${S}(0);`,
                 "if (res)",
                 [
-                    "return new ParseResult(res, null);",
+                    "return {ast: res, errs: []};",
                 ],
                 "this.reset(mrk);",
                 "const rec = new ErrorTracker();",
                 `this.match${S}(0, rec);`,
-                "return new ParseResult(res, rec.getErr());",
+                "const err = rec.getErr()",
+                "return {ast: res, errs: err !== null ? [err] : []}",
             ],
             "}",
         ];
@@ -340,16 +347,10 @@ export class Generator {
     public writeParseResultClass(gram: Grammar): Block {
         const head = gram[0];
         const startname = head.name;
-        return ["export class ParseResult {",
+        return ["export interface ParseResult {",
             [
-                `public ast: Nullable<${startname}>;`,
-                "public err: Nullable<SyntaxErr>;",
-                `constructor(ast: Nullable<${startname}>, err: Nullable<SyntaxErr>) {`,
-                [
-                    "this.ast = ast;",
-                    "this.err = err;",
-                ],
-                "}",
+                `ast: Nullable<${startname}>;`,
+                "errs: SyntaxErr[];",
             ],
             "}",
         ];

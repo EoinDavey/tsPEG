@@ -11,7 +11,7 @@ test("test calculator", () => {
     ];
     for (const tc of tcs) {
         const res = parse(tc.inp);
-        expect(res.err).toBeNull();
+        expect(res.errs).toEqual([]);
         expect(res.ast).not.toBeNull();
         const ast = res.ast!;
         expect(ast.value).toEqual(tc.exp);
