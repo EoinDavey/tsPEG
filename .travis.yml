@@ -16,4 +16,3 @@ deploy:
     tags: true
     repo: EoinDavey/tsPEG
   api_key: "$NPM_TOKEN"
-  edge: true
