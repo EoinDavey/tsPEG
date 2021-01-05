@@ -1,16 +1,16 @@
 # Changelog
 
-## [Unreleased]
+## 3.0.0 - 2021/01/05
 
 ### Added
 
-- Added support for left recursion (#17)
+- Added support for left recursion (#17).
 
 ### Changed
 
-- Add `$` symbol for matching EOF
-- Parsers no longer fail if EOF is not met (unless specified with `$`)
-- `ParseResult` objects now return a list of `SyntaxErr`s
+- Add `$` symbol for matching EOF.
+- Parsers no longer fail if EOF is not met (unless specified with `$`).
+- `ParseResult` objects now return a list of `SyntaxErr`s.
 
 ## 2.1.0 - 2020/09/29
 
