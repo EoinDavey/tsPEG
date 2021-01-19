@@ -18,7 +18,7 @@
         "lint": "eslint",
         "lint-all": "eslint --ext .ts src/"
     },
-    "license": "ISC",
+    "license": "MPL-2.0",
     "files": [
         "tsbuild/*.js"
     ],
