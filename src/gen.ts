@@ -108,18 +108,12 @@ export class Generator {
     }
 
     public writeMemos(): Block {
-        const out: Block = this
-            .memoRules()
-            .map(rule =>
+        return this.memoRules().map(rule =>
                 `private ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
-        return out;
     }
 
     public writeMemoClearFn(): Block {
-        const ls: Block = this
-            .memoRules()
-            .map(rule =>
-                `this.${memoName(rule.name)}.clear();`);
+        const ls: Block = this.memoRules().map(rule => `this.${memoName(rule.name)}.clear();`);
         return [
             'private clearMemos(): void {',
             ls,
