@@ -27,6 +27,7 @@ export class Parser {
     private readonly input: string;
     private pos: PosInfo;
     private negating: boolean = false;
+    private memoSafe: boolean = true;
     constructor(input: string) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
@@ -37,7 +38,12 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
+    private clearMemos(): void {
+        this.$scope$A$memo.clear();
+        this.$scope$B$memo.clear();
+    }
     private $scope$A$memo: Map<number, [Nullable<A>, PosInfo]> = new Map();
+    private $scope$B$memo: Map<number, [Nullable<B>, PosInfo]> = new Map();
     public matchA($$dpth: number, $$cr?: ErrorTracker): Nullable<A> {
         const fn = () => {
             return this.choice<A>([
@@ -45,26 +51,29 @@ export class Parser {
                 () => this.matchA_2($$dpth + 1, $$cr),
             ]);
         };
-        const pos = this.mark();
-        const memo = this.$scope$A$memo.get(pos.overallPos);
+        const $scope$pos = this.mark();
+        const memo = this.$scope$A$memo.get($scope$pos.overallPos);
         if(memo !== undefined) {
             this.reset(memo[1]);
             return memo[0];
         }
-        this.$scope$A$memo.set(pos.overallPos, [null, pos]);
+        const $scope$oldMemoSafe = this.memoSafe;
+        this.memoSafe = false;
+        this.$scope$A$memo.set($scope$pos.overallPos, [null, $scope$pos]);
         let lastRes: Nullable<A> = null;
-        let lastPos: PosInfo = pos;
+        let lastPos: PosInfo = $scope$pos;
         for(;;) {
-            this.reset(pos);
+            this.reset($scope$pos);
             const res = fn();
             const end = this.mark();
             if(end.overallPos <= lastPos.overallPos)
                 break;
             lastRes = res;
             lastPos = end;
-            this.$scope$A$memo.set(pos.overallPos, [lastRes, lastPos]);
+            this.$scope$A$memo.set($scope$pos.overallPos, [lastRes, lastPos]);
         }
         this.reset(lastPos);
+        this.memoSafe = $scope$oldMemoSafe;
         return lastRes;
     }
     public matchA_1($$dpth: number, $$cr?: ErrorTracker): Nullable<A_1> {
@@ -84,10 +93,15 @@ export class Parser {
         return this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr);
     }
     public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
-        return this.choice<B>([
-            () => this.matchB_1($$dpth + 1, $$cr),
-            () => this.matchB_2($$dpth + 1, $$cr),
-        ]);
+        return this.memoise(
+            () => {
+                return this.choice<B>([
+                    () => this.matchB_1($$dpth + 1, $$cr),
+                    () => this.matchB_2($$dpth + 1, $$cr),
+                ]);
+            },
+            this.$scope$B$memo
+        );
     }
     public matchB_1($$dpth: number, $$cr?: ErrorTracker): Nullable<B_1> {
         return this.matchA($$dpth + 1, $$cr);
@@ -109,6 +123,7 @@ export class Parser {
             return {ast: res, errs: []};
         this.reset(mrk);
         const rec = new ErrorTracker();
+        this.clearMemos();
         this.matchA(0, rec);
         const err = rec.getErr()
         return {ast: res, errs: err !== null ? [err] : []}
@@ -204,6 +219,18 @@ export class Parser {
         this.negating = oneg;
         this.reset(mrk);
         return res === null ? true : null;
+    }
+    private memoise<K>(rule: $$RuleType<K>, memo: Map<number, [Nullable<K>, PosInfo]>): Nullable<K> {
+        const $scope$pos = this.mark();
+        const $scope$memoRes = memo.get($scope$pos.overallPos);
+        if(this.memoSafe && $scope$memoRes !== undefined) {
+        this.reset($scope$memoRes[1]);
+        return $scope$memoRes[0];
+        }
+        const $scope$result = rule();
+        if(this.memoSafe)
+        memo.set($scope$pos.overallPos, [$scope$result, this.mark()]);
+        return $scope$result;
     }
 }
 export function parse(s: string): ParseResult {

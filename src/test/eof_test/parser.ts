@@ -19,6 +19,7 @@ export class Parser {
     private readonly input: string;
     private pos: PosInfo;
     private negating: boolean = false;
+    private memoSafe: boolean = true;
     constructor(input: string) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
@@ -29,18 +30,27 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
+    private clearMemos(): void {
+        this.$scope$RULE$memo.clear();
+    }
+    private $scope$RULE$memo: Map<number, [Nullable<RULE>, PosInfo]> = new Map();
     public matchRULE($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE> {
-        return this.runner<RULE>($$dpth,
+        return this.memoise(
             () => {
-                let $$res: Nullable<RULE> = null;
-                if (true
-                    && this.regexAccept(String.raw`(?:abcde)`, $$dpth + 1, $$cr) !== null
-                    && this.match$EOF($$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.RULE, };
-                }
-                return $$res;
-            })();
+                return this.runner<RULE>($$dpth,
+                    () => {
+                        let $$res: Nullable<RULE> = null;
+                        if (true
+                            && this.regexAccept(String.raw`(?:abcde)`, $$dpth + 1, $$cr) !== null
+                            && this.match$EOF($$cr) !== null
+                        ) {
+                            $$res = {kind: ASTKinds.RULE, };
+                        }
+                        return $$res;
+                    })();
+            },
+            this.$scope$RULE$memo
+        );
     }
     public test(): boolean {
         const mrk = this.mark();
@@ -56,6 +66,7 @@ export class Parser {
             return {ast: res, errs: []};
         this.reset(mrk);
         const rec = new ErrorTracker();
+        this.clearMemos();
         this.matchRULE(0, rec);
         const err = rec.getErr()
         return {ast: res, errs: err !== null ? [err] : []}
@@ -151,6 +162,18 @@ export class Parser {
         this.negating = oneg;
         this.reset(mrk);
         return res === null ? true : null;
+    }
+    private memoise<K>(rule: $$RuleType<K>, memo: Map<number, [Nullable<K>, PosInfo]>): Nullable<K> {
+        const $scope$pos = this.mark();
+        const $scope$memoRes = memo.get($scope$pos.overallPos);
+        if(this.memoSafe && $scope$memoRes !== undefined) {
+        this.reset($scope$memoRes[1]);
+        return $scope$memoRes[0];
+        }
+        const $scope$result = rule();
+        if(this.memoSafe)
+        memo.set($scope$pos.overallPos, [$scope$result, this.mark()]);
+        return $scope$result;
     }
     private match$EOF(et?: ErrorTracker): Nullable<{kind: ASTKinds.$EOF}> {
         const res: {kind: ASTKinds.$EOF} | null = this.finished() ? { kind: ASTKinds.$EOF } : null;
