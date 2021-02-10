@@ -16,7 +16,7 @@ yargs.command("$0 <grammar> <output_file>", "build parser from grammar",
         },
         "enable-memo": {
             type: "boolean",
-            default: true,
+            default: false,
             desc: "Enable memoisation, get better performance for increased memory usage",
         },
     }),

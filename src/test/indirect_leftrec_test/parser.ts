@@ -40,10 +40,8 @@ export class Parser {
     }
     public clearMemos(): void {
         this.$scope$A$memo.clear();
-        this.$scope$B$memo.clear();
     }
     protected $scope$A$memo: Map<number, [Nullable<A>, PosInfo]> = new Map();
-    protected $scope$B$memo: Map<number, [Nullable<B>, PosInfo]> = new Map();
     public matchA($$dpth: number, $$cr?: ErrorTracker): Nullable<A> {
         const fn = () => {
             return this.choice<A>([
@@ -93,15 +91,10 @@ export class Parser {
         return this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr);
     }
     public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
-        return this.memoise(
-            () => {
-                return this.choice<B>([
-                    () => this.matchB_1($$dpth + 1, $$cr),
-                    () => this.matchB_2($$dpth + 1, $$cr),
-                ]);
-            },
-            this.$scope$B$memo,
-        );
+        return this.choice<B>([
+            () => this.matchB_1($$dpth + 1, $$cr),
+            () => this.matchB_2($$dpth + 1, $$cr),
+        ]);
     }
     public matchB_1($$dpth: number, $$cr?: ErrorTracker): Nullable<B_1> {
         return this.matchA($$dpth + 1, $$cr);

@@ -31,26 +31,19 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-        this.$scope$RULE$memo.clear();
     }
-    protected $scope$RULE$memo: Map<number, [Nullable<RULE>, PosInfo]> = new Map();
     public matchRULE($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE> {
-        return this.memoise(
+        return this.runner<RULE>($$dpth,
             () => {
-                return this.runner<RULE>($$dpth,
-                    () => {
-                        let $$res: Nullable<RULE> = null;
-                        if (true
-                            && this.regexAccept(String.raw`(?:abcde)`, $$dpth + 1, $$cr) !== null
-                            && this.match$EOF($$cr) !== null
-                        ) {
-                            $$res = {kind: ASTKinds.RULE, };
-                        }
-                        return $$res;
-                    })();
-            },
-            this.$scope$RULE$memo,
-        );
+                let $$res: Nullable<RULE> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:abcde)`, $$dpth + 1, $$cr) !== null
+                    && this.match$EOF($$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.RULE, };
+                }
+                return $$res;
+            })();
     }
     public test(): boolean {
         const mrk = this.mark();
