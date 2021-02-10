@@ -30,10 +30,10 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    private clearMemos(): void {
+    public clearMemos(): void {
         this.$scope$RULE$memo.clear();
     }
-    private $scope$RULE$memo: Map<number, [Nullable<RULE>, PosInfo]> = new Map();
+    protected $scope$RULE$memo: Map<number, [Nullable<RULE>, PosInfo]> = new Map();
     public matchRULE($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE> {
         return this.memoise(
             () => {
@@ -49,7 +49,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$RULE$memo
+            this.$scope$RULE$memo,
         );
     }
     public test(): boolean {

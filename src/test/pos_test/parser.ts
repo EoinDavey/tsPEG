@@ -43,12 +43,12 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    private clearMemos(): void {
+    public clearMemos(): void {
         this.$scope$EXPR$memo.clear();
         this.$scope$_$memo.clear();
     }
-    private $scope$EXPR$memo: Map<number, [Nullable<EXPR>, PosInfo]> = new Map();
-    private $scope$_$memo: Map<number, [Nullable<_>, PosInfo]> = new Map();
+    protected $scope$EXPR$memo: Map<number, [Nullable<EXPR>, PosInfo]> = new Map();
+    protected $scope$_$memo: Map<number, [Nullable<_>, PosInfo]> = new Map();
     public matchEXPR($$dpth: number, $$cr?: ErrorTracker): Nullable<EXPR> {
         return this.memoise(
             () => {
@@ -74,7 +74,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$EXPR$memo
+            this.$scope$EXPR$memo,
         );
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
@@ -82,7 +82,7 @@ export class Parser {
             () => {
                 return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
             },
-            this.$scope$_$memo
+            this.$scope$_$memo,
         );
     }
     public test(): boolean {

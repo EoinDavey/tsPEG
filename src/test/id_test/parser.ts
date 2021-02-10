@@ -62,7 +62,7 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    private clearMemos(): void {
+    public clearMemos(): void {
         this.$scope$lowercase$memo.clear();
         this.$scope$UPPERCASE$memo.clear();
         this.$scope$_start_hypen_$memo.clear();
@@ -71,19 +71,19 @@ export class Parser {
         this.$scope$rule2$memo.clear();
         this.$scope$rule3$memo.clear();
     }
-    private $scope$lowercase$memo: Map<number, [Nullable<lowercase>, PosInfo]> = new Map();
-    private $scope$UPPERCASE$memo: Map<number, [Nullable<UPPERCASE>, PosInfo]> = new Map();
-    private $scope$_start_hypen_$memo: Map<number, [Nullable<_start_hypen_>, PosInfo]> = new Map();
-    private $scope$numbers1ab234$memo: Map<number, [Nullable<numbers1ab234>, PosInfo]> = new Map();
-    private $scope$rule$memo: Map<number, [Nullable<rule>, PosInfo]> = new Map();
-    private $scope$rule2$memo: Map<number, [Nullable<rule2>, PosInfo]> = new Map();
-    private $scope$rule3$memo: Map<number, [Nullable<rule3>, PosInfo]> = new Map();
+    protected $scope$lowercase$memo: Map<number, [Nullable<lowercase>, PosInfo]> = new Map();
+    protected $scope$UPPERCASE$memo: Map<number, [Nullable<UPPERCASE>, PosInfo]> = new Map();
+    protected $scope$_start_hypen_$memo: Map<number, [Nullable<_start_hypen_>, PosInfo]> = new Map();
+    protected $scope$numbers1ab234$memo: Map<number, [Nullable<numbers1ab234>, PosInfo]> = new Map();
+    protected $scope$rule$memo: Map<number, [Nullable<rule>, PosInfo]> = new Map();
+    protected $scope$rule2$memo: Map<number, [Nullable<rule2>, PosInfo]> = new Map();
+    protected $scope$rule3$memo: Map<number, [Nullable<rule3>, PosInfo]> = new Map();
     public matchlowercase($$dpth: number, $$cr?: ErrorTracker): Nullable<lowercase> {
         return this.memoise(
             () => {
                 return this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr);
             },
-            this.$scope$lowercase$memo
+            this.$scope$lowercase$memo,
         );
     }
     public matchUPPERCASE($$dpth: number, $$cr?: ErrorTracker): Nullable<UPPERCASE> {
@@ -91,7 +91,7 @@ export class Parser {
             () => {
                 return this.regexAccept(String.raw`(?:b)`, $$dpth + 1, $$cr);
             },
-            this.$scope$UPPERCASE$memo
+            this.$scope$UPPERCASE$memo,
         );
     }
     public match_start_hypen_($$dpth: number, $$cr?: ErrorTracker): Nullable<_start_hypen_> {
@@ -99,7 +99,7 @@ export class Parser {
             () => {
                 return this.regexAccept(String.raw`(?:c)`, $$dpth + 1, $$cr);
             },
-            this.$scope$_start_hypen_$memo
+            this.$scope$_start_hypen_$memo,
         );
     }
     public matchnumbers1ab234($$dpth: number, $$cr?: ErrorTracker): Nullable<numbers1ab234> {
@@ -107,7 +107,7 @@ export class Parser {
             () => {
                 return this.regexAccept(String.raw`(?:d)`, $$dpth + 1, $$cr);
             },
-            this.$scope$numbers1ab234$memo
+            this.$scope$numbers1ab234$memo,
         );
     }
     public matchrule($$dpth: number, $$cr?: ErrorTracker): Nullable<rule> {
@@ -164,7 +164,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$rule2$memo
+            this.$scope$rule2$memo,
         );
     }
     public matchrule3($$dpth: number, $$cr?: ErrorTracker): Nullable<rule3> {
@@ -182,7 +182,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$rule3$memo
+            this.$scope$rule3$memo,
         );
     }
     public test(): boolean {

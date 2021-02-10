@@ -203,7 +203,7 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    private clearMemos(): void {
+    public clearMemos(): void {
         this.$scope$Program$memo.clear();
         this.$scope$Melody$memo.clear();
         this.$scope$Melody_$0$memo.clear();
@@ -236,37 +236,37 @@ export class Parser {
         this.$scope$ID$memo.clear();
         this.$scope$_$memo.clear();
     }
-    private $scope$Program$memo: Map<number, [Nullable<Program>, PosInfo]> = new Map();
-    private $scope$Melody$memo: Map<number, [Nullable<Melody>, PosInfo]> = new Map();
-    private $scope$Melody_$0$memo: Map<number, [Nullable<Melody_$0>, PosInfo]> = new Map();
-    private $scope$Stmt$memo: Map<number, [Nullable<Stmt>, PosInfo]> = new Map();
-    private $scope$KeyStmt$memo: Map<number, [Nullable<KeyStmt>, PosInfo]> = new Map();
-    private $scope$AssignStmt$memo: Map<number, [Nullable<AssignStmt>, PosInfo]> = new Map();
-    private $scope$ForStmt$memo: Map<number, [Nullable<ForStmt>, PosInfo]> = new Map();
-    private $scope$IfStmt$memo: Map<number, [Nullable<IfStmt>, PosInfo]> = new Map();
-    private $scope$IfStmt_$0$memo: Map<number, [Nullable<IfStmt_$0>, PosInfo]> = new Map();
-    private $scope$FuncExpr$memo: Map<number, [Nullable<FuncExpr>, PosInfo]> = new Map();
-    private $scope$FuncExpr_$0$memo: Map<number, [Nullable<FuncExpr_$0>, PosInfo]> = new Map();
-    private $scope$Expr$memo: Map<number, [Nullable<Expr>, PosInfo]> = new Map();
-    private $scope$Eq$memo: Map<number, [Nullable<Eq>, PosInfo]> = new Map();
-    private $scope$Eq_$0$memo: Map<number, [Nullable<Eq_$0>, PosInfo]> = new Map();
-    private $scope$Comp$memo: Map<number, [Nullable<Comp>, PosInfo]> = new Map();
-    private $scope$Comp_$0$memo: Map<number, [Nullable<Comp_$0>, PosInfo]> = new Map();
-    private $scope$Sum$memo: Map<number, [Nullable<Sum>, PosInfo]> = new Map();
-    private $scope$Sum_$0$memo: Map<number, [Nullable<Sum_$0>, PosInfo]> = new Map();
-    private $scope$Product$memo: Map<number, [Nullable<Product>, PosInfo]> = new Map();
-    private $scope$Product_$0$memo: Map<number, [Nullable<Product_$0>, PosInfo]> = new Map();
-    private $scope$Atom$memo: Map<number, [Nullable<Atom>, PosInfo]> = new Map();
-    private $scope$PlusMinus$memo: Map<number, [Nullable<PlusMinus>, PosInfo]> = new Map();
-    private $scope$MulDiv$memo: Map<number, [Nullable<MulDiv>, PosInfo]> = new Map();
-    private $scope$Compare$memo: Map<number, [Nullable<Compare>, PosInfo]> = new Map();
-    private $scope$NoteLit$memo: Map<number, [Nullable<NoteLit>, PosInfo]> = new Map();
-    private $scope$INT$memo: Map<number, [Nullable<INT>, PosInfo]> = new Map();
-    private $scope$Keyword$memo: Map<number, [Nullable<Keyword>, PosInfo]> = new Map();
-    private $scope$Funcs$memo: Map<number, [Nullable<Funcs>, PosInfo]> = new Map();
-    private $scope$KID$memo: Map<number, [Nullable<KID>, PosInfo]> = new Map();
-    private $scope$ID$memo: Map<number, [Nullable<ID>, PosInfo]> = new Map();
-    private $scope$_$memo: Map<number, [Nullable<_>, PosInfo]> = new Map();
+    protected $scope$Program$memo: Map<number, [Nullable<Program>, PosInfo]> = new Map();
+    protected $scope$Melody$memo: Map<number, [Nullable<Melody>, PosInfo]> = new Map();
+    protected $scope$Melody_$0$memo: Map<number, [Nullable<Melody_$0>, PosInfo]> = new Map();
+    protected $scope$Stmt$memo: Map<number, [Nullable<Stmt>, PosInfo]> = new Map();
+    protected $scope$KeyStmt$memo: Map<number, [Nullable<KeyStmt>, PosInfo]> = new Map();
+    protected $scope$AssignStmt$memo: Map<number, [Nullable<AssignStmt>, PosInfo]> = new Map();
+    protected $scope$ForStmt$memo: Map<number, [Nullable<ForStmt>, PosInfo]> = new Map();
+    protected $scope$IfStmt$memo: Map<number, [Nullable<IfStmt>, PosInfo]> = new Map();
+    protected $scope$IfStmt_$0$memo: Map<number, [Nullable<IfStmt_$0>, PosInfo]> = new Map();
+    protected $scope$FuncExpr$memo: Map<number, [Nullable<FuncExpr>, PosInfo]> = new Map();
+    protected $scope$FuncExpr_$0$memo: Map<number, [Nullable<FuncExpr_$0>, PosInfo]> = new Map();
+    protected $scope$Expr$memo: Map<number, [Nullable<Expr>, PosInfo]> = new Map();
+    protected $scope$Eq$memo: Map<number, [Nullable<Eq>, PosInfo]> = new Map();
+    protected $scope$Eq_$0$memo: Map<number, [Nullable<Eq_$0>, PosInfo]> = new Map();
+    protected $scope$Comp$memo: Map<number, [Nullable<Comp>, PosInfo]> = new Map();
+    protected $scope$Comp_$0$memo: Map<number, [Nullable<Comp_$0>, PosInfo]> = new Map();
+    protected $scope$Sum$memo: Map<number, [Nullable<Sum>, PosInfo]> = new Map();
+    protected $scope$Sum_$0$memo: Map<number, [Nullable<Sum_$0>, PosInfo]> = new Map();
+    protected $scope$Product$memo: Map<number, [Nullable<Product>, PosInfo]> = new Map();
+    protected $scope$Product_$0$memo: Map<number, [Nullable<Product_$0>, PosInfo]> = new Map();
+    protected $scope$Atom$memo: Map<number, [Nullable<Atom>, PosInfo]> = new Map();
+    protected $scope$PlusMinus$memo: Map<number, [Nullable<PlusMinus>, PosInfo]> = new Map();
+    protected $scope$MulDiv$memo: Map<number, [Nullable<MulDiv>, PosInfo]> = new Map();
+    protected $scope$Compare$memo: Map<number, [Nullable<Compare>, PosInfo]> = new Map();
+    protected $scope$NoteLit$memo: Map<number, [Nullable<NoteLit>, PosInfo]> = new Map();
+    protected $scope$INT$memo: Map<number, [Nullable<INT>, PosInfo]> = new Map();
+    protected $scope$Keyword$memo: Map<number, [Nullable<Keyword>, PosInfo]> = new Map();
+    protected $scope$Funcs$memo: Map<number, [Nullable<Funcs>, PosInfo]> = new Map();
+    protected $scope$KID$memo: Map<number, [Nullable<KID>, PosInfo]> = new Map();
+    protected $scope$ID$memo: Map<number, [Nullable<ID>, PosInfo]> = new Map();
+    protected $scope$_$memo: Map<number, [Nullable<_>, PosInfo]> = new Map();
     public matchProgram($$dpth: number, $$cr?: ErrorTracker): Nullable<Program> {
         return this.memoise(
             () => {
@@ -282,7 +282,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Program$memo
+            this.$scope$Program$memo,
         );
     }
     public matchMelody($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody> {
@@ -308,7 +308,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Melody$memo
+            this.$scope$Melody$memo,
         );
     }
     public matchMelody_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody_$0> {
@@ -326,7 +326,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Melody_$0$memo
+            this.$scope$Melody_$0$memo,
         );
     }
     public matchStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt> {
@@ -339,7 +339,7 @@ export class Parser {
                     () => this.matchStmt_4($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$Stmt$memo
+            this.$scope$Stmt$memo,
         );
     }
     public matchStmt_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_1> {
@@ -371,7 +371,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$KeyStmt$memo
+            this.$scope$KeyStmt$memo,
         );
     }
     public matchAssignStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<AssignStmt> {
@@ -393,7 +393,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$AssignStmt$memo
+            this.$scope$AssignStmt$memo,
         );
     }
     public matchForStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<ForStmt> {
@@ -424,7 +424,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$ForStmt$memo
+            this.$scope$ForStmt$memo,
         );
     }
     public matchIfStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt> {
@@ -448,7 +448,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$IfStmt$memo
+            this.$scope$IfStmt$memo,
         );
     }
     public matchIfStmt_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0> {
@@ -459,7 +459,7 @@ export class Parser {
                     () => this.matchIfStmt_$0_2($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$IfStmt_$0$memo
+            this.$scope$IfStmt_$0$memo,
         );
     }
     public matchIfStmt_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_1> {
@@ -506,7 +506,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$FuncExpr$memo
+            this.$scope$FuncExpr$memo,
         );
     }
     public matchFuncExpr_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr_$0> {
@@ -526,7 +526,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$FuncExpr_$0$memo
+            this.$scope$FuncExpr_$0$memo,
         );
     }
     public matchExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<Expr> {
@@ -534,7 +534,7 @@ export class Parser {
             () => {
                 return this.matchEq($$dpth + 1, $$cr);
             },
-            this.$scope$Expr$memo
+            this.$scope$Expr$memo,
         );
     }
     public matchEq($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq> {
@@ -553,7 +553,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Eq$memo
+            this.$scope$Eq$memo,
         );
     }
     public matchEq_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq_$0> {
@@ -572,7 +572,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Eq_$0$memo
+            this.$scope$Eq_$0$memo,
         );
     }
     public matchComp($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp> {
@@ -591,7 +591,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Comp$memo
+            this.$scope$Comp$memo,
         );
     }
     public matchComp_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp_$0> {
@@ -611,7 +611,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Comp_$0$memo
+            this.$scope$Comp_$0$memo,
         );
     }
     public matchSum($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum> {
@@ -630,7 +630,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Sum$memo
+            this.$scope$Sum$memo,
         );
     }
     public matchSum_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum_$0> {
@@ -650,7 +650,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Sum_$0$memo
+            this.$scope$Sum_$0$memo,
         );
     }
     public matchProduct($$dpth: number, $$cr?: ErrorTracker): Nullable<Product> {
@@ -669,7 +669,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Product$memo
+            this.$scope$Product$memo,
         );
     }
     public matchProduct_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Product_$0> {
@@ -689,7 +689,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$Product_$0$memo
+            this.$scope$Product_$0$memo,
         );
     }
     public matchAtom($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom> {
@@ -702,7 +702,7 @@ export class Parser {
                     () => this.matchAtom_4($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$Atom$memo
+            this.$scope$Atom$memo,
         );
     }
     public matchAtom_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_1> {
@@ -737,7 +737,7 @@ export class Parser {
                     () => this.matchPlusMinus_2($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$PlusMinus$memo
+            this.$scope$PlusMinus$memo,
         );
     }
     public matchPlusMinus_1($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus_1> {
@@ -755,7 +755,7 @@ export class Parser {
                     () => this.matchMulDiv_3($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$MulDiv$memo
+            this.$scope$MulDiv$memo,
         );
     }
     public matchMulDiv_1($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_1> {
@@ -777,7 +777,7 @@ export class Parser {
                     () => this.matchCompare_4($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$Compare$memo
+            this.$scope$Compare$memo,
         );
     }
     public matchCompare_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_1> {
@@ -797,7 +797,7 @@ export class Parser {
             () => {
                 return this.regexAccept(String.raw`(?:[A-G][#b]?\d)`, $$dpth + 1, $$cr);
             },
-            this.$scope$NoteLit$memo
+            this.$scope$NoteLit$memo,
         );
     }
     public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
@@ -805,7 +805,7 @@ export class Parser {
             () => {
                 return this.regexAccept(String.raw`(?:[0-9]+)`, $$dpth + 1, $$cr);
             },
-            this.$scope$INT$memo
+            this.$scope$INT$memo,
         );
     }
     public matchKeyword($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword> {
@@ -820,7 +820,7 @@ export class Parser {
                     () => this.matchKeyword_6($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$Keyword$memo
+            this.$scope$Keyword$memo,
         );
     }
     public matchKeyword_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_1> {
@@ -849,7 +849,7 @@ export class Parser {
                     () => this.matchFuncs_2($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$Funcs$memo
+            this.$scope$Funcs$memo,
         );
     }
     public matchFuncs_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs_1> {
@@ -873,7 +873,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$KID$memo
+            this.$scope$KID$memo,
         );
     }
     public matchID($$dpth: number, $$cr?: ErrorTracker): Nullable<ID> {
@@ -881,7 +881,7 @@ export class Parser {
             () => {
                 return this.regexAccept(String.raw`(?:[a-zA-Z_]+)`, $$dpth + 1, $$cr);
             },
-            this.$scope$ID$memo
+            this.$scope$ID$memo,
         );
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
@@ -889,7 +889,7 @@ export class Parser {
             () => {
                 return this.loop<string>(() => this.regexAccept(String.raw`(?:\s)`, $$dpth + 1, $$cr), true);
             },
-            this.$scope$_$memo
+            this.$scope$_$memo,
         );
     }
     public test(): boolean {

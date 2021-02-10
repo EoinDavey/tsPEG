@@ -38,12 +38,12 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    private clearMemos(): void {
+    public clearMemos(): void {
         this.$scope$A$memo.clear();
         this.$scope$B$memo.clear();
     }
-    private $scope$A$memo: Map<number, [Nullable<A>, PosInfo]> = new Map();
-    private $scope$B$memo: Map<number, [Nullable<B>, PosInfo]> = new Map();
+    protected $scope$A$memo: Map<number, [Nullable<A>, PosInfo]> = new Map();
+    protected $scope$B$memo: Map<number, [Nullable<B>, PosInfo]> = new Map();
     public matchA($$dpth: number, $$cr?: ErrorTracker): Nullable<A> {
         const fn = () => {
             return this.choice<A>([
@@ -100,7 +100,7 @@ export class Parser {
                     () => this.matchB_2($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$B$memo
+            this.$scope$B$memo,
         );
     }
     public matchB_1($$dpth: number, $$cr?: ErrorTracker): Nullable<B_1> {

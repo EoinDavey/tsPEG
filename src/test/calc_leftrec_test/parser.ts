@@ -118,18 +118,18 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
-    private clearMemos(): void {
+    public clearMemos(): void {
         this.$scope$SUM$memo.clear();
         this.$scope$FAC$memo.clear();
         this.$scope$ATOM$memo.clear();
         this.$scope$INT$memo.clear();
         this.$scope$_$memo.clear();
     }
-    private $scope$SUM$memo: Map<number, [Nullable<SUM>, PosInfo]> = new Map();
-    private $scope$FAC$memo: Map<number, [Nullable<FAC>, PosInfo]> = new Map();
-    private $scope$ATOM$memo: Map<number, [Nullable<ATOM>, PosInfo]> = new Map();
-    private $scope$INT$memo: Map<number, [Nullable<INT>, PosInfo]> = new Map();
-    private $scope$_$memo: Map<number, [Nullable<_>, PosInfo]> = new Map();
+    protected $scope$SUM$memo: Map<number, [Nullable<SUM>, PosInfo]> = new Map();
+    protected $scope$FAC$memo: Map<number, [Nullable<FAC>, PosInfo]> = new Map();
+    protected $scope$ATOM$memo: Map<number, [Nullable<ATOM>, PosInfo]> = new Map();
+    protected $scope$INT$memo: Map<number, [Nullable<INT>, PosInfo]> = new Map();
+    protected $scope$_$memo: Map<number, [Nullable<_>, PosInfo]> = new Map();
     public matchSUM($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM> {
         const fn = () => {
             return this.choice<SUM>([
@@ -242,7 +242,7 @@ export class Parser {
                     () => this.matchATOM_2($$dpth + 1, $$cr),
                 ]);
             },
-            this.$scope$ATOM$memo
+            this.$scope$ATOM$memo,
         );
     }
     public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
@@ -292,7 +292,7 @@ export class Parser {
                         return $$res;
                     })();
             },
-            this.$scope$INT$memo
+            this.$scope$INT$memo,
         );
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
@@ -300,7 +300,7 @@ export class Parser {
             () => {
                 return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
             },
-            this.$scope$_$memo
+            this.$scope$_$memo,
         );
     }
     public test(): boolean {

@@ -27,7 +27,7 @@ function memoedBody(memo: string, body: Block): Block {
             '() => {',
             body,
             '},',
-            `this.${memoName(memo)}`,
+            `this.${memoName(memo)},`,
         ],
         ');',
     ];
@@ -109,13 +109,13 @@ export class Generator {
 
     public writeMemos(): Block {
         return this.memoRules().map(rule =>
-                `private ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
+                `protected ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
     }
 
     public writeMemoClearFn(): Block {
         const ls: Block = this.memoRules().map(rule => `this.${memoName(rule.name)}.clear();`);
         return [
-            'private clearMemos(): void {',
+            'public clearMemos(): void {',
             ls,
             '}',
         ];

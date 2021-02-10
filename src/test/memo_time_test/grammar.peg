@@ -1,0 +1,21 @@
+E0  := a=E1 op='a|b' b=E0 .value=number { return this.a.value + this.b.value }
+     | E1
+
+E1  := a=E2 op='c|d' b=E1 .value=number { return this.a.value + this.b.value }
+      | E2
+
+E2  := a=E3 op='e|f' b=E2 .value=number { return this.a.value + this.b.value }
+      | E3
+
+E3  := a=E4 op='g|h' b=E3 .value=number { return this.a.value + this.b.value }
+      | E4
+
+E4  := a=ATOM op='i|j' b=E4 .value=number { return this.a.value + this.b.value }
+      | ATOM
+
+ATOM := val=INT
+        .value=number { return this.val.value; }
+        | '\(' val=E0 '\)'
+        .value=number { return this.val.value; }
+INT  := val='[0-9]+'
+        .value=number { return parseInt(this.val); }
