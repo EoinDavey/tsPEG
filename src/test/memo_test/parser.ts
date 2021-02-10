@@ -157,7 +157,7 @@ export class Parser {
     public matchS($$dpth: number, $$cr?: ErrorTracker): Nullable<S> {
         return this.memoise(
             () => {
-                return this.runner<S>($$dpth,
+                return this.run<S>($$dpth,
                     () => {
                         let $scope$expr: Nullable<E0>;
                         let $$res: Nullable<S> = null;
@@ -169,7 +169,7 @@ export class Parser {
                             $$res = new S($scope$expr);
                         }
                         return $$res;
-                    })();
+                    });
             },
             this.$scope$S$memo,
         );
@@ -186,7 +186,7 @@ export class Parser {
         );
     }
     public matchE0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<E0_1> {
-        return this.runner<E0_1>($$dpth,
+        return this.run<E0_1>($$dpth,
             () => {
                 let $scope$a: Nullable<E1>;
                 let $scope$op: Nullable<string>;
@@ -201,7 +201,7 @@ export class Parser {
                     $$res = new E0_1($scope$a, $scope$op, $scope$b);
                 }
                 return $$res;
-            })();
+            });
     }
     public matchE0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<E0_2> {
         return this.matchE1($$dpth + 1, $$cr);
@@ -218,7 +218,7 @@ export class Parser {
         );
     }
     public matchE1_1($$dpth: number, $$cr?: ErrorTracker): Nullable<E1_1> {
-        return this.runner<E1_1>($$dpth,
+        return this.run<E1_1>($$dpth,
             () => {
                 let $scope$a: Nullable<ATOM>;
                 let $scope$op: Nullable<string>;
@@ -233,7 +233,7 @@ export class Parser {
                     $$res = new E1_1($scope$a, $scope$op, $scope$b);
                 }
                 return $$res;
-            })();
+            });
     }
     public matchE1_2($$dpth: number, $$cr?: ErrorTracker): Nullable<E1_2> {
         return this.matchATOM($$dpth + 1, $$cr);
@@ -250,7 +250,7 @@ export class Parser {
         );
     }
     public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
-        return this.runner<ATOM_1>($$dpth,
+        return this.run<ATOM_1>($$dpth,
             () => {
                 let $scope$val: Nullable<INT>;
                 let $$res: Nullable<ATOM_1> = null;
@@ -261,10 +261,10 @@ export class Parser {
                     $$res = new ATOM_1($scope$val);
                 }
                 return $$res;
-            })();
+            });
     }
     public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
-        return this.runner<ATOM_2>($$dpth,
+        return this.run<ATOM_2>($$dpth,
             () => {
                 let $scope$val: Nullable<E0>;
                 let $$res: Nullable<ATOM_2> = null;
@@ -278,12 +278,12 @@ export class Parser {
                     $$res = new ATOM_2($scope$val);
                 }
                 return $$res;
-            })();
+            });
     }
     public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
         return this.memoise(
             () => {
-                return this.runner<INT>($$dpth,
+                return this.run<INT>($$dpth,
                     () => {
                         let $scope$val: Nullable<string>;
                         let $$res: Nullable<INT> = null;
@@ -293,7 +293,7 @@ export class Parser {
                             $$res = new INT($scope$val);
                         }
                         return $$res;
-                    })();
+                    });
             },
             this.$scope$INT$memo,
         );
@@ -344,15 +344,13 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {
-        return () => {
-            const mrk = this.mark();
-            const res = fn()
-            if (res !== null)
-                return res;
-            this.reset(mrk);
-            return null;
-        };
+    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
+        const mrk = this.mark();
+        const res = fn()
+        if (res !== null)
+            return res;
+        this.reset(mrk);
+        return null;
     }
     private choice<T>(fns: Array<$$RuleType<T>>): Nullable<T> {
         for (const f of fns) {
@@ -364,7 +362,7 @@ export class Parser {
         return null;
     }
     private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
-        return this.runner<string>(dpth,
+        return this.run<string>(dpth,
             () => {
                 const reg = new RegExp(match, "y");
                 const mrk = this.mark();
@@ -380,7 +378,7 @@ export class Parser {
                     });
                 }
                 return res;
-            })();
+            });
     }
     private tryConsume(reg: RegExp): Nullable<string> {
         const res = reg.exec(this.input);

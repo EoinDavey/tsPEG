@@ -83,20 +83,16 @@ export function expandTemplate(opts: TemplateOpts): Block {
             "return null;",
         ],
         "}",
-        "private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {",
+        "private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {",
         [
-            "return () => {",
+            "const mrk = this.mark();",
+            "const res = fn()",
+            "if (res !== null)",
             [
-                "const mrk = this.mark();",
-                "const res = fn()",
-                "if (res !== null)",
-                [
-                    "return res;",
-                ],
-                "this.reset(mrk);",
-                "return null;",
+                "return res;",
             ],
-            "};",
+            "this.reset(mrk);",
+            "return null;",
         ],
         "}",
 
@@ -117,7 +113,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
         "}",
         "private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {",
         [
-            "return this.runner<string>(dpth,",
+            "return this.run<string>(dpth,",
             [
                 "() => {",
                 [
@@ -140,7 +136,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
                     "}",
                     "return res;",
                 ],
-                "})();",
+                "});",
             ],
         ],
         "}",

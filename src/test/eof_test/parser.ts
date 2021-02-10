@@ -33,7 +33,7 @@ export class Parser {
     public clearMemos(): void {
     }
     public matchRULE($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE> {
-        return this.runner<RULE>($$dpth,
+        return this.run<RULE>($$dpth,
             () => {
                 let $$res: Nullable<RULE> = null;
                 if (true
@@ -43,7 +43,7 @@ export class Parser {
                     $$res = {kind: ASTKinds.RULE, };
                 }
                 return $$res;
-            })();
+            });
     }
     public test(): boolean {
         const mrk = this.mark();
@@ -83,15 +83,13 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {
-        return () => {
-            const mrk = this.mark();
-            const res = fn()
-            if (res !== null)
-                return res;
-            this.reset(mrk);
-            return null;
-        };
+    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
+        const mrk = this.mark();
+        const res = fn()
+        if (res !== null)
+            return res;
+        this.reset(mrk);
+        return null;
     }
     private choice<T>(fns: Array<$$RuleType<T>>): Nullable<T> {
         for (const f of fns) {
@@ -103,7 +101,7 @@ export class Parser {
         return null;
     }
     private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
-        return this.runner<string>(dpth,
+        return this.run<string>(dpth,
             () => {
                 const reg = new RegExp(match, "y");
                 const mrk = this.mark();
@@ -119,7 +117,7 @@ export class Parser {
                     });
                 }
                 return res;
-            })();
+            });
     }
     private tryConsume(reg: RegExp): Nullable<string> {
         const res = reg.exec(this.input);

@@ -249,7 +249,7 @@ export class Generator {
         if(namedTypes.length === 0 && alt.matches.length === 1)
             return this.writeRuleAliasFnBody(name, alt.matches[0].rule);
         return [
-            `return this.runner<${name}>($$dpth,`,
+            `return this.run<${name}>($$dpth,`,
             [
                 "() => {",
                 [
@@ -266,7 +266,7 @@ export class Generator {
                     "}",
                     "return $$res;",
                 ],
-                "})();",
+                "});",
             ],
         ];
     }

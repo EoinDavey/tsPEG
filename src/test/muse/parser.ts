@@ -206,7 +206,7 @@ export class Parser {
     public clearMemos(): void {
     }
     public matchProgram($$dpth: number, $$cr?: ErrorTracker): Nullable<Program> {
-        return this.runner<Program>($$dpth,
+        return this.run<Program>($$dpth,
             () => {
                 let $$res: Nullable<Program> = null;
                 if (true
@@ -216,10 +216,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Program, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchMelody($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody> {
-        return this.runner<Melody>($$dpth,
+        return this.run<Melody>($$dpth,
             () => {
                 let $$res: Nullable<Melody> = null;
                 if (true
@@ -237,10 +237,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Melody, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchMelody_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody_$0> {
-        return this.runner<Melody_$0>($$dpth,
+        return this.run<Melody_$0>($$dpth,
             () => {
                 let $$res: Nullable<Melody_$0> = null;
                 if (true
@@ -250,7 +250,7 @@ export class Parser {
                     $$res = {kind: ASTKinds.Melody_$0, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt> {
         return this.choice<Stmt>([
@@ -273,7 +273,7 @@ export class Parser {
         return this.matchIfStmt($$dpth + 1, $$cr);
     }
     public matchKeyStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<KeyStmt> {
-        return this.runner<KeyStmt>($$dpth,
+        return this.run<KeyStmt>($$dpth,
             () => {
                 let $$res: Nullable<KeyStmt> = null;
                 if (true
@@ -285,10 +285,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.KeyStmt, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchAssignStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<AssignStmt> {
-        return this.runner<AssignStmt>($$dpth,
+        return this.run<AssignStmt>($$dpth,
             () => {
                 let $$res: Nullable<AssignStmt> = null;
                 if (true
@@ -302,10 +302,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.AssignStmt, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchForStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<ForStmt> {
-        return this.runner<ForStmt>($$dpth,
+        return this.run<ForStmt>($$dpth,
             () => {
                 let $$res: Nullable<ForStmt> = null;
                 if (true
@@ -328,10 +328,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.ForStmt, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchIfStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt> {
-        return this.runner<IfStmt>($$dpth,
+        return this.run<IfStmt>($$dpth,
             () => {
                 let $$res: Nullable<IfStmt> = null;
                 if (true
@@ -347,7 +347,7 @@ export class Parser {
                     $$res = {kind: ASTKinds.IfStmt, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchIfStmt_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0> {
         return this.choice<IfStmt_$0>([
@@ -356,7 +356,7 @@ export class Parser {
         ]);
     }
     public matchIfStmt_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_1> {
-        return this.runner<IfStmt_$0_1>($$dpth,
+        return this.run<IfStmt_$0_1>($$dpth,
             () => {
                 let $$res: Nullable<IfStmt_$0_1> = null;
                 if (true
@@ -366,10 +366,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.IfStmt_$0_1, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchIfStmt_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_2> {
-        return this.runner<IfStmt_$0_2>($$dpth,
+        return this.run<IfStmt_$0_2>($$dpth,
             () => {
                 let $$res: Nullable<IfStmt_$0_2> = null;
                 if (true
@@ -382,10 +382,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.IfStmt_$0_2, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchFuncExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr> {
-        return this.runner<FuncExpr>($$dpth,
+        return this.run<FuncExpr>($$dpth,
             () => {
                 let $$res: Nullable<FuncExpr> = null;
                 if (true
@@ -395,10 +395,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.FuncExpr, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchFuncExpr_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr_$0> {
-        return this.runner<FuncExpr_$0>($$dpth,
+        return this.run<FuncExpr_$0>($$dpth,
             () => {
                 let $$res: Nullable<FuncExpr_$0> = null;
                 if (true
@@ -410,13 +410,13 @@ export class Parser {
                     $$res = {kind: ASTKinds.FuncExpr_$0, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<Expr> {
         return this.matchEq($$dpth + 1, $$cr);
     }
     public matchEq($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq> {
-        return this.runner<Eq>($$dpth,
+        return this.run<Eq>($$dpth,
             () => {
                 let $$res: Nullable<Eq> = null;
                 if (true
@@ -427,10 +427,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Eq, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchEq_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq_$0> {
-        return this.runner<Eq_$0>($$dpth,
+        return this.run<Eq_$0>($$dpth,
             () => {
                 let $$res: Nullable<Eq_$0> = null;
                 if (true
@@ -441,10 +441,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Eq_$0, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchComp($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp> {
-        return this.runner<Comp>($$dpth,
+        return this.run<Comp>($$dpth,
             () => {
                 let $$res: Nullable<Comp> = null;
                 if (true
@@ -455,10 +455,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Comp, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchComp_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp_$0> {
-        return this.runner<Comp_$0>($$dpth,
+        return this.run<Comp_$0>($$dpth,
             () => {
                 let $$res: Nullable<Comp_$0> = null;
                 if (true
@@ -470,10 +470,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Comp_$0, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchSum($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum> {
-        return this.runner<Sum>($$dpth,
+        return this.run<Sum>($$dpth,
             () => {
                 let $$res: Nullable<Sum> = null;
                 if (true
@@ -484,10 +484,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Sum, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchSum_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum_$0> {
-        return this.runner<Sum_$0>($$dpth,
+        return this.run<Sum_$0>($$dpth,
             () => {
                 let $$res: Nullable<Sum_$0> = null;
                 if (true
@@ -499,10 +499,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Sum_$0, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchProduct($$dpth: number, $$cr?: ErrorTracker): Nullable<Product> {
-        return this.runner<Product>($$dpth,
+        return this.run<Product>($$dpth,
             () => {
                 let $$res: Nullable<Product> = null;
                 if (true
@@ -513,10 +513,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.Product, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchProduct_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Product_$0> {
-        return this.runner<Product_$0>($$dpth,
+        return this.run<Product_$0>($$dpth,
             () => {
                 let $$res: Nullable<Product_$0> = null;
                 if (true
@@ -528,7 +528,7 @@ export class Parser {
                     $$res = {kind: ASTKinds.Product_$0, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchAtom($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom> {
         return this.choice<Atom>([
@@ -548,7 +548,7 @@ export class Parser {
         return this.matchINT($$dpth + 1, $$cr);
     }
     public matchAtom_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_4> {
-        return this.runner<Atom_4>($$dpth,
+        return this.run<Atom_4>($$dpth,
             () => {
                 let $$res: Nullable<Atom_4> = null;
                 if (true
@@ -560,7 +560,7 @@ export class Parser {
                     $$res = {kind: ASTKinds.Atom_4, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchPlusMinus($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus> {
         return this.choice<PlusMinus>([
@@ -657,7 +657,7 @@ export class Parser {
         return this.regexAccept(String.raw`(?:wait)`, $$dpth + 1, $$cr);
     }
     public matchKID($$dpth: number, $$cr?: ErrorTracker): Nullable<KID> {
-        return this.runner<KID>($$dpth,
+        return this.run<KID>($$dpth,
             () => {
                 let $$res: Nullable<KID> = null;
                 if (true
@@ -667,7 +667,7 @@ export class Parser {
                     $$res = {kind: ASTKinds.KID, };
                 }
                 return $$res;
-            })();
+            });
     }
     public matchID($$dpth: number, $$cr?: ErrorTracker): Nullable<ID> {
         return this.regexAccept(String.raw`(?:[a-zA-Z_]+)`, $$dpth + 1, $$cr);
@@ -713,15 +713,13 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {
-        return () => {
-            const mrk = this.mark();
-            const res = fn()
-            if (res !== null)
-                return res;
-            this.reset(mrk);
-            return null;
-        };
+    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
+        const mrk = this.mark();
+        const res = fn()
+        if (res !== null)
+            return res;
+        this.reset(mrk);
+        return null;
     }
     private choice<T>(fns: Array<$$RuleType<T>>): Nullable<T> {
         for (const f of fns) {
@@ -733,7 +731,7 @@ export class Parser {
         return null;
     }
     private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
-        return this.runner<string>(dpth,
+        return this.run<string>(dpth,
             () => {
                 const reg = new RegExp(match, "y");
                 const mrk = this.mark();
@@ -749,7 +747,7 @@ export class Parser {
                     });
                 }
                 return res;
-            })();
+            });
     }
     private tryConsume(reg: RegExp): Nullable<string> {
         const res = reg.exec(this.input);

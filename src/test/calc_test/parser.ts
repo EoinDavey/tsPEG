@@ -128,7 +128,7 @@ export class Parser {
     public clearMemos(): void {
     }
     public matchSUM($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM> {
-        return this.runner<SUM>($$dpth,
+        return this.run<SUM>($$dpth,
             () => {
                 let $scope$head: Nullable<FAC>;
                 let $scope$tail: Nullable<SUM_$0[]>;
@@ -140,10 +140,10 @@ export class Parser {
                     $$res = new SUM($scope$head, $scope$tail);
                 }
                 return $$res;
-            })();
+            });
     }
     public matchSUM_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM_$0> {
-        return this.runner<SUM_$0>($$dpth,
+        return this.run<SUM_$0>($$dpth,
             () => {
                 let $scope$op: Nullable<string>;
                 let $scope$sm: Nullable<FAC>;
@@ -155,10 +155,10 @@ export class Parser {
                     $$res = {kind: ASTKinds.SUM_$0, op: $scope$op, sm: $scope$sm};
                 }
                 return $$res;
-            })();
+            });
     }
     public matchFAC($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC> {
-        return this.runner<FAC>($$dpth,
+        return this.run<FAC>($$dpth,
             () => {
                 let $scope$head: Nullable<ATOM>;
                 let $scope$tail: Nullable<FAC_$0[]>;
@@ -170,10 +170,10 @@ export class Parser {
                     $$res = new FAC($scope$head, $scope$tail);
                 }
                 return $$res;
-            })();
+            });
     }
     public matchFAC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC_$0> {
-        return this.runner<FAC_$0>($$dpth,
+        return this.run<FAC_$0>($$dpth,
             () => {
                 let $scope$op: Nullable<string>;
                 let $scope$sm: Nullable<ATOM>;
@@ -185,7 +185,7 @@ export class Parser {
                     $$res = {kind: ASTKinds.FAC_$0, op: $scope$op, sm: $scope$sm};
                 }
                 return $$res;
-            })();
+            });
     }
     public matchATOM($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM> {
         return this.choice<ATOM>([
@@ -194,7 +194,7 @@ export class Parser {
         ]);
     }
     public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
-        return this.runner<ATOM_1>($$dpth,
+        return this.run<ATOM_1>($$dpth,
             () => {
                 let $scope$val: Nullable<INT>;
                 let $$res: Nullable<ATOM_1> = null;
@@ -206,10 +206,10 @@ export class Parser {
                     $$res = new ATOM_1($scope$val);
                 }
                 return $$res;
-            })();
+            });
     }
     public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
-        return this.runner<ATOM_2>($$dpth,
+        return this.run<ATOM_2>($$dpth,
             () => {
                 let $scope$val: Nullable<SUM>;
                 let $$res: Nullable<ATOM_2> = null;
@@ -223,10 +223,10 @@ export class Parser {
                     $$res = new ATOM_2($scope$val);
                 }
                 return $$res;
-            })();
+            });
     }
     public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
-        return this.runner<INT>($$dpth,
+        return this.run<INT>($$dpth,
             () => {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<INT> = null;
@@ -236,7 +236,7 @@ export class Parser {
                     $$res = new INT($scope$val);
                 }
                 return $$res;
-            })();
+            });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
         return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
@@ -279,15 +279,13 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {
-        return () => {
-            const mrk = this.mark();
-            const res = fn()
-            if (res !== null)
-                return res;
-            this.reset(mrk);
-            return null;
-        };
+    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
+        const mrk = this.mark();
+        const res = fn()
+        if (res !== null)
+            return res;
+        this.reset(mrk);
+        return null;
     }
     private choice<T>(fns: Array<$$RuleType<T>>): Nullable<T> {
         for (const f of fns) {
@@ -299,7 +297,7 @@ export class Parser {
         return null;
     }
     private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
-        return this.runner<string>(dpth,
+        return this.run<string>(dpth,
             () => {
                 const reg = new RegExp(match, "y");
                 const mrk = this.mark();
@@ -315,7 +313,7 @@ export class Parser {
                     });
                 }
                 return res;
-            })();
+            });
     }
     private tryConsume(reg: RegExp): Nullable<string> {
         const res = reg.exec(this.input);
