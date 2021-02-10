@@ -1,5 +1,11 @@
 # Changelog
 
+## Upcoming
+
+### Added
+
+- Support for memoisation (#8).
+
 ## 3.0.0 - 2021/01/05
 
 ### Added

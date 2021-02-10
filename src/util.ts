@@ -89,3 +89,7 @@ export function usesEOF(gram: Grammar): boolean {
     }
     return false;
 }
+
+export function flattenBlock(ls: Block[]): Block {
+    return ([] as Block).concat(...ls);
+}

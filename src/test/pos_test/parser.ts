@@ -32,6 +32,7 @@ export class Parser {
     private readonly input: string;
     private pos: PosInfo;
     private negating: boolean = false;
+    private memoSafe: boolean = true;
     constructor(input: string) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
@@ -42,8 +43,10 @@ export class Parser {
     public finished(): boolean {
         return this.pos.overallPos === this.input.length;
     }
+    public clearMemos(): void {
+    }
     public matchEXPR($$dpth: number, $$cr?: ErrorTracker): Nullable<EXPR> {
-        return this.runner<EXPR>($$dpth,
+        return this.run<EXPR>($$dpth,
             () => {
                 let $scope$strt: Nullable<PosInfo>;
                 let $scope$left: Nullable<Nullable<EXPR>>;
@@ -63,7 +66,7 @@ export class Parser {
                     $$res = {kind: ASTKinds.EXPR, strt: $scope$strt, left: $scope$left, end: $scope$end, right: $scope$right};
                 }
                 return $$res;
-            })();
+            });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
         return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
@@ -82,6 +85,7 @@ export class Parser {
             return {ast: res, errs: []};
         this.reset(mrk);
         const rec = new ErrorTracker();
+        this.clearMemos();
         this.matchEXPR(0, rec);
         const err = rec.getErr()
         return {ast: res, errs: err !== null ? [err] : []}
@@ -105,15 +109,13 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private runner<T>($$dpth: number, fn: $$RuleType<T>): $$RuleType<T> {
-        return () => {
-            const mrk = this.mark();
-            const res = fn()
-            if (res !== null)
-                return res;
-            this.reset(mrk);
-            return null;
-        };
+    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
+        const mrk = this.mark();
+        const res = fn()
+        if (res !== null)
+            return res;
+        this.reset(mrk);
+        return null;
     }
     private choice<T>(fns: Array<$$RuleType<T>>): Nullable<T> {
         for (const f of fns) {
@@ -125,7 +127,7 @@ export class Parser {
         return null;
     }
     private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
-        return this.runner<string>(dpth,
+        return this.run<string>(dpth,
             () => {
                 const reg = new RegExp(match, "y");
                 const mrk = this.mark();
@@ -141,7 +143,7 @@ export class Parser {
                     });
                 }
                 return res;
-            })();
+            });
     }
     private tryConsume(reg: RegExp): Nullable<string> {
         const res = reg.exec(this.input);
@@ -177,6 +179,18 @@ export class Parser {
         this.negating = oneg;
         this.reset(mrk);
         return res === null ? true : null;
+    }
+    private memoise<K>(rule: $$RuleType<K>, memo: Map<number, [Nullable<K>, PosInfo]>): Nullable<K> {
+        const $scope$pos = this.mark();
+        const $scope$memoRes = memo.get($scope$pos.overallPos);
+        if(this.memoSafe && $scope$memoRes !== undefined) {
+        this.reset($scope$memoRes[1]);
+        return $scope$memoRes[0];
+        }
+        const $scope$result = rule();
+        if(this.memoSafe)
+        memo.set($scope$pos.overallPos, [$scope$result, this.mark()]);
+        return $scope$result;
     }
 }
 export function parse(s: string): ParseResult {
