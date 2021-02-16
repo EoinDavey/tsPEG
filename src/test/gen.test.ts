@@ -4,7 +4,7 @@ import { writeBlock } from "../util";
 import { extractRules, matchRule } from "../rules";
 import { matchType } from "../types";
 
-test("Parser Test", () => {
+describe("Parser Test", () => {
     interface TestCase { inp: string, expmatches?: string[];  }
     const tcs : TestCase[] = [
         {
@@ -91,22 +91,24 @@ test("Parser Test", () => {
         },
     ];
     for(const tc of tcs) {
-        const res = parse(tc.inp);
-        if (res.errs.length > 0 || tc.expmatches !== undefined) {
-            expect(tc.expmatches).not.toBeUndefined();
-            expect(res.errs).not.toEqual([]);
-            const allMatches: string[] = ([] as string[])
-                .concat(...res.errs
-                    .map(x => x.expmatches
-                        .map(m => m.kind === "RegexMatch" ? m.literal : "$EOF")));
-            expect(tc.expmatches!.sort()).toEqual(allMatches.sort());
-            continue;
-        }
-        expect(res.ast).not.toBeNull();
+        test(`inp: ${tc.inp}`, () => {
+            const res = parse(tc.inp);
+            if (res.errs.length > 0 || tc.expmatches !== undefined) {
+                expect(tc.expmatches).not.toBeUndefined();
+                expect(res.errs).not.toEqual([]);
+                const allMatches: string[] = ([] as string[])
+                    .concat(...res.errs
+                        .map(x => x.expmatches
+                            .map(m => m.kind === "RegexMatch" ? m.literal : "$EOF")));
+                expect(tc.expmatches!.sort()).toEqual(allMatches.sort());
+                return;
+            }
+            expect(res.ast).not.toBeNull();
+        });
     }
 });
 
-test("extractRule test", () => {
+describe("extractRule test", () => {
     interface TestCase { inp: string, rulenames: string[];  }
     const tcs : TestCase[] = [
         {
@@ -131,17 +133,19 @@ test("extractRule test", () => {
         },
     ];
     for(const tc of tcs) {
-        const res = parse(tc.inp);
-        expect(res.errs).toEqual([]);
-        expect(res.ast).not.toBeNull();
-        const names : string[] = res.ast!.rules.map(x => extractRules(x.rule.list, x.name))
-            .reduce((x, y) => x.concat(y))
-            .map(x => x.name);
-        expect(names.sort()).toEqual(tc.rulenames.sort());
+        test(`inp: ${tc.inp}`, () => {
+            const res = parse(tc.inp);
+            expect(res.errs).toEqual([]);
+            expect(res.ast).not.toBeNull();
+            const names : string[] = res.ast!.rules.map(x => extractRules(x.rule.list, x.name))
+                .reduce((x, y) => x.concat(y))
+                .map(x => x.name);
+            expect(names.sort()).toEqual(tc.rulenames.sort());
+        });
     }
 });
 
-test("match type/rule test", () => {
+describe("match type/rule test", () => {
     interface TestCase { match: string, expType: string, expRule?: string }
     const tcs : TestCase[] = [
         {
@@ -191,20 +195,22 @@ test("match type/rule test", () => {
         },
     ];
     for(const tc of tcs) {
-        const p = new Parser(tc.match);
-        const res = p.matchMATCH(0);
-        expect(res).not.toBeNull();
-        const m : MATCH = res!;
-        const gotType = matchType(m);
-        expect(gotType).toEqual(tc.expType);
-        if(tc.expRule) {
-            const gotRule = matchRule(m);
-            expect(gotRule).toEqual(tc.expRule);
-        }
+        test(`match: ${tc.match}`, () => {
+            const p = new Parser(tc.match);
+            const res = p.matchMATCH(0);
+            expect(res).not.toBeNull();
+            const m : MATCH = res!;
+            const gotType = matchType(m);
+            expect(gotType).toEqual(tc.expType);
+            if(tc.expRule) {
+                const gotRule = matchRule(m);
+                expect(gotRule).toEqual(tc.expRule);
+            }
+        });
     }
 });
 
-test("subrule type/rule test", () => {
+describe("subrule type/rule test", () => {
     const inp = "rule := 'has' { subrule }";
     const expectedType = "rule_$0";
     const expectedRule = "this.matchrule_$0($$dpth + 1, $$cr)";
@@ -215,7 +221,7 @@ test("subrule type/rule test", () => {
     expect(matchRule(subRef)).toEqual(expectedRule);
 });
 
-test("writeKinds test", () => {
+describe("writeKinds test", () => {
     interface TestCase { inp: string, writeKinds: string, numEnums: boolean }
     const tcs: TestCase[] = [
         {
@@ -260,13 +266,15 @@ test("writeKinds test", () => {
         },
     ];
     for(const tc of tcs) {
-        const g = new Generator(tc.inp, tc.numEnums);
-        const got = writeBlock(g.writeKinds()).join("\n");
-        expect(got).toEqual(tc.writeKinds);
+        test(`inp: ${tc.inp}`, () => {
+            const g = new Generator(tc.inp, tc.numEnums);
+            const got = writeBlock(g.writeKinds()).join("\n");
+            expect(got).toEqual(tc.writeKinds);
+        });
     }
 });
 
-test("writeRuleClasses Test", () => {
+describe("writeRuleClasses Test", () => {
     interface TestCase { inp: string, ruleClasses: string }
     const tcs: TestCase[] = [
         {
@@ -444,13 +452,16 @@ test("writeRuleClasses Test", () => {
 }`,
         },
     ];
-    for(const tc of tcs) {
-        const res = parse(tc.inp);
-        expect(res.errs).toEqual([]);
-        expect(res.ast).not.toBeNull();
-        const g = new Generator(tc.inp);
-        const gram = g.expandedGram;
-        const got = writeBlock(g.writeRuleClasses(gram)).join("\n");
-        expect(got).toEqual(tc.ruleClasses);
+    for(let i = 0; i < tcs.length; ++i) {
+        const tc = tcs[i];
+        test(`test ${i}`, () => {
+            const res = parse(tc.inp);
+            expect(res.errs).toEqual([]);
+            expect(res.ast).not.toBeNull();
+            const g = new Generator(tc.inp);
+            const gram = g.expandedGram;
+            const got = writeBlock(g.writeRuleClasses(gram)).join("\n");
+            expect(got).toEqual(tc.ruleClasses);
+        });
     }
 });

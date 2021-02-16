@@ -2,7 +2,7 @@ import { parse } from "./parser";
 
 // Just ensure they all parse
 
-test("test parser", () => {
+describe("test parser", () => {
     interface TestCase { inp: string }
     const tcs: TestCase[] = [
         {
@@ -143,9 +143,12 @@ melody d start
 end`,
         },
     ];
-    for (const tc of tcs) {
-        const res = parse(tc.inp);
-        expect(res.errs).toEqual([]);
-        expect(res.ast).not.toBeNull();
+    for (let i = 0; i < tcs.length; ++i) {
+        const tc = tcs[i];
+        test(`test ${i}`, () => {
+            const res = parse(tc.inp);
+            expect(res.errs).toEqual([]);
+            expect(res.ast).not.toBeNull();
+        });
     }
 });

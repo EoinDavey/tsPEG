@@ -1,15 +1,12 @@
 import { parse } from "./parser";
 
-test("test parser", () => {
-    const tcs: string[] = [
-        "a",
-        "aaaaaaaa",
-        "bb",
-        "bab",
-    ];
-    for (const tc of tcs) {
-        const res = parse(tc);
-        expect(res.errs).toEqual([]);
-        expect(res.ast).not.toBeNull();
-    }
+test.each([
+    "a",
+    "aaaaaaaa",
+    "bb",
+    "bab",
+])('%p', inp => {
+    const res = parse(inp);
+    expect(res.errs).toEqual([]);
+    expect(res.ast).not.toBeNull();
 });
