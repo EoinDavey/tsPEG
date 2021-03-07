@@ -3,7 +3,7 @@ import { Generator } from "../gen";
 import { getRuleFromGram } from "../util";
 import { disjointCycleSets, getRulesToMarkForBoundedRecursion, leftRecCycles, leftRecRules, nullableAtomSet, ruleIsNullableInCtx } from "../leftrec";
 
-test("test left recursion detection", () => {
+describe("test left recursion detection", () => {
     const tcs: {inp: string, hasLeftRec: boolean, cycles: string[][]}[] = [
         { // no left recursion simple
             inp: "test := 'test'",
@@ -78,23 +78,25 @@ test("test left recursion detection", () => {
         },
     ];
     for(const tc of tcs) {
-        const res = parse(tc.inp);
-        expect(res.errs).toEqual([]);
-        expect(res.ast).not.toBeNull();
-        const g = new Generator(tc.inp);
-        const leftRecs = leftRecRules(g.unexpandedGram);
-        expect(leftRecs.has("test")).toEqual(tc.hasLeftRec);
+        test(`inp: ${tc.inp}`, () => {
+            const res = parse(tc.inp);
+            expect(res.errs).toEqual([]);
+            expect(res.ast).not.toBeNull();
+            const g = new Generator(tc.inp);
+            const leftRecs = leftRecRules(g.unexpandedGram);
+            expect(leftRecs.has("test")).toEqual(tc.hasLeftRec);
 
-        const atoms = nullableAtomSet(g.unexpandedGram);
-        const cycles = leftRecCycles(g.unexpandedGram, atoms);
-        expect(cycles.sort()).toEqual(tc.cycles.sort());
+            const atoms = nullableAtomSet(g.unexpandedGram);
+            const cycles = leftRecCycles(g.unexpandedGram, atoms);
+            expect(cycles.sort()).toEqual(tc.cycles.sort());
 
-        // Ensure only one rule per cycle is marked
-        const marked = getRulesToMarkForBoundedRecursion(g.unexpandedGram);
-        for(const cyc of cycles) {
-            const cnt = cyc.filter(x => marked.has(x)).length;
-            expect(cnt).toEqual(1);
-        }
+            // Ensure only one rule per cycle is marked
+            const marked = getRulesToMarkForBoundedRecursion(g.unexpandedGram);
+            for(const cyc of cycles) {
+                const cnt = cyc.filter(x => marked.has(x)).length;
+                expect(cnt).toEqual(1);
+            }
+        });
     }
 });
 

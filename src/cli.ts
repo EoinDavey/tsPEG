@@ -14,13 +14,18 @@ yargs.command("$0 <grammar> <output_file>", "build parser from grammar",
             default: false,
             desc: "Use numeric enums for AST kinds",
         },
+        "enable-memo": {
+            type: "boolean",
+            default: false,
+            desc: "Enable memoisation, get better performance for increased memory usage",
+        },
     }),
     argv => {
         const grammarFile = argv.grammar as string;
         const outputFile = argv.output_file as string;
         try {
             const inGram = fs.readFileSync(grammarFile, { encoding: "utf8" });
-            const parser = buildParser(inGram, argv["num-enums"]);
+            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"]);
             fs.writeFileSync(outputFile, parser);
         } catch(err) {
             process.exitCode = 1;

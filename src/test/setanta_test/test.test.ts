@@ -2,7 +2,7 @@ import { parse } from "./parser";
 
 // Just ensure they all parse
 
-test("test calculator", () => {
+describe("test calculator", () => {
     interface TestCase { inp: string }
     const tcs: TestCase[] = [
         {
@@ -326,10 +326,13 @@ le i idir (2, 100) {
 }`,
         },
     ];
-    for (const tc of tcs) {
-        const res = parse(tc.inp);
-        expect(res.errs).toEqual([]);
-        expect(res.ast).not.toBeNull();
+    for (let i = 0; i < tcs.length; ++i) {
+        const tc = tcs[i];
+        test(`inp: ${tc.inp}`, () => {
+            const res = parse(tc.inp);
+            expect(res.errs).toEqual([]);
+            expect(res.ast).not.toBeNull();
+        });
     }
 });
 

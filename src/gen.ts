@@ -1,6 +1,6 @@
 import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo, SyntaxErr }  from "./meta";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Ruledef, altNames, usesEOF, writeBlock } from "./util";
+import { Block, Grammar, Ruledef, altNames, flattenBlock, usesEOF, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchType } from "./types";
 import { extractRules, matchRule } from "./rules";
@@ -20,6 +20,19 @@ function memoName(id: string): string {
     return addScope(id + "$memo");
 }
 
+function memoedBody(memo: string, body: Block): Block {
+    return [
+        'return this.memoise(',
+        [
+            '() => {',
+            body,
+            '},',
+            `this.${memoName(memo)},`,
+        ],
+        ');',
+    ];
+}
+
 export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: string): string {
     return inputStr.substring(t.start.overallPos, t.end.overallPos);
 }
@@ -36,14 +49,16 @@ export class Generator {
     // unexpandedGram is the grammar with no subrules expanded.
     public unexpandedGram: Grammar;
     private numEnums: boolean;
+    private enableMemos: boolean;
     private input: string;
     private checkers: Checker[] = [];
     private header: string | null;
     private boundedRecRules: Set<string>;
 
-    public constructor(input: string, numEnums = false) {
+    public constructor(input: string, numEnums = false, enableMemos = false) {
         this.input = input;
         this.numEnums = numEnums;
+        this.enableMemos = enableMemos;
         const p = new Parser(this.input);
         const res = p.parse();
         if (res.errs.length > 0)
@@ -85,14 +100,25 @@ export class Generator {
         ];
     }
 
+    private memoRules(): Ruledef[] {
+        return this.enableMemos
+            ? this.expandedGram
+            : this.expandedGram
+                .filter(rule => this.boundedRecRules.has(rule.name));
+    }
+
     public writeMemos(): Block {
-        const out: Block = [];
-        for(const rule of this.expandedGram) {
-            if(this.boundedRecRules.has(rule.name)) {
-                out.push(`private ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
-            }
-        }
-        return out;
+        return this.memoRules().map(rule =>
+                `protected ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
+    }
+
+    public writeMemoClearFn(): Block {
+        const ls: Block = this.memoRules().map(rule => `this.${memoName(rule.name)}.clear();`);
+        return [
+            'public clearMemos(): void {',
+            ls,
+            '}',
+        ];
     }
 
     public writeChoice(name: string, alt: ALT): Block {
@@ -187,9 +213,11 @@ export class Generator {
             ];
     }
 
-    public writeChoiceParseFn(name: string, alt: ALT): Block {
+    public writeChoiceParseFn(name: string, alt: ALT, memo = false): Block {
         return [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
-             this.writeChoiceParseFnBody(name, alt),
+            memo
+                ? memoedBody(name, this.writeChoiceParseFnBody(name, alt))
+                : this.writeChoiceParseFnBody(name, alt),
             "}",
         ];
     }
@@ -220,7 +248,8 @@ export class Generator {
         const namedTypes = this.getNamedTypes(alt);
         if(namedTypes.length === 0 && alt.matches.length === 1)
             return this.writeRuleAliasFnBody(name, alt.matches[0].rule);
-        return [`return this.runner<${name}>($$dpth,`,
+        return [
+            `return this.run<${name}>($$dpth,`,
             [
                 "() => {",
                 [
@@ -237,30 +266,34 @@ export class Generator {
                     "}",
                     "return $$res;",
                 ],
-                "})();",
+                "});",
             ],
         ];
     }
 
     private writeLeftRecRuleParseFn(name: string, body: Block): Block {
         const memo = memoName(name);
+        const posVar = addScope("pos");
+        const oldMemoSafe = addScope("oldMemoSafe");
         const t: Block = [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
         [
             'const fn = () => {',
             body,
             '};',
-            'const pos = this.mark();',
-            `const memo = this.${memo}.get(pos.overallPos);`,
+            `const ${posVar} = this.mark();`,
+            `const memo = this.${memo}.get(${posVar}.overallPos);`,
             'if(memo !== undefined) {',
             '    this.reset(memo[1]);',
             '    return memo[0];',
             '}',
-            `this.${memo}.set(pos.overallPos, [null, pos]);`,
+            `const ${oldMemoSafe} = this.memoSafe;`,
+            'this.memoSafe = false;',
+            `this.${memo}.set(${posVar}.overallPos, [null, ${posVar}]);`,
             `let lastRes: Nullable<${name}> = null;`,
-            'let lastPos: PosInfo = pos;',
+            `let lastPos: PosInfo = ${posVar};`,
             'for(;;) {',
             [
-                'this.reset(pos);',
+                `this.reset(${posVar});`,
                 'const res = fn();',
                 'const end = this.mark();',
                 'if(end.overallPos <= lastPos.overallPos)',
@@ -269,10 +302,11 @@ export class Generator {
                 ],
                 'lastRes = res;',
                 'lastPos = end;',
-                `this.${memo}.set(pos.overallPos, [lastRes, lastPos]);`,
+                `this.${memo}.set(${posVar}.overallPos, [lastRes, lastPos]);`,
             ],
             '}',
             'this.reset(lastPos);',
+            `this.memoSafe = ${oldMemoSafe};`,
             'return lastRes;',
         ],
     '}'];
@@ -281,26 +315,41 @@ export class Generator {
 
     public writeRuleParseFns(ruledef: Ruledef): Block {
         const nm = ruledef.name;
-        const choices: Block = [];
         const nms: string[] = altNames(ruledef);
-        nms.forEach((name, i) => {
-            choices.push(...this.writeChoiceParseFn(name, ruledef.rule[i]));
-        });
 
         if(this.boundedRecRules.has(nm)) {
-            const body = nms.length === 1 
-                ? this.writeChoiceParseFnBody(nms[0], ruledef.rule[0])
-                : this.writeUnionParseBody(nm, nms);
-            const fn = this.writeLeftRecRuleParseFn(nm, body);
-            if(nms.length === 1)
+            if(nms.length === 1) {
+                // Only 1, skip the union
+                const body = this.writeChoiceParseFnBody(nms[0], ruledef.rule[0]);
+                if(nm !== nms[0])
+                    throw `${nm} != ${nms[0]}`;
+                const fn = this.writeLeftRecRuleParseFn(nm, body);
+
                 return fn;
-            return [...fn, ...choices];
+            }
+            const body = this.writeUnionParseBody(nm, nms);
+            const fn = this.writeLeftRecRuleParseFn(nm, body);
+            const choiceFns = flattenBlock(nms.map((name, i) =>
+                this.writeChoiceParseFn(name, ruledef.rule[i])));
+
+            return [...fn, ...choiceFns];
         }
-        const union = ruledef.rule.length <= 1 ? []
-            : [`public match${nm}($$dpth: number, $$cr?: ErrorTracker): Nullable<${nm}> {`,
-                this.writeUnionParseBody(nm, nms),
-                `}`];
-        return [...union, ...choices];
+        if(ruledef.rule.length <= 1)
+            return this.writeChoiceParseFn(nm, ruledef.rule[0], this.enableMemos);
+        const union = this.writeUnionParseFn(nm, nms, this.enableMemos);
+        const choiceFns = flattenBlock(
+            nms.map((name, i) => this.writeChoiceParseFn(name, ruledef.rule[i])));
+        return [...union, ...choiceFns];
+    }
+
+    public writeUnionParseFn(name: string, alts: string[], memo = false): Block {
+        return [
+            `public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
+            memo
+                ? memoedBody(name, this.writeUnionParseBody(name, alts))
+                : this.writeUnionParseBody(name, alts),
+            `}`,
+        ];
     }
 
     public writeUnionParseBody(name: string, alts: string[]): Block {
@@ -336,6 +385,7 @@ export class Generator {
                 ],
                 "this.reset(mrk);",
                 "const rec = new ErrorTracker();",
+                "this.clearMemos();",
                 `this.match${S}(0, rec);`,
                 "const err = rec.getErr()",
                 "return {ast: res, errs: err !== null ? [err] : []}",
@@ -368,6 +418,7 @@ export class Generator {
             inputStr: this.input,
             header: hdr,
             memos: this.writeMemos(),
+            memoClearFn: this.writeMemoClearFn(),
             kinds: this.writeKinds(),
             ruleClasses: this.writeRuleClasses(this.expandedGram),
             ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
@@ -378,8 +429,8 @@ export class Generator {
     }
 }
 
-export function buildParser(s: string, numEnums: boolean): string {
-    const gen = new Generator(s, numEnums)
+export function buildParser(s: string, numEnums: boolean, enableMemos: boolean): string {
+    const gen = new Generator(s, numEnums, enableMemos)
         .addChecker(BannedNamesChecker)
         .addChecker(RulesExistChecker)
         .addChecker(NoRuleNameCollisionChecker);

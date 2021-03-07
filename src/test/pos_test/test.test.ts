@@ -30,7 +30,7 @@ function traverse(e: EXPR): [PosInfo[], PosInfo[]] {
     return ret;
 }
 
-test("test positions", () => {
+describe("test positions", () => {
     interface TestCase { inp: string; starts: PosInfo[]; ends: PosInfo[] }
     const tcs: TestCase[] = [
         {
@@ -156,13 +156,15 @@ test("test positions", () => {
         },
     ];
     for (const tc of tcs) {
-        const res = parse(tc.inp);
-        expect(res.errs).toEqual([]);
-        expect(res.ast).not.toBeNull();
+        test(`inp: ${tc.inp}`, () => {
+            const res = parse(tc.inp);
+            expect(res.errs).toEqual([]);
+            expect(res.ast).not.toBeNull();
 
-        const [starts, ends] = traverse(res.ast!);
+            const [starts, ends] = traverse(res.ast!);
 
-        expect(tc.starts.sort(posSort)).toEqual(starts.sort(posSort));
-        expect(tc.ends.sort(posSort)).toEqual(ends.sort(posSort));
+            expect(tc.starts.sort(posSort)).toEqual(starts.sort(posSort));
+            expect(tc.ends.sort(posSort)).toEqual(ends.sort(posSort));
+        });
     }
 });

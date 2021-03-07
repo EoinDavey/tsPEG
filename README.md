@@ -18,6 +18,7 @@ npm install -g tspeg
 - Infinite lookahead parsing, no restrictions.
 - Regex based lexing, implicit tokenisation in your grammar specification.
 - Tight typing, generates classes for all production rules, differentiable using discriminated unions.
+- Memoisation (packrat parsing) support for guaranteed `O(n)` parse times.
 
 ## CLI Usage
 
@@ -25,22 +26,36 @@ The CLI invocation syntax is as follows
 
 `tspeg <grammar-file> <output-file>`
 
-This generates a TypeScript ES6 module that exports a parser class, as well as classes that represent your AST.
+This generates a TypeScript ES6 module that exports a parse function, as well as classes that
+represent your AST.
 
 Run `tspeg --help` to see usage and available flags.
 
+Flags supported:
+
+- `--enable-memo`: Enable [memoisation](#memoisation); Get better performance at the expense of
+  increased memory usage.
+- `--num-enums`: Use numeric enums instead of strings for AST kinds. Slightly reduces memory
+  footprint of syntax trees.
+
 ## Parser Usage
 
-The parser exports a `parse` function that accepts an input string, and returns `ParseResult` object like this
+The generated module exports a `parse` function that accepts an input string, and returns a
+`ParseResult` object like this:
 
 ```TypeScript
 class ParseResult {
     ast: START | null;
     errs: SyntaxErr[];
 }
+
+export function parse(input: string): ParseResult {
+    ...
+}
 ```
 
-If the `errs` field is non-empty, then syntax errors were found, otherwise the AST is stored in the `ast` field.
+If the `errs` field is non-empty, then syntax errors were found, otherwise the AST is stored in
+the `ast` field. (`START` will be replaced with the type of your starting grammar rule).
 
 ## Grammar Syntax
 
@@ -346,3 +361,12 @@ hello := 'Hello World' $
 If the EOF is not matched by the parser you will get an `EOFMatch` object in your expected matches in the returned `SyntaxErr`.
 
 ![With EOF Symbol](assets/with_eof_symb.png)
+
+## Memoisation
+
+If your generated parser speed is slow, it might be due to excessive backtracking being required to
+parse your input.
+
+Memoisation can be enabled to solve this problem. By passing the flag `--enable-memo` to tsPEG,
+your generated parser will cache partial parsing results as it goes, which can drastically improve
+parse times, at the expense of increasing the parsers memory usage.
