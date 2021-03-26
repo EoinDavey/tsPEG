@@ -1,4 +1,4 @@
-![NPM Build Status](https://github.com/EoinDavey/tsPEG/actions/workflows/npm.yml/badge.svg)
+![NPM Build Status](https://github.com/EoinDavey/tsPEG/actions/workflows/npm.yaml/badge.svg)
 
 # tsPEG : A PEG Parser Generator for TypeScript
 
