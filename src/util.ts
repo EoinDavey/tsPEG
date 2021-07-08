@@ -70,7 +70,7 @@ export function assertValidRegex(s: string, start?: PosInfo): void {
     try {
         new RegExp(s);
     } catch (err) {
-        throw new CheckError(`Couldnt' compile regex '${s}': ${err}`, start);
+        throw new CheckError(`Couldn't compile regex '${s}': ${err}`, start);
     }
 }
 
