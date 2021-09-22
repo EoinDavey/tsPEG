@@ -1,7 +1,7 @@
 // Meta grammar for parser
 
 GRAM      := header=HDR? rules=RULEDEF+ $
-HDR       := '---' content='((?!---)(.|\n))*' '---'
+HDR       := '---' content='((?!---)(.|\r\n|\n))*' '---'
 RULEDEF   := _ namestart=@ name=NAME nameend=@ _ ':=' _ rule=RULE _
 RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
@@ -26,7 +26,7 @@ STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
 
 // Whitespace definition includes traditional whitespace
 // and // comments.
-_         := '(?:\s|(?:\/\/.*(?:\n|$)))*'
+_         := '(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*'
 
 // Grammar to match TypeScript type defs
 

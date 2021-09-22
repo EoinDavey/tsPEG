@@ -2,7 +2,7 @@
 * INPUT GRAMMAR:
 * // Meta grammar for parser
 * GRAM      := header=HDR? rules=RULEDEF+ $
-* HDR       := '---' content='((?!---)(.|\n))*' '---'
+* HDR       := '---' content='((?!---)(.|\r\n|\n))*' '---'
 * RULEDEF   := _ namestart=@ name=NAME nameend=@ _ ':=' _ rule=RULE _
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
 *           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
@@ -26,7 +26,7 @@
 * STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
 * // Whitespace definition includes traditional whitespace
 * // and // comments.
-* _         := '(?:\s|(?:\/\/.*(?:\n|$)))*'
+* _         := '(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*'
 * // Grammar to match TypeScript type defs
 * TS_TYPE := _ start=@ { TS_FUNCTION | TS_CONSTRUCTOR | TS_EXPR } end=@
 * TS_EXPR := _ TS_PRIM {_ '[&|]' TS_PRIM }*
@@ -487,7 +487,7 @@ export class Parser {
                 let $$res: Nullable<HDR> = null;
                 if (true
                     && this.regexAccept(String.raw`(?:---)`, $$dpth + 1, $$cr) !== null
-                    && ($scope$content = this.regexAccept(String.raw`(?:((?!---)(.|\n))*)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$content = this.regexAccept(String.raw`(?:((?!---)(.|\r\n|\n))*)`, $$dpth + 1, $$cr)) !== null
                     && this.regexAccept(String.raw`(?:---)`, $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.HDR, content: $scope$content};
@@ -770,7 +770,7 @@ export class Parser {
             });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.regexAccept(String.raw`(?:(?:\s|(?:\/\/.*(?:\n|$)))*)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*)`, $$dpth + 1, $$cr);
     }
     public matchTS_TYPE($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE> {
         return this.run<TS_TYPE>($$dpth,
