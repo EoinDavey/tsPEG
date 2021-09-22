@@ -5,7 +5,11 @@
 ### Added
 
 - Added `--regex-flags` flag to support user specified regex flags. Can be used to enable unicode
-  property matchers (#26).
+  property matchers (#27).
+
+### Fixed
+
+- Support for [CRLF endlines](https://en.wikipedia.org/wiki/Carriage_return#Computers) added. (#28)
 
 ## 3.1.0 - 2021/02/10
 
