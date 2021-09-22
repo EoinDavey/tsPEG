@@ -23,16 +23,16 @@
         "tsbuild/*.js"
     ],
     "devDependencies": {
-        "@types/jest": "^26.0.23",
-        "@types/node": "^15.3.0",
-        "@types/yargs": "^16.0.1",
-        "@typescript-eslint/eslint-plugin": "^4.23.0",
-        "@typescript-eslint/parser": "^4.23.0",
-        "eslint": "^7.26.0",
-        "jest": "^26.6.3",
+        "@types/jest": "^27.0.2",
+        "@types/node": "^16.9.6",
+        "@types/yargs": "^17.0.3",
+        "@typescript-eslint/eslint-plugin": "^4.31.2",
+        "@typescript-eslint/parser": "^4.31.2",
+        "eslint": "^7.32.0",
+        "jest": "^27.2.1",
         "setanta": "^0.10.0",
-        "ts-jest": "^26.5.6",
-        "typescript": "^4.2.4"
+        "ts-jest": "^27.0.5",
+        "typescript": "^4.4.3"
     },
     "bin": {
         "tspeg": "tsbuild/cli.js"
@@ -45,6 +45,6 @@
         ]
     },
     "dependencies": {
-        "yargs": "^17.0.1"
+        "yargs": "^17.1.1"
     }
 }
