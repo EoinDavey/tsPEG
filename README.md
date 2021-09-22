@@ -37,6 +37,10 @@ Flags supported:
   increased memory usage.
 - `--num-enums`: Use numeric enums instead of strings for AST kinds. Slightly reduces memory
   footprint of syntax trees.
+- `--regex-flags`: Add additional flags to generated regex expressions. For example: Set
+  `--regex-flags=u` to enable
+  [Unicode property escapes.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes)
+
 
 ## Parser Usage
 

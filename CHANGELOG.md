@@ -1,5 +1,12 @@
 # Changelog
 
+## Upcoming
+
+### Added
+
+- Added `--regex-flags` flag to support user specified regex flags. Can be used to enable unicode
+  property matchers (#26).
+
 ## 3.1.0 - 2021/02/10
 
 ### Added
