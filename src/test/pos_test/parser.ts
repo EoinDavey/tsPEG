@@ -13,7 +13,7 @@
 
 type Nullable<T> = T | null;
 type $$RuleType<T> = () => Nullable<T>;
-interface ASTNodeIntf {
+export interface ASTNodeIntf {
     kind: ASTKinds;
 }
 export enum ASTKinds {
