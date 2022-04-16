@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## 3.2.0 - 2021/09/22
 
 ### Added
 
