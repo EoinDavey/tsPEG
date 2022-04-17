@@ -51,16 +51,19 @@ export class Generator {
     private numEnums: boolean;
     private enableMemos: boolean;
     private regexFlags: string;
+    private includeGrammar: boolean;
+
     private input: string;
     private checkers: Checker[] = [];
     private header: string | null;
     private boundedRecRules: Set<string>;
 
-    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "") {
+    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true) {
         this.input = input;
         this.numEnums = numEnums;
         this.enableMemos = enableMemos;
         this.regexFlags = regexFlags;
+        this.includeGrammar = includeGrammar;
         const p = new Parser(this.input);
         const res = p.parse();
         if (res.errs.length > 0)
@@ -427,13 +430,14 @@ export class Generator {
             ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
             parseResult: this.writeParseResultClass(this.expandedGram),
             usesEOF: usesEOF(this.expandedGram),
+            includeGrammar: this.includeGrammar,
         });
         return writeBlock(parseBlock).join("\n");
     }
 }
 
-export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string): string {
-    const gen = new Generator(s, numEnums, enableMemos, regexFlags)
+export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true): string {
+    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar)
         .addChecker(BannedNamesChecker)
         .addChecker(RulesExistChecker)
         .addChecker(NoRuleNameCollisionChecker);

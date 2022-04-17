@@ -13,6 +13,14 @@ function validateRegexFlags(regexFlags: string): void {
             throw new Error(`--regex-flags must only contain valid regex flags: unexpected ${flag}`);
 }
 
+function validateIncludeGrammarFlag(includeGrammar: boolean, s: string): void {
+    if(!includeGrammar)
+        return;
+
+    if(s.includes('*/'))
+        throw new Error("--include-grammar-comment must be false when grammar contains the sequence '*/'");
+}
+
 yargs.command("$0 <grammar> <output_file>", "build parser from grammar",
     _yargs => _yargs.options({
         "num-enums": {
@@ -25,6 +33,11 @@ yargs.command("$0 <grammar> <output_file>", "build parser from grammar",
             default: false,
             desc: "Enable memoisation, get better performance for increased memory usage",
         },
+        "include-grammar-comment": {
+            type: "boolean",
+            default: true,
+            desc: "Include the input grammar as a comment at the start of the parser file.",
+        },
         "regex-flags": {
             type: "string",
             default: "",
@@ -36,10 +49,12 @@ yargs.command("$0 <grammar> <output_file>", "build parser from grammar",
         const grammarFile = argv.grammar as string;
         const outputFile = argv.output_file as string;
         const regexFlags = argv["regex-flags"];
+        const includeGrammar = argv["include-grammar-comment"];
         try {
             validateRegexFlags(regexFlags);
             const inGram = fs.readFileSync(grammarFile, { encoding: "utf8" });
-            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags);
+            validateIncludeGrammarFlag(includeGrammar, inGram);
+            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags, includeGrammar);
             fs.writeFileSync(outputFile, parser);
         } catch(err) {
             process.exitCode = 1;
