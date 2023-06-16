@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.3 - 2023/06/17
+
+- fix non-terminating nested Kleene star
+
+## 3.2.2 - 2023/03/24
+
+- update major versions of dependencies
+
 ## 3.2.1 - 2022/04/18
 
 ### Added
@@ -91,7 +99,7 @@ Unpublished due to CD failures, can't be undone. All 3.0.0 changes are in 3.0.1
 ### Fixed
 
 - Add workaround for Safari/iOS/WebKit issues. See https://bugs.webkit.org/show_bug.cgi?id=214181
-  for details on bug. 
+  for details on bug.
 
 ## 1.3.1 - 2020/04/13
 

@@ -128,8 +128,9 @@ export class Parser {
         const mrk = this.mark();
         const res: T[] = [];
         for (;;) {
+            const preMrk = this.mark();
             const t = func();
-            if (t === null) {
+            if (t === null || this.pos.overallPos === preMrk.overallPos) {
                 break;
             }
             res.push(t);
