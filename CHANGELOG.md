@@ -2,11 +2,12 @@
 
 ## 3.2.3 - 2023/06/17
 
-- fix non-terminating nested Kleene star
+- Fix non-terminating nested Kleene star (#46).
+- Update build dependencies.
 
 ## 3.2.2 - 2023/03/24
 
-- update major versions of dependencies
+- Update major versions of dependencies.
 
 ## 3.2.1 - 2022/04/18
 
