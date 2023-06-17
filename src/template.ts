@@ -72,8 +72,9 @@ export function expandTemplate(opts: TemplateOpts): Block {
             "const res: T[] = [];",
             "for (;;) {",
             [
+                "const preMrk = this.mark();",
                 "const t = func();",
-                "if (t === null) {",
+                "if (t === null || this.pos.overallPos === preMrk.overallPos) {",
                 [
                     "break;",
                 ],
