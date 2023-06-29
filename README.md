@@ -24,10 +24,10 @@ npm install -g tspeg
 
 The CLI invocation syntax is as follows
 
-`tspeg <grammar-file> <output-file>`
+`tspeg <grammar-file> [output-file]`
 
 This generates a TypeScript ES6 module that exports a parse function, as well as classes that
-represent your AST.
+represent your AST. If `[output-file]` is omitted the parser is written to STDOUT.
 
 Run `tspeg --help` to see usage and available flags.
 

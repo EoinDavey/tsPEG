@@ -212,7 +212,7 @@ export class Generator {
         return checks;
     }
 
-    public writeRuleAliasFnBody(name: string, expr: MATCH): Block {
+    public writeRuleAliasFnBody(expr: MATCH): Block {
         return [
                 `return ${matchRule(expr)};`,
             ];
@@ -252,7 +252,7 @@ export class Generator {
     public writeChoiceParseFnBody(name: string, alt: ALT): Block {
         const namedTypes = this.getNamedTypes(alt);
         if(namedTypes.length === 0 && alt.matches.length === 1)
-            return this.writeRuleAliasFnBody(name, alt.matches[0].rule);
+            return this.writeRuleAliasFnBody(alt.matches[0].rule);
         return [
             `return this.run<${name}>($$dpth,`,
             [
