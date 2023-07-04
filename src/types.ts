@@ -7,6 +7,8 @@ export function matchType(expr: MATCH): string {
     if (expr.op) {
         if (expr.op === "?")
             return `Nullable<${preType(expr.pre)}>`;
+        if (expr.op === '+')
+            return `[${preType(expr.pre)}, ...${preType(expr.pre)}[]]`;
         return `${preType(expr.pre)}[]`;
     }
     return preType(expr.pre);

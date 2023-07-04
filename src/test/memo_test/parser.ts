@@ -328,7 +328,11 @@ export class Parser {
     public mark(): PosInfo {
         return this.pos;
     }
-    //@ts-ignore: loop may not be called
+    // @ts-ignore: loopPlus may not be called
+    private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
+        return this.loop(func, false) as Nullable<[T, ...T[]]>;
+    }
+    // @ts-ignore: loop may not be called
     private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
         const mrk = this.mark();
         const res: T[] = [];
@@ -403,14 +407,14 @@ export class Parser {
         }
         return null;
     }
-    //@ts-ignore: noConsume may not be called
+    // @ts-ignore: noConsume may not be called
     private noConsume<T>(fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
         const res = fn();
         this.reset(mrk);
         return res;
     }
-    //@ts-ignore: negate may not be called
+    // @ts-ignore: negate may not be called
     private negate<T>(fn: $$RuleType<T>): Nullable<boolean> {
         const mrk = this.mark();
         const oneg = this.negating;
@@ -420,7 +424,7 @@ export class Parser {
         this.reset(mrk);
         return res === null ? true : null;
     }
-    //@ts-ignore: Memoise may not be used
+    // @ts-ignore: Memoise may not be used
     private memoise<K>(rule: $$RuleType<K>, memo: Map<number, [Nullable<K>, PosInfo]>): Nullable<K> {
         const $scope$pos = this.mark();
         const $scope$memoRes = memo.get($scope$pos.overallPos);

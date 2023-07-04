@@ -6,8 +6,10 @@ export function matchRule(expr: MATCH): string {
     // Check if special rule
     if (expr.kind === ASTKinds.SPECIAL)
         return "this.mark()";
-    if (expr.op && expr.op !== "?")
-        return `this.loop<${preType(expr.pre)}>(() => ${preRule(expr.pre)}, ${expr.op === "+" ? "false" : "true"})`;
+    if (expr.op && expr.op === "*")
+        return `this.loop<${preType(expr.pre)}>(() => ${preRule(expr.pre)}, true)`;
+    if (expr.op && expr.op === "+")
+        return `this.loopPlus<${preType(expr.pre)}>(() => ${preRule(expr.pre)})`;
     return preRule(expr.pre);
 }
 

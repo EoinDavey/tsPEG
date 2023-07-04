@@ -5,6 +5,7 @@
 ### Added
 
 - Support for optional output file. If not provided just output parser to stdout.
+- `+` operator return type now specifies non-empty arrays (#49).
 
 ### Fixed
 

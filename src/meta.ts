@@ -163,7 +163,7 @@ export enum ASTKinds {
 export interface GRAM {
     kind: ASTKinds.GRAM;
     header: Nullable<HDR>;
-    rules: RULEDEF[];
+    rules: [RULEDEF, ...RULEDEF[]];
 }
 export interface HDR {
     kind: ASTKinds.HDR;
@@ -195,7 +195,7 @@ export interface RULE_$0 {
 }
 export interface ALT {
     kind: ASTKinds.ALT;
-    matches: MATCHSPEC[];
+    matches: [MATCHSPEC, ...MATCHSPEC[]];
     attrs: ATTR[];
 }
 export interface MATCHSPEC {
@@ -468,11 +468,11 @@ export class Parser {
         return this.run<GRAM>($$dpth,
             () => {
                 let $scope$header: Nullable<Nullable<HDR>>;
-                let $scope$rules: Nullable<RULEDEF[]>;
+                let $scope$rules: Nullable<[RULEDEF, ...RULEDEF[]]>;
                 let $$res: Nullable<GRAM> = null;
                 if (true
                     && (($scope$header = this.matchHDR($$dpth + 1, $$cr)) || true)
-                    && ($scope$rules = this.loop<RULEDEF>(() => this.matchRULEDEF($$dpth + 1, $$cr), false)) !== null
+                    && ($scope$rules = this.loopPlus<RULEDEF>(() => this.matchRULEDEF($$dpth + 1, $$cr))) !== null
                     && this.match$EOF($$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.GRAM, header: $scope$header, rules: $scope$rules};
@@ -553,11 +553,11 @@ export class Parser {
     public matchALT($$dpth: number, $$cr?: ErrorTracker): Nullable<ALT> {
         return this.run<ALT>($$dpth,
             () => {
-                let $scope$matches: Nullable<MATCHSPEC[]>;
+                let $scope$matches: Nullable<[MATCHSPEC, ...MATCHSPEC[]]>;
                 let $scope$attrs: Nullable<ATTR[]>;
                 let $$res: Nullable<ALT> = null;
                 if (true
-                    && ($scope$matches = this.loop<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, $$cr), false)) !== null
+                    && ($scope$matches = this.loopPlus<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, $$cr))) !== null
                     && ($scope$attrs = this.loop<ATTR>(() => this.matchATTR($$dpth + 1, $$cr), true)) !== null
                 ) {
                     $$res = {kind: ASTKinds.ALT, matches: $scope$matches, attrs: $scope$attrs};
@@ -1675,7 +1675,11 @@ export class Parser {
     public mark(): PosInfo {
         return this.pos;
     }
-    //@ts-ignore: loop may not be called
+    // @ts-ignore: loopPlus may not be called
+    private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
+        return this.loop(func, false) as Nullable<[T, ...T[]]>;
+    }
+    // @ts-ignore: loop may not be called
     private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
         const mrk = this.mark();
         const res: T[] = [];
@@ -1750,14 +1754,14 @@ export class Parser {
         }
         return null;
     }
-    //@ts-ignore: noConsume may not be called
+    // @ts-ignore: noConsume may not be called
     private noConsume<T>(fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
         const res = fn();
         this.reset(mrk);
         return res;
     }
-    //@ts-ignore: negate may not be called
+    // @ts-ignore: negate may not be called
     private negate<T>(fn: $$RuleType<T>): Nullable<boolean> {
         const mrk = this.mark();
         const oneg = this.negating;
@@ -1767,7 +1771,7 @@ export class Parser {
         this.reset(mrk);
         return res === null ? true : null;
     }
-    //@ts-ignore: Memoise may not be used
+    // @ts-ignore: Memoise may not be used
     private memoise<K>(rule: $$RuleType<K>, memo: Map<number, [Nullable<K>, PosInfo]>): Nullable<K> {
         const $scope$pos = this.mark();
         const $scope$memoRes = memo.get($scope$pos.overallPos);

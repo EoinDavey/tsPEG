@@ -160,8 +160,8 @@ describe("match type/rule test", () => {
         },
         {
             match: "ruleReference+",
-            expType: "ruleReference[]",
-            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), false)",
+            expType: "[ruleReference, ...ruleReference[]]",
+            expRule: "this.loopPlus<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr))",
         },
         {
             match: "ruleReference?",
@@ -180,8 +180,8 @@ describe("match type/rule test", () => {
         },
         {
             match: "'regex'+",
-            expType: "string[]",
-            expRule: "this.loop<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr), false)",
+            expType: "[string, ...string[]]",
+            expRule: "this.loopPlus<string>(() => this.regexAccept(String.raw`(?:regex)`, $$dpth + 1, $$cr))",
         },
         {
             match: "&'regex'",
