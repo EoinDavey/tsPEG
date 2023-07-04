@@ -22,7 +22,7 @@ ATOM      := start=@ name=NAME !'\s*:='
 EOF       := symb='\$'
 ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ code=CODE_SECTION
 NAME      := '[a-zA-Z_][a-zA-Z0-9_]*'
-STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
+STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\'' mods='[mius]*'
 
 // Whitespace definition includes traditional whitespace
 // and // comments.

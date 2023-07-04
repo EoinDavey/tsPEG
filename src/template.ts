@@ -126,13 +126,13 @@ export function expandTemplate(opts: TemplateOpts): Block {
             "return null;",
         ],
         "}",
-        "private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {",
+        "private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {",
         [
             "return this.run<string>(dpth,",
             [
                 "() => {",
                 [
-                    `const reg = new RegExp(match, "y${opts.regexFlags}");`,
+                    `const reg = new RegExp(match, "y${opts.regexFlags}" + mods);`,
                     "const mrk = this.mark();",
                     "reg.lastIndex = mrk.overallPos;",
                     "const res = this.tryConsume(reg);",

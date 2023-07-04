@@ -1,0 +1,1 @@
+start := 'SELECT'i '\s*' 'FROM'i $

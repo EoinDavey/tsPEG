@@ -88,7 +88,7 @@ export class Parser {
             });
     }
     public matchA_2($$dpth: number, $$cr?: ErrorTracker): Nullable<A_2> {
-        return this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:a)`, "", $$dpth + 1, $$cr);
     }
     public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
         return this.choice<B>([
@@ -100,7 +100,7 @@ export class Parser {
         return this.matchA($$dpth + 1, $$cr);
     }
     public matchB_2($$dpth: number, $$cr?: ErrorTracker): Nullable<B_2> {
-        return this.regexAccept(String.raw`(?:b)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:b)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();
@@ -164,10 +164,10 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
+    private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         return this.run<string>(dpth,
             () => {
-                const reg = new RegExp(match, "y");
+                const reg = new RegExp(match, "y" + mods);
                 const mrk = this.mark();
                 reg.lastIndex = mrk.overallPos;
                 const res = this.tryConsume(reg);

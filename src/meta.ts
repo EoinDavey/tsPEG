@@ -23,7 +23,7 @@
 * EOF       := symb='\$'
 * ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ code=CODE_SECTION
 * NAME      := '[a-zA-Z_][a-zA-Z0-9_]*'
-* STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\''
+* STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\'' mods='[mius]*'
 * // Whitespace definition includes traditional whitespace
 * // and // comments.
 * _         := '(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*'
@@ -271,6 +271,7 @@ export interface STRLIT {
     kind: ASTKinds.STRLIT;
     start: PosInfo;
     val: string;
+    mods: string;
 }
 export type _ = string;
 export interface TS_TYPE {
@@ -757,14 +758,16 @@ export class Parser {
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$val: Nullable<string>;
+                let $scope$mods: Nullable<string>;
                 let $$res: Nullable<STRLIT> = null;
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
                     && ($scope$val = this.regexAccept(String.raw`(?:([^\'\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
                     && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
+                    && ($scope$mods = this.regexAccept(String.raw`(?:[mius]*)`, $$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.STRLIT, start: $scope$start, val: $scope$val};
+                    $$res = {kind: ASTKinds.STRLIT, start: $scope$start, val: $scope$val, mods: $scope$mods};
                 }
                 return $$res;
             });

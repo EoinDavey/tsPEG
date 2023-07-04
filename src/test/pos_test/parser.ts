@@ -56,9 +56,9 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$strt = this.mark()) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && (($scope$left = this.matchEXPR($$dpth + 1, $$cr)) || true)
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && ($scope$end = this.mark()) !== null
                     && (($scope$right = this.matchEXPR($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -69,7 +69,7 @@ export class Parser {
             });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:\s*)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();
@@ -133,10 +133,10 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
+    private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         return this.run<string>(dpth,
             () => {
-                const reg = new RegExp(match, "y");
+                const reg = new RegExp(match, "y" + mods);
                 const mrk = this.mark();
                 reg.lastIndex = mrk.overallPos;
                 const res = this.tryConsume(reg);

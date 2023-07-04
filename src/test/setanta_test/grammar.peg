@@ -37,7 +37,7 @@ BlockStmt   := _ '{' blk=AsgnStmt* _ '}'
                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitBlockStmt(this); }
 NuairStmt   := _ 'nuair-a' expr=Expr &gap stmt=NonAsgnStmt
                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitNuairStmt(this); }
-LeStmt      := _ 'le' &gap id=ID _ 'idir' _ '\('strt=Expr _ ',' end=Expr step={_ ',' step=Expr}? _ '\)' stmt=NonAsgnStmt
+LeStmt      := _ 'le' &gap id=ID _ 'idir' _ '\(' strt=Expr _ ',' end=Expr step={_ ',' step=Expr}? _ '\)' stmt=NonAsgnStmt
                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitLeStmt(this); }
 DefnStmt    := _ idstart=@ id=ID idend=@ _ ':=' _ expr=Expr
                .accept = Acceptor { return <T>(v: ASTVisitor<T>) => v.visitDefnStmt(this); }

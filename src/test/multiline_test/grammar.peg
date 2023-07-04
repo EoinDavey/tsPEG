@@ -1,0 +1,1 @@
+start := '^line 1$'m '.'s '^line 2$'m

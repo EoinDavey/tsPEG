@@ -37,7 +37,7 @@ Flags supported:
   increased memory usage.
 - `--num-enums`: Use numeric enums instead of strings for AST kinds. Slightly reduces memory
   footprint of syntax trees.
-- `--regex-flags`: Add additional flags to generated regex expressions. For example: Set
+- `--regex-flags`: Add additional flags to all generated regex expressions. For example: Set
   `--regex-flags=u` to enable
   [Unicode property escapes.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes)
 
@@ -207,6 +207,21 @@ class SyntaxErr {
 
 C-style comments can be added to grammar spec files. Anything on a line after a // is a comment, and
 is ignored by the generator.
+
+## Regex Modifiers
+
+You can add one of 4 regex modifiers to any regex literal to change their behaviour. These modifiers
+are:
+- 'i': Ignore case: Makes regex case insensitive.
+- 'm': Multiline: Make it so that `^` and `$` match start/end of individual lines and `.` does not
+  match newlines.
+- 's': Single Line: Make it so that `^` and `$` match start/end of input and `.` *does* match
+  newlines.
+- 'u': Unicode Support: Enable [Unicode property escapes.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes).
+
+To add a regex modifier simply type it immediately after the regex literal: e.g. `'a'i` matches both
+'a' and 'A'. You can specify multiple modifiers e.g. `'^select$'im` enables case insensitivity and
+multiline mode.
 
 ## Computed Properties
 

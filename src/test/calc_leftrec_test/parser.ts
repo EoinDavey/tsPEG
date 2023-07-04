@@ -165,7 +165,7 @@ export class Parser {
                 let $$res: Nullable<SUM_1> = null;
                 if (true
                     && ($scope$l = this.matchSUM($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:\+|-)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw`(?:\+|-)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$r = this.matchFAC($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new SUM_1($scope$l, $scope$op, $scope$r);
@@ -217,7 +217,7 @@ export class Parser {
                 let $$res: Nullable<FAC_1> = null;
                 if (true
                     && ($scope$l = this.matchFAC($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:\*|/)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw`(?:\*|/)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$r = this.matchATOM($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new FAC_1($scope$l, $scope$op, $scope$r);
@@ -256,9 +256,9 @@ export class Parser {
                 let $$res: Nullable<ATOM_2> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && ($scope$val = this.matchSUM($$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = new ATOM_2($scope$val);
@@ -272,7 +272,7 @@ export class Parser {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<INT> = null;
                 if (true
-                    && ($scope$val = this.regexAccept(String.raw`(?:[0-9]+)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new INT($scope$val);
                 }
@@ -280,7 +280,7 @@ export class Parser {
             });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.regexAccept(String.raw`(?:\s*)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:\s*)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();
@@ -344,10 +344,10 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
+    private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         return this.run<string>(dpth,
             () => {
-                const reg = new RegExp(match, "y");
+                const reg = new RegExp(match, "y" + mods);
                 const mrk = this.mark();
                 reg.lastIndex = mrk.overallPos;
                 const res = this.tryConsume(reg);

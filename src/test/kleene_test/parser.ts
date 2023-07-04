@@ -40,8 +40,8 @@ export class Parser {
             () => {
                 let $$res: Nullable<spec_$0> = null;
                 if (true
-                    && this.loop<string>(() => this.regexAccept(String.raw`(?:a)`, $$dpth + 1, $$cr), true) !== null
-                    && this.loop<string>(() => this.regexAccept(String.raw`(?:b)`, $$dpth + 1, $$cr), true) !== null
+                    && this.loop<string>(() => this.regexAccept(String.raw`(?:a)`, "", $$dpth + 1, $$cr), true) !== null
+                    && this.loop<string>(() => this.regexAccept(String.raw`(?:b)`, "", $$dpth + 1, $$cr), true) !== null
                 ) {
                     $$res = {kind: ASTKinds.spec_$0, };
                 }
@@ -110,10 +110,10 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
+    private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         return this.run<string>(dpth,
             () => {
-                const reg = new RegExp(match, "y");
+                const reg = new RegExp(match, "y" + mods);
                 const mrk = this.mark();
                 reg.lastIndex = mrk.overallPos;
                 const res = this.tryConsume(reg);

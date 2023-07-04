@@ -31,7 +31,7 @@ export function atomRule(at: ATOM): string {
         const mtch = at.match;
         assertValidRegex(mtch.val);
         const reg = "(?:" + mtch.val + ")";
-        return `this.regexAccept(String.raw\`${escapeBackticks(reg)}\`, $$dpth + 1, $$cr)`;
+        return `this.regexAccept(String.raw\`${escapeBackticks(reg)}\`, "${mtch.mods}", $$dpth + 1, $$cr)`;
     }
     const subname = at.name;
     if (subname)
