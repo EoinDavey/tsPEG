@@ -105,6 +105,7 @@ const keywords: string[] = [
     "protected", "public", "static", "yield",
     "any", "boolean", "constructor", "declare", "get", "module",
     "require", "number", "set", "string", "symbol", "type", "from", "of",
+    "object",
 ];
 export const NoKeywords: Checker = {
     Check: (g: Grammar): CheckError | null => {
