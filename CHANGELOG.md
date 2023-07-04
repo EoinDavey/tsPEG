@@ -6,6 +6,8 @@
 
 - Support for optional output file. If not provided just output parser to stdout.
 - `+` operator return type now specifies non-empty arrays (#49).
+- Grammars now are checked for any Typescript keywords before parser generation, to avoid
+  generating invalid TypeScript (#44).
 
 ### Fixed
 

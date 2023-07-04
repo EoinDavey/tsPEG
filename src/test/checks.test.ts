@@ -25,3 +25,9 @@ test("Check rule collision checker for double definition", () => {
     expect(() => buildParser(inp, false, false, ""))
         .toThrow('Rule already defined: "rule"');
 });
+
+test("Check keywords aren't allowed as name", () => {
+    const inp = `break := 'a' | 'b'`;
+    expect(() => buildParser(inp, false, false, ""))
+        .toThrow('Rule name "break" is a reserved Typescript keyword');
+});

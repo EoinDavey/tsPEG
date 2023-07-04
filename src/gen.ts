@@ -1,7 +1,7 @@
 import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo, SyntaxErr }  from "./meta";
 import { expandTemplate } from "./template";
 import { Block, Grammar, Ruledef, altNames, flattenBlock, usesEOF, writeBlock } from "./util";
-import { BannedNamesChecker, Checker, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
+import { BannedNamesChecker, Checker, NoKeywords, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchType } from "./types";
 import { extractRules, matchRule } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
@@ -440,6 +440,7 @@ export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, 
     const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar)
         .addChecker(BannedNamesChecker)
         .addChecker(RulesExistChecker)
-        .addChecker(NoRuleNameCollisionChecker);
+        .addChecker(NoRuleNameCollisionChecker)
+        .addChecker(NoKeywords);
     return gen.generate();
 }
