@@ -1,9 +1,6 @@
 ---
 import { Context } from "setanta/node_build/ctx";
-import { PossibleResolution, callFunc, idxList, Value } from "setanta/node_build/values";
-import { unescapeChars } from "setanta/node_build/teacs";
-import * as Asserts from "setanta/node_build/asserts";
-import * as Checks from "setanta/node_build/checks";
+import { PossibleResolution, Value } from "setanta/node_build/values";
 import { orBinOp, orQuickBinOp, andBinOp, andQuickBinOp,
     binOpEvalFn, binOpQuickEvalFn } from "setanta/node_build/binops";
 import { objLookupsEval, postfixArgsEval, csArgsEval, prefEval, EvalFn } from "setanta/node_build/evals";

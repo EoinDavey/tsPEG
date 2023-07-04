@@ -6,6 +6,10 @@
 
 - Support for optional output file. If not provided just output parser to stdout.
 
+### Fixed
+
+- Added annotations to avoid errors on `--noUnusedLocals`.
+
 ## 3.2.3 - 2023/06/17
 
 - Fix non-terminating nested Kleene star (#46).

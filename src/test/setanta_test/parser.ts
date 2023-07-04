@@ -2,10 +2,7 @@
 * INPUT GRAMMAR:
 * ---
 * import { Context } from "setanta/node_build/ctx";
-* import { PossibleResolution, callFunc, idxList, Value } from "setanta/node_build/values";
-* import { unescapeChars } from "setanta/node_build/teacs";
-* import * as Asserts from "setanta/node_build/asserts";
-* import * as Checks from "setanta/node_build/checks";
+* import { PossibleResolution, Value } from "setanta/node_build/values";
 * import { orBinOp, orQuickBinOp, andBinOp, andQuickBinOp,
 *     binOpEvalFn, binOpQuickEvalFn } from "setanta/node_build/binops";
 * import { objLookupsEval, postfixArgsEval, csArgsEval, prefEval, EvalFn } from "setanta/node_build/evals";
@@ -159,10 +156,7 @@
 */
 
 import { Context } from "setanta/node_build/ctx";
-import { PossibleResolution, callFunc, idxList, Value } from "setanta/node_build/values";
-import { unescapeChars } from "setanta/node_build/teacs";
-import * as Asserts from "setanta/node_build/asserts";
-import * as Checks from "setanta/node_build/checks";
+import { PossibleResolution, Value } from "setanta/node_build/values";
 import { orBinOp, orQuickBinOp, andBinOp, andQuickBinOp,
     binOpEvalFn, binOpQuickEvalFn } from "setanta/node_build/binops";
 import { objLookupsEval, postfixArgsEval, csArgsEval, prefEval, EvalFn } from "setanta/node_build/evals";
@@ -2061,6 +2055,7 @@ export class Parser {
     public mark(): PosInfo {
         return this.pos;
     }
+    //@ts-ignore: loop may not be called
     private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
         const mrk = this.mark();
         const res: T[] = [];
@@ -2086,6 +2081,7 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
+    // @ts-ignore: choice may not be called
     private choice<T>(fns: Array<$$RuleType<T>>): Nullable<T> {
         for (const f of fns) {
             const res = f();
@@ -2134,12 +2130,14 @@ export class Parser {
         }
         return null;
     }
+    //@ts-ignore: noConsume may not be called
     private noConsume<T>(fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
         const res = fn();
         this.reset(mrk);
         return res;
     }
+    //@ts-ignore: negate may not be called
     private negate<T>(fn: $$RuleType<T>): Nullable<boolean> {
         const mrk = this.mark();
         const oneg = this.negating;
@@ -2149,6 +2147,7 @@ export class Parser {
         this.reset(mrk);
         return res === null ? true : null;
     }
+    //@ts-ignore: Memoise may not be used
     private memoise<K>(rule: $$RuleType<K>, memo: Map<number, [Nullable<K>, PosInfo]>): Nullable<K> {
         const $scope$pos = this.mark();
         const $scope$memoRes = memo.get($scope$pos.overallPos);
