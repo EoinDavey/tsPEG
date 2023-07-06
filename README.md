@@ -150,12 +150,15 @@ We can also use [computed properties](#computed-properties) to calculate the res
     This rule matches "It's a long way away", "It's a long long way away", etc. for any amount of "long"s that's not 0. When this operator is used, a list of results is attached to the AST.
 
 - The `*` operator is the same as the `+` operator but it allows zero matches.
+- You can specify a specific number of matches by adding square brackets notation: `rule := 'Hello'[2]` will match exactly "HelloHello" (2 matches). You can specify only a lower bound:
+  `rule := 'World'[3, ]` will match any sequence like "WorldWorldWorldWorld" with at least 3
+  matches (but will not match less). You can specify both an upper and lower bound: `rule := 'tsPEG'[5, 10]` to limit the number of possible matches.
 - The `!` is called the "*negative lookahead*" operator, and it does exactly what it says on the tin. This operator inverts the result of the match, meaning you can specify a rule by what it should not match. For example the rule
    ```
    rule := 'The banned word is ' !'Macbeth' '[a-zA-Z]+'
    ```
    This will match the phrase "The banned word is X" for any value of X, except when X is 'Macbeth'
-- The `&` operator is called the "*postitive lookahead*" operator, this operator will change a match so that it will test for the match, and fail if it doesn't work, but it will not consume the input. This allows you to lookahead at what comes next in the string, but not to consume it.
+- The `&` operator is called the "*positive lookahead*" operator, this operator will change a match so that it will test for the match, and fail if it doesn't work, but it will not consume the input. This allows you to lookahead at what comes next in the string, but not to consume it.
 
 ## Sub-rules
 

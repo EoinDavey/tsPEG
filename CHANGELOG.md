@@ -9,6 +9,7 @@
 - Grammars now are checked for any Typescript keywords before parser generation, to avoid
   generating invalid TypeScript (#44).
 - Added support for regex modifiers including case insensitivity and multiline mode (#48).
+- Added support for specifying a specific number of matches (#45).
 
 ### Fixed
 
