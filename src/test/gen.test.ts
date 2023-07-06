@@ -156,12 +156,27 @@ describe("match type/rule test", () => {
         {
             match: "ruleReference*",
             expType: "ruleReference[]",
-            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), true)",
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), 0, -1)",
         },
         {
             match: "ruleReference+",
             expType: "[ruleReference, ...ruleReference[]]",
             expRule: "this.loopPlus<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr))",
+        },
+        {
+            match: "ruleReference[3]",
+            expType: "ruleReference[]",
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), 3, 3)",
+        },
+        {
+            match: "ruleReference[3, 4]",
+            expType: "ruleReference[]",
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), 3, 4)",
+        },
+        {
+            match: "ruleReference[3,]",
+            expType: "ruleReference[]",
+            expRule: "this.loop<ruleReference>(() => this.matchruleReference($$dpth + 1, $$cr), 3, -1)",
         },
         {
             match: "ruleReference?",

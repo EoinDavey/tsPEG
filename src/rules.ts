@@ -6,9 +6,13 @@ export function matchRule(expr: MATCH): string {
     // Check if special rule
     if (expr.kind === ASTKinds.SPECIAL)
         return "this.mark()";
-    if (expr.op && expr.op === "*")
-        return `this.loop<${preType(expr.pre)}>(() => ${preRule(expr.pre)}, true)`;
-    if (expr.op && expr.op === "+")
+    if (expr.op === null)
+        return preRule(expr.pre);
+    if (expr.op.kind === ASTKinds.RANGESPEC)
+        return `this.loop<${preType(expr.pre)}>(() => ${preRule(expr.pre)}, ${expr.op.lb}, ${expr.op.ub})`;
+    if (expr.op.kind === ASTKinds.POSTOP_$0_1 && expr.op.op === "*")
+        return `this.loop<${preType(expr.pre)}>(() => ${preRule(expr.pre)}, 0, -1)`;
+    if (expr.op.kind === ASTKinds.POSTOP_$0_1 && expr.op.op === "+")
         return `this.loopPlus<${preType(expr.pre)}>(() => ${preRule(expr.pre)})`;
     return preRule(expr.pre);
 }

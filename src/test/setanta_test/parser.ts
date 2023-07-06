@@ -970,7 +970,7 @@ export class Parser {
                 let $scope$stmts: Nullable<AsgnStmt[]>;
                 let $$res: Nullable<Program> = null;
                 if (true
-                    && ($scope$stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), 0, -1)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.Program, stmts: $scope$stmts};
@@ -1115,7 +1115,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:{)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$blk = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$blk = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), 0, -1)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, "", $$dpth + 1, $$cr) !== null
                 ) {
@@ -1255,7 +1255,7 @@ export class Parser {
                     && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:{)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), 0, -1)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, "", $$dpth + 1, $$cr) !== null
                 ) {
@@ -1279,7 +1279,7 @@ export class Parser {
                     && (($scope$tuis = this.matchCtlchStmt_$0($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:{)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$gniomhs = this.loop<GniomhStmt>(() => this.matchGniomhStmt($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$gniomhs = this.loop<GniomhStmt>(() => this.matchGniomhStmt($$dpth + 1, $$cr), 0, -1)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, "", $$dpth + 1, $$cr) !== null
                 ) {
@@ -1364,7 +1364,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$head = this.matchOr($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<And_$0>(() => this.matchAnd_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<And_$0>(() => this.matchAnd_$0($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
                     $$res = new And($scope$start, $scope$head, $scope$tail, $scope$end);
@@ -1398,7 +1398,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$head = this.matchEq($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<Or_$0>(() => this.matchOr_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<Or_$0>(() => this.matchOr_$0($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
                     $$res = new Or($scope$start, $scope$head, $scope$tail, $scope$end);
@@ -1432,7 +1432,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$head = this.matchComp($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<Eq_$0>(() => this.matchEq_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<Eq_$0>(() => this.matchEq_$0($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
                     $$res = new Eq($scope$start, $scope$head, $scope$tail, $scope$end);
@@ -1467,7 +1467,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$head = this.matchSum($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<Comp_$0>(() => this.matchComp_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<Comp_$0>(() => this.matchComp_$0($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
                     $$res = new Comp($scope$start, $scope$head, $scope$tail, $scope$end);
@@ -1502,7 +1502,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$head = this.matchProduct($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<Sum_$0>(() => this.matchSum_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<Sum_$0>(() => this.matchSum_$0($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
                     $$res = new Sum($scope$start, $scope$head, $scope$tail, $scope$end);
@@ -1537,7 +1537,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$head = this.matchPrefix($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<Product_$0>(() => this.matchProduct_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<Product_$0>(() => this.matchProduct_$0($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
                     $$res = new Product($scope$start, $scope$head, $scope$tail, $scope$end);
@@ -1592,7 +1592,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$at = this.matchObjLookups($$dpth + 1, $$cr)) !== null
-                    && ($scope$ops = this.loop<PostOp>(() => this.matchPostOp($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$ops = this.loop<PostOp>(() => this.matchPostOp($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
                     $$res = new Postfix($scope$start, $scope$at, $scope$ops, $scope$end);
@@ -1610,7 +1610,7 @@ export class Parser {
                 let $$res: Nullable<ObjLookups> = null;
                 if (true
                     && ($scope$start = this.mark()) !== null
-                    && ($scope$attrs = this.loop<ObjLookups_$0>(() => this.matchObjLookups_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$attrs = this.loop<ObjLookups_$0>(() => this.matchObjLookups_$0($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$root = this.matchAtom($$dpth + 1, $$cr)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
@@ -1738,7 +1738,7 @@ export class Parser {
                     && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:{)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$stmts = this.loop<AsgnStmt>(() => this.matchAsgnStmt($$dpth + 1, $$cr), 0, -1)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, "", $$dpth + 1, $$cr) !== null
                 ) {
@@ -1775,7 +1775,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$head = this.matchExpr($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<CSArgs_$0>(() => this.matchCSArgs_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<CSArgs_$0>(() => this.matchCSArgs_$0($$dpth + 1, $$cr), 0, -1)) !== null
                     && ($scope$end = this.mark()) !== null
                 ) {
                     $$res = new CSArgs($scope$start, $scope$head, $scope$tail, $scope$end);
@@ -1806,7 +1806,7 @@ export class Parser {
                 let $$res: Nullable<CSIDs> = null;
                 if (true
                     && ($scope$head = this.matchID($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<CSIDs_$0>(() => this.matchCSIDs_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<CSIDs_$0>(() => this.matchCSIDs_$0($$dpth + 1, $$cr), 0, -1)) !== null
                 ) {
                     $$res = new CSIDs($scope$head, $scope$tail);
                 }
@@ -1960,7 +1960,7 @@ export class Parser {
             });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.loop<wspace>(() => this.matchwspace($$dpth + 1, $$cr), true);
+        return this.loop<wspace>(() => this.matchwspace($$dpth + 1, $$cr), 0, -1);
     }
     public matchwspace($$dpth: number, $$cr?: ErrorTracker): Nullable<wspace> {
         return this.regexAccept(String.raw`(?:(?:\s|>--(?:(?!--<).)*(--<|\n|$)))`, "", $$dpth + 1, $$cr);
@@ -2057,13 +2057,12 @@ export class Parser {
     }
     // @ts-ignore: loopPlus may not be called
     private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
-        return this.loop(func, false) as Nullable<[T, ...T[]]>;
+        return this.loop(func, 1, -1) as Nullable<[T, ...T[]]>;
     }
-    // @ts-ignore: loop may not be called
-    private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
+    private loop<T>(func: $$RuleType<T>, lb: number, ub: number): Nullable<T[]> {
         const mrk = this.mark();
         const res: T[] = [];
-        for (;;) {
+        while (ub === -1 || res.length < ub) {
             const preMrk = this.mark();
             const t = func();
             if (t === null || this.pos.overallPos === preMrk.overallPos) {
@@ -2071,7 +2070,7 @@ export class Parser {
             }
             res.push(t);
         }
-        if (star || res.length > 0) {
+        if (res.length >= lb) {
             return res;
         }
         this.reset(mrk);

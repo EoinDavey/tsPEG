@@ -10,8 +10,8 @@
 * MATCHSPEC := _ named={start=@ name=NAME _ '=' _}? rule=MATCH // TODO rename to match
 * MATCH     := SPECIAL | POSTOP
 * SPECIAL   := op='@'
-* POSTOP    := pre=PREOP op='\+|\*|\?'?
-*             .optional = boolean { return this.op === '?';}
+* POSTOP    := pre=PREOP op={ op='\+|\*|\?' | RANGESPEC }?
+*             .optional = boolean { return this.op?.kind === ASTKinds.POSTOP_$0_1 && this.op.op === '?';}
 * PREOP     := start=@ op='\&|!'? at=ATOM
 * // Negative lookahead is used here to allow no requirement for semicolons
 * // to denote end of rule definition
@@ -24,6 +24,11 @@
 * ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ code=CODE_SECTION
 * NAME      := '[a-zA-Z_][a-zA-Z0-9_]*'
 * STRLIT    := start=@ '\'' val='([^\'\\]|(\\.))*' '\'' mods='[mius]*'
+* RANGESPEC := '\[\s*' a='[0-9]+' u={',\s*' b='[0-9]+'? }? '\s*\]'
+*              .a_val = number { return parseInt(this.a); }
+*              .b_val = number | null { return this.u !== null && this.u.b !== null ? parseInt(this.u.b) : null; }
+*              .lb = number { return this.a_val; }
+*              .ub = number { return this.b_val ?? (this.u !== null ? -1 : this.lb); }
 * // Whitespace definition includes traditional whitespace
 * // and // comments.
 * _         := '(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*'
@@ -86,6 +91,8 @@ export enum ASTKinds {
     MATCH_2 = "MATCH_2",
     SPECIAL = "SPECIAL",
     POSTOP = "POSTOP",
+    POSTOP_$0_1 = "POSTOP_$0_1",
+    POSTOP_$0_2 = "POSTOP_$0_2",
     PREOP = "PREOP",
     ATOM_1 = "ATOM_1",
     ATOM_2 = "ATOM_2",
@@ -95,6 +102,8 @@ export enum ASTKinds {
     ATTR = "ATTR",
     NAME = "NAME",
     STRLIT = "STRLIT",
+    RANGESPEC = "RANGESPEC",
+    RANGESPEC_$0 = "RANGESPEC_$0",
     _ = "_",
     TS_TYPE = "TS_TYPE",
     TS_TYPE_$0_1 = "TS_TYPE_$0_1",
@@ -218,16 +227,22 @@ export interface SPECIAL {
 export class POSTOP {
     public kind: ASTKinds.POSTOP = ASTKinds.POSTOP;
     public pre: PREOP;
-    public op: Nullable<string>;
+    public op: Nullable<POSTOP_$0>;
     public optional: boolean;
-    constructor(pre: PREOP, op: Nullable<string>){
+    constructor(pre: PREOP, op: Nullable<POSTOP_$0>){
         this.pre = pre;
         this.op = op;
         this.optional = ((): boolean => {
-        return this.op === '?';
+        return this.op?.kind === ASTKinds.POSTOP_$0_1 && this.op.op === '?';
         })();
     }
 }
+export type POSTOP_$0 = POSTOP_$0_1 | POSTOP_$0_2;
+export interface POSTOP_$0_1 {
+    kind: ASTKinds.POSTOP_$0_1;
+    op: string;
+}
+export type POSTOP_$0_2 = RANGESPEC;
 export interface PREOP {
     kind: ASTKinds.PREOP;
     start: PosInfo;
@@ -272,6 +287,35 @@ export interface STRLIT {
     start: PosInfo;
     val: string;
     mods: string;
+}
+export class RANGESPEC {
+    public kind: ASTKinds.RANGESPEC = ASTKinds.RANGESPEC;
+    public a: string;
+    public u: Nullable<RANGESPEC_$0>;
+    public a_val: number;
+    public b_val: number | null;
+    public lb: number;
+    public ub: number;
+    constructor(a: string, u: Nullable<RANGESPEC_$0>){
+        this.a = a;
+        this.u = u;
+        this.a_val = ((): number => {
+        return parseInt(this.a);
+        })();
+        this.b_val = ((): number | null => {
+        return this.u !== null && this.u.b !== null ? parseInt(this.u.b) : null;
+        })();
+        this.lb = ((): number => {
+        return this.a_val;
+        })();
+        this.ub = ((): number => {
+        return this.b_val ?? (this.u !== null ? -1 : this.lb);
+        })();
+    }
+}
+export interface RANGESPEC_$0 {
+    kind: ASTKinds.RANGESPEC_$0;
+    b: Nullable<string>;
 }
 export type _ = string;
 export interface TS_TYPE {
@@ -487,9 +531,9 @@ export class Parser {
                 let $scope$content: Nullable<string>;
                 let $$res: Nullable<HDR> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:---)`, $$dpth + 1, $$cr) !== null
-                    && ($scope$content = this.regexAccept(String.raw`(?:((?!---)(.|\r\n|\n))*)`, $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:---)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:---)`, "", $$dpth + 1, $$cr) !== null
+                    && ($scope$content = this.regexAccept(String.raw`(?:((?!---)(.|\r\n|\n))*)`, "", $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:---)`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.HDR, content: $scope$content};
                 }
@@ -510,7 +554,7 @@ export class Parser {
                     && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
                     && ($scope$nameend = this.mark()) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::=)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::=)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$rule = this.matchRULE($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -528,7 +572,7 @@ export class Parser {
                 let $$res: Nullable<RULE> = null;
                 if (true
                     && ($scope$head = this.matchALT($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<RULE_$0>(() => this.matchRULE_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<RULE_$0>(() => this.matchRULE_$0($$dpth + 1, $$cr), 0, -1)) !== null
                 ) {
                     $$res = new RULE($scope$head, $scope$tail);
                 }
@@ -542,7 +586,7 @@ export class Parser {
                 let $$res: Nullable<RULE_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\|)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\|)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$alt = this.matchALT($$dpth + 1, $$cr)) !== null
                 ) {
@@ -559,7 +603,7 @@ export class Parser {
                 let $$res: Nullable<ALT> = null;
                 if (true
                     && ($scope$matches = this.loopPlus<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, $$cr))) !== null
-                    && ($scope$attrs = this.loop<ATTR>(() => this.matchATTR($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$attrs = this.loop<ATTR>(() => this.matchATTR($$dpth + 1, $$cr), 0, -1)) !== null
                 ) {
                     $$res = {kind: ASTKinds.ALT, matches: $scope$matches, attrs: $scope$attrs};
                 }
@@ -592,7 +636,7 @@ export class Parser {
                     && ($scope$start = this.mark()) !== null
                     && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:=)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:=)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.MATCHSPEC_$0, start: $scope$start, name: $scope$name};
@@ -618,7 +662,7 @@ export class Parser {
                 let $scope$op: Nullable<string>;
                 let $$res: Nullable<SPECIAL> = null;
                 if (true
-                    && ($scope$op = this.regexAccept(String.raw`(?:@)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw`(?:@)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.SPECIAL, op: $scope$op};
                 }
@@ -629,16 +673,38 @@ export class Parser {
         return this.run<POSTOP>($$dpth,
             () => {
                 let $scope$pre: Nullable<PREOP>;
-                let $scope$op: Nullable<Nullable<string>>;
+                let $scope$op: Nullable<Nullable<POSTOP_$0>>;
                 let $$res: Nullable<POSTOP> = null;
                 if (true
                     && ($scope$pre = this.matchPREOP($$dpth + 1, $$cr)) !== null
-                    && (($scope$op = this.regexAccept(String.raw`(?:\+|\*|\?)`, $$dpth + 1, $$cr)) || true)
+                    && (($scope$op = this.matchPOSTOP_$0($$dpth + 1, $$cr)) || true)
                 ) {
                     $$res = new POSTOP($scope$pre, $scope$op);
                 }
                 return $$res;
             });
+    }
+    public matchPOSTOP_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0> {
+        return this.choice<POSTOP_$0>([
+            () => this.matchPOSTOP_$0_1($$dpth + 1, $$cr),
+            () => this.matchPOSTOP_$0_2($$dpth + 1, $$cr),
+        ]);
+    }
+    public matchPOSTOP_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0_1> {
+        return this.run<POSTOP_$0_1>($$dpth,
+            () => {
+                let $scope$op: Nullable<string>;
+                let $$res: Nullable<POSTOP_$0_1> = null;
+                if (true
+                    && ($scope$op = this.regexAccept(String.raw`(?:\+|\*|\?)`, "", $$dpth + 1, $$cr)) !== null
+                ) {
+                    $$res = {kind: ASTKinds.POSTOP_$0_1, op: $scope$op};
+                }
+                return $$res;
+            });
+    }
+    public matchPOSTOP_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0_2> {
+        return this.matchRANGESPEC($$dpth + 1, $$cr);
     }
     public matchPREOP($$dpth: number, $$cr?: ErrorTracker): Nullable<PREOP> {
         return this.run<PREOP>($$dpth,
@@ -649,7 +715,7 @@ export class Parser {
                 let $$res: Nullable<PREOP> = null;
                 if (true
                     && ($scope$start = this.mark()) !== null
-                    && (($scope$op = this.regexAccept(String.raw`(?:\&|!)`, $$dpth + 1, $$cr)) || true)
+                    && (($scope$op = this.regexAccept(String.raw`(?:\&|!)`, "", $$dpth + 1, $$cr)) || true)
                     && ($scope$at = this.matchATOM($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.PREOP, start: $scope$start, op: $scope$op, at: $scope$at};
@@ -674,7 +740,7 @@ export class Parser {
                 if (true
                     && ($scope$start = this.mark()) !== null
                     && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
-                    && this.negate(() => this.regexAccept(String.raw`(?:\s*:=)`, $$dpth + 1, $$cr)) !== null
+                    && this.negate(() => this.regexAccept(String.raw`(?:\s*:=)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.ATOM_1, start: $scope$start, name: $scope$name};
                 }
@@ -700,11 +766,11 @@ export class Parser {
                 let $scope$sub: Nullable<RULE>;
                 let $$res: Nullable<ATOM_3> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:{)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:{)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$sub = this.matchRULE($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:})`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:})`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = new ATOM_3($scope$sub);
                 }
@@ -720,7 +786,7 @@ export class Parser {
                 let $scope$symb: Nullable<string>;
                 let $$res: Nullable<EOF> = null;
                 if (true
-                    && ($scope$symb = this.regexAccept(String.raw`(?:\$)`, $$dpth + 1, $$cr)) !== null
+                    && ($scope$symb = this.regexAccept(String.raw`(?:\$)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.EOF, symb: $scope$symb};
                 }
@@ -736,10 +802,10 @@ export class Parser {
                 let $$res: Nullable<ATTR> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\.)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\.)`, "", $$dpth + 1, $$cr) !== null
                     && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:=)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:=)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$type = this.matchTS_TYPE($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
@@ -751,7 +817,7 @@ export class Parser {
             });
     }
     public matchNAME($$dpth: number, $$cr?: ErrorTracker): Nullable<NAME> {
-        return this.regexAccept(String.raw`(?:[a-zA-Z_][a-zA-Z0-9_]*)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:[a-zA-Z_][a-zA-Z0-9_]*)`, "", $$dpth + 1, $$cr);
     }
     public matchSTRLIT($$dpth: number, $$cr?: ErrorTracker): Nullable<STRLIT> {
         return this.run<STRLIT>($$dpth,
@@ -762,18 +828,49 @@ export class Parser {
                 let $$res: Nullable<STRLIT> = null;
                 if (true
                     && ($scope$start = this.mark()) !== null
-                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.regexAccept(String.raw`(?:([^\'\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
-                    && ($scope$mods = this.regexAccept(String.raw`(?:[mius]*)`, $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\')`, "", $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:([^\'\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\')`, "", $$dpth + 1, $$cr) !== null
+                    && ($scope$mods = this.regexAccept(String.raw`(?:[mius]*)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.STRLIT, start: $scope$start, val: $scope$val, mods: $scope$mods};
                 }
                 return $$res;
             });
     }
+    public matchRANGESPEC($$dpth: number, $$cr?: ErrorTracker): Nullable<RANGESPEC> {
+        return this.run<RANGESPEC>($$dpth,
+            () => {
+                let $scope$a: Nullable<string>;
+                let $scope$u: Nullable<Nullable<RANGESPEC_$0>>;
+                let $$res: Nullable<RANGESPEC> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:\[\s*)`, "", $$dpth + 1, $$cr) !== null
+                    && ($scope$a = this.regexAccept(String.raw`(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
+                    && (($scope$u = this.matchRANGESPEC_$0($$dpth + 1, $$cr)) || true)
+                    && this.regexAccept(String.raw`(?:\s*\])`, "", $$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = new RANGESPEC($scope$a, $scope$u);
+                }
+                return $$res;
+            });
+    }
+    public matchRANGESPEC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<RANGESPEC_$0> {
+        return this.run<RANGESPEC_$0>($$dpth,
+            () => {
+                let $scope$b: Nullable<Nullable<string>>;
+                let $$res: Nullable<RANGESPEC_$0> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:,\s*)`, "", $$dpth + 1, $$cr) !== null
+                    && (($scope$b = this.regexAccept(String.raw`(?:[0-9]+)`, "", $$dpth + 1, $$cr)) || true)
+                ) {
+                    $$res = {kind: ASTKinds.RANGESPEC_$0, b: $scope$b};
+                }
+                return $$res;
+            });
+    }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.regexAccept(String.raw`(?:(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*)`, "", $$dpth + 1, $$cr);
     }
     public matchTS_TYPE($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE> {
         return this.run<TS_TYPE>($$dpth,
@@ -815,7 +912,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_PRIM($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_EXPR_$0>(() => this.matchTS_EXPR_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_EXPR_$0>(() => this.matchTS_EXPR_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_EXPR, };
                 }
@@ -828,7 +925,7 @@ export class Parser {
                 let $$res: Nullable<TS_EXPR_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:[&|])`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:[&|])`, "", $$dpth + 1, $$cr) !== null
                     && this.matchTS_PRIM($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_EXPR_$0, };
@@ -842,7 +939,7 @@ export class Parser {
                 let $$res: Nullable<TS_PRIM> = null;
                 if (true
                     && this.matchTS_PRIM_$0($$dpth + 1, $$cr) !== null
-                    && this.loop<string>(() => this.regexAccept(String.raw`(?:\[\])`, $$dpth + 1, $$cr), true) !== null
+                    && this.loop<string>(() => this.regexAccept(String.raw`(?:\[\])`, "", $$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_PRIM, };
                 }
@@ -864,11 +961,11 @@ export class Parser {
             () => {
                 let $$res: Nullable<TS_PRIM_$0_1> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_PRIM_$0_1, };
                 }
@@ -889,10 +986,10 @@ export class Parser {
             () => {
                 let $$res: Nullable<TS_PRIM_$0_5> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\{)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\{)`, "", $$dpth + 1, $$cr) !== null
                     && ((this.matchTS_PRIM_$0_$0($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\})`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\})`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_PRIM_$0_5, };
                 }
@@ -904,11 +1001,11 @@ export class Parser {
             () => {
                 let $$res: Nullable<TS_PRIM_$0_6> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\[)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\[)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_PRIM_$0_$1($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\])`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\])`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_PRIM_$0_6, };
                 }
@@ -922,9 +1019,9 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE_MEMBER($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_PRIM_$0_$0_$0>(() => this.matchTS_PRIM_$0_$0_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_PRIM_$0_$0_$0>(() => this.matchTS_PRIM_$0_$0_$0($$dpth + 1, $$cr), 0, -1) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:[;,]?)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:[;,]?)`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_PRIM_$0_$0, };
                 }
@@ -937,7 +1034,7 @@ export class Parser {
                 let $$res: Nullable<TS_PRIM_$0_$0_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:[;,])`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:[;,])`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE_MEMBER($$dpth + 1, $$cr) !== null
                 ) {
@@ -953,7 +1050,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_PRIM_$0_$1_$0>(() => this.matchTS_PRIM_$0_$1_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_PRIM_$0_$1_$0>(() => this.matchTS_PRIM_$0_$1_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_PRIM_$0_$1, };
                 }
@@ -966,7 +1063,7 @@ export class Parser {
                 let $$res: Nullable<TS_PRIM_$0_$1_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -982,7 +1079,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_TYPE_REF_$0>(() => this.matchTS_TYPE_REF_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_TYPE_REF_$0>(() => this.matchTS_TYPE_REF_$0($$dpth + 1, $$cr), 0, -1) !== null
                     && ((this.matchTS_TYPE_REF_$1($$dpth + 1, $$cr)) || true)
                 ) {
                     $$res = {kind: ASTKinds.TS_TYPE_REF, };
@@ -995,7 +1092,7 @@ export class Parser {
             () => {
                 let $$res: Nullable<TS_TYPE_REF_$0> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\.)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\.)`, "", $$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_TYPE_REF_$0, };
@@ -1022,11 +1119,11 @@ export class Parser {
                 let $$res: Nullable<TS_TYPE_QUERY> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:typeof)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:typeof)`, "", $$dpth + 1, $$cr) !== null
                     && this.noConsume<_>(() => this.match_($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_TYPE_QUERY_$0>(() => this.matchTS_TYPE_QUERY_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_TYPE_QUERY_$0>(() => this.matchTS_TYPE_QUERY_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_TYPE_QUERY, };
                 }
@@ -1038,7 +1135,7 @@ export class Parser {
             () => {
                 let $$res: Nullable<TS_TYPE_QUERY_$0> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\.)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\.)`, "", $$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_TYPE_QUERY_$0, };
@@ -1054,13 +1151,13 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:=>)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:=>)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1075,7 +1172,7 @@ export class Parser {
                 let $$res: Nullable<TS_CONSTRUCTOR> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:new)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:new)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_FUNCTION($$dpth + 1, $$cr) !== null
                 ) {
@@ -1090,11 +1187,11 @@ export class Parser {
                 let $$res: Nullable<TS_GENERIC_PARAMS> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:<)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:<)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_GENERIC_PARAMS_$0($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:>)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:>)`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_GENERIC_PARAMS, };
                 }
@@ -1107,7 +1204,7 @@ export class Parser {
                 let $$res: Nullable<TS_GENERIC_PARAMS_$0> = null;
                 if (true
                     && this.matchTS_GENERIC_PARAM($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_GENERIC_PARAMS_$0_$0>(() => this.matchTS_GENERIC_PARAMS_$0_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_GENERIC_PARAMS_$0_$0>(() => this.matchTS_GENERIC_PARAMS_$0_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_GENERIC_PARAMS_$0, };
                 }
@@ -1120,7 +1217,7 @@ export class Parser {
                 let $$res: Nullable<TS_GENERIC_PARAMS_$0_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_GENERIC_PARAM($$dpth + 1, $$cr) !== null
                 ) {
@@ -1149,7 +1246,7 @@ export class Parser {
                 let $$res: Nullable<TS_GENERIC_PARAM_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:extends)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:extends)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1164,11 +1261,11 @@ export class Parser {
                 let $$res: Nullable<TS_GENERIC_ARGS> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:<)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:<)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_GENERIC_ARGS_$0($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:>)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:>)`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_GENERIC_ARGS, };
                 }
@@ -1181,7 +1278,7 @@ export class Parser {
                 let $$res: Nullable<TS_GENERIC_ARGS_$0> = null;
                 if (true
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_GENERIC_ARGS_$0_$0>(() => this.matchTS_GENERIC_ARGS_$0_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_GENERIC_ARGS_$0_$0>(() => this.matchTS_GENERIC_ARGS_$0_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_GENERIC_ARGS_$0, };
                 }
@@ -1194,7 +1291,7 @@ export class Parser {
                 let $$res: Nullable<TS_GENERIC_ARGS_$0_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1258,7 +1355,7 @@ export class Parser {
                 let $$res: Nullable<TS_PARAM_LIST_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_OPTIONAL_PARAMS($$dpth + 1, $$cr) !== null
                 ) {
@@ -1273,7 +1370,7 @@ export class Parser {
                 let $$res: Nullable<TS_PARAM_LIST_$1> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null
                 ) {
@@ -1288,7 +1385,7 @@ export class Parser {
                 let $$res: Nullable<TS_PARAM_LIST_$2> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null
                 ) {
@@ -1304,7 +1401,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_REQUIRED_PARAM($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_REQUIRED_PARAMS_$0>(() => this.matchTS_REQUIRED_PARAMS_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_REQUIRED_PARAMS_$0>(() => this.matchTS_REQUIRED_PARAMS_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_REQUIRED_PARAMS, };
                 }
@@ -1317,7 +1414,7 @@ export class Parser {
                 let $$res: Nullable<TS_REQUIRED_PARAMS_$0> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_REQUIRED_PARAM($$dpth + 1, $$cr) !== null
                 ) {
@@ -1334,7 +1431,7 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1351,7 +1448,7 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_OPTIONAL_PARAM($$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_OPTIONAL_PARAMS_$0>(() => this.matchTS_OPTIONAL_PARAMS_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<TS_OPTIONAL_PARAMS_$0>(() => this.matchTS_OPTIONAL_PARAMS_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_OPTIONAL_PARAMS, };
                 }
@@ -1363,7 +1460,7 @@ export class Parser {
             () => {
                 let $$res: Nullable<TS_OPTIONAL_PARAMS_$0> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:,)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:,)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_OPTIONAL_PARAM($$dpth + 1, $$cr) !== null
                 ) {
@@ -1379,9 +1476,9 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\?)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\?)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1396,11 +1493,11 @@ export class Parser {
                 let $$res: Nullable<TS_REST_PARAM> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\.\.\.)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\.\.\.)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1424,9 +1521,9 @@ export class Parser {
                 let $$res: Nullable<TS_TYPE_MEMBER_1> = null;
                 if (true
                     && this.matchTS_PROPERTY_NAME($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\??)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\??)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1443,13 +1540,13 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1464,17 +1561,17 @@ export class Parser {
                 let $$res: Nullable<TS_TYPE_MEMBER_3> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:new)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:new)`, "", $$dpth + 1, $$cr) !== null
                     && this.noConsume<_>(() => this.match_($$dpth + 1, $$cr)) !== null
                     && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1489,17 +1586,17 @@ export class Parser {
                 let $$res: Nullable<TS_TYPE_MEMBER_4> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\[)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\[)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\])`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\])`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1515,17 +1612,17 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\??)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\??)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\))`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?::)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
                 ) {
@@ -1563,9 +1660,9 @@ export class Parser {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<TS_STRING_1> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:")`, $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.regexAccept(String.raw`(?:([^"\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:")`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:")`, "", $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:([^"\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:")`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_STRING_1, val: $scope$val};
                 }
@@ -1578,9 +1675,9 @@ export class Parser {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<TS_STRING_2> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.regexAccept(String.raw`(?:([^\'\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:\')`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\')`, "", $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:([^\'\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\')`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_STRING_2, val: $scope$val};
                 }
@@ -1593,9 +1690,9 @@ export class Parser {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<TS_STRING_3> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\`)`, $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.regexAccept(String.raw`(?:([^\`\\]|(\\.))*)`, $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:\`)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\`)`, "", $$dpth + 1, $$cr) !== null
+                    && ($scope$val = this.regexAccept(String.raw`(?:([^\`\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:\`)`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.TS_STRING_3, val: $scope$val};
                 }
@@ -1603,7 +1700,7 @@ export class Parser {
             });
     }
     public matchTS_NUM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_NUM> {
-        return this.regexAccept(String.raw`(?:-?[0-9]+(?:\.[0-9]+)?)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:-?[0-9]+(?:\.[0-9]+)?)`, "", $$dpth + 1, $$cr);
     }
     public matchCODE_SECTION($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_SECTION> {
         return this.run<CODE_SECTION>($$dpth,
@@ -1613,12 +1710,12 @@ export class Parser {
                 let $$res: Nullable<CODE_SECTION> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\{)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\{)`, "", $$dpth + 1, $$cr) !== null
                     && ($scope$start = this.mark()) !== null
                     && ((this.matchCODE_REC($$dpth + 1, $$cr)) || true)
                     && ($scope$end = this.mark()) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\})`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\})`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.CODE_SECTION, start: $scope$start, end: $scope$end};
                 }
@@ -1626,7 +1723,7 @@ export class Parser {
             });
     }
     public matchCODE_REC($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC> {
-        return this.loop<CODE_REC_$0>(() => this.matchCODE_REC_$0($$dpth + 1, $$cr), true);
+        return this.loop<CODE_REC_$0>(() => this.matchCODE_REC_$0($$dpth + 1, $$cr), 0, -1);
     }
     public matchCODE_REC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0> {
         return this.choice<CODE_REC_$0>([
@@ -1636,7 +1733,7 @@ export class Parser {
         ]);
     }
     public matchCODE_REC_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_1> {
-        return this.regexAccept(String.raw`(?:[^{}\'"\`]+)`, $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw`(?:[^{}\'"\`]+)`, "", $$dpth + 1, $$cr);
     }
     public matchCODE_REC_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_2> {
         return this.matchTS_STRING($$dpth + 1, $$cr);
@@ -1646,10 +1743,10 @@ export class Parser {
             () => {
                 let $$res: Nullable<CODE_REC_$0_3> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\{)`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\{)`, "", $$dpth + 1, $$cr) !== null
                     && this.matchCODE_REC($$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\})`, $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw`(?:\})`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.CODE_REC_$0_3, };
                 }
@@ -1680,13 +1777,12 @@ export class Parser {
     }
     // @ts-ignore: loopPlus may not be called
     private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
-        return this.loop(func, false) as Nullable<[T, ...T[]]>;
+        return this.loop(func, 1, -1) as Nullable<[T, ...T[]]>;
     }
-    // @ts-ignore: loop may not be called
-    private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
+    private loop<T>(func: $$RuleType<T>, lb: number, ub: number): Nullable<T[]> {
         const mrk = this.mark();
         const res: T[] = [];
-        for (;;) {
+        while (ub === -1 || res.length < ub) {
             const preMrk = this.mark();
             const t = func();
             if (t === null || this.pos.overallPos === preMrk.overallPos) {
@@ -1694,7 +1790,7 @@ export class Parser {
             }
             res.push(t);
         }
-        if (star || res.length > 0) {
+        if (res.length >= lb) {
             return res;
         }
         this.reset(mrk);
@@ -1718,10 +1814,10 @@ export class Parser {
         }
         return null;
     }
-    private regexAccept(match: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
+    private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         return this.run<string>(dpth,
             () => {
-                const reg = new RegExp(match, "y");
+                const reg = new RegExp(match, "y" + mods);
                 const mrk = this.mark();
                 reg.lastIndex = mrk.overallPos;
                 const res = this.tryConsume(reg);

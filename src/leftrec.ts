@@ -29,7 +29,7 @@ function matchIsNullableInCtx(match: MATCH, nullableAtoms: Set<ATOM>): boolean {
     // match is a POSTOP
 
     // match is nullable if these are the postops
-    if(match.op === "?" || match.op === "*")
+    if(match.op?.kind === ASTKinds.POSTOP_$0_1 &&  (match.op.op === "?" || match.op.op === "*"))
         return true;
     const preop = match.pre;
     // Negations of nullables are invalid grammar expressions

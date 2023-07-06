@@ -4,14 +4,16 @@ export function matchType(expr: MATCH): string {
     // Check if special rule
     if (expr.kind === ASTKinds.SPECIAL)
         return "PosInfo";
-    if (expr.op) {
-        if (expr.op === "?")
-            return `Nullable<${preType(expr.pre)}>`;
-        if (expr.op === '+')
-            return `[${preType(expr.pre)}, ...${preType(expr.pre)}[]]`;
+    if (expr.op === null)
+        return preType(expr.pre);
+    if (expr.op.kind === ASTKinds.RANGESPEC){
         return `${preType(expr.pre)}[]`;
     }
-    return preType(expr.pre);
+    if (expr.op.op === "?")
+        return `Nullable<${preType(expr.pre)}>`;
+    if (expr.op.op === '+')
+        return `[${preType(expr.pre)}, ...${preType(expr.pre)}[]]`;
+    return `${preType(expr.pre)}[]`;
 }
 
 export function preType(expr: PREOP): string {

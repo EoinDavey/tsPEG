@@ -33,15 +33,15 @@ export class Parser {
     public clearMemos(): void {
     }
     public matchspec($$dpth: number, $$cr?: ErrorTracker): Nullable<spec> {
-        return this.loop<spec_$0>(() => this.matchspec_$0($$dpth + 1, $$cr), true);
+        return this.loop<spec_$0>(() => this.matchspec_$0($$dpth + 1, $$cr), 0, -1);
     }
     public matchspec_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<spec_$0> {
         return this.run<spec_$0>($$dpth,
             () => {
                 let $$res: Nullable<spec_$0> = null;
                 if (true
-                    && this.loop<string>(() => this.regexAccept(String.raw`(?:a)`, "", $$dpth + 1, $$cr), true) !== null
-                    && this.loop<string>(() => this.regexAccept(String.raw`(?:b)`, "", $$dpth + 1, $$cr), true) !== null
+                    && this.loop<string>(() => this.regexAccept(String.raw`(?:a)`, "", $$dpth + 1, $$cr), 0, -1) !== null
+                    && this.loop<string>(() => this.regexAccept(String.raw`(?:b)`, "", $$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.spec_$0, };
                 }
@@ -72,13 +72,12 @@ export class Parser {
     }
     // @ts-ignore: loopPlus may not be called
     private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
-        return this.loop(func, false) as Nullable<[T, ...T[]]>;
+        return this.loop(func, 1, -1) as Nullable<[T, ...T[]]>;
     }
-    // @ts-ignore: loop may not be called
-    private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
+    private loop<T>(func: $$RuleType<T>, lb: number, ub: number): Nullable<T[]> {
         const mrk = this.mark();
         const res: T[] = [];
-        for (;;) {
+        while (ub === -1 || res.length < ub) {
             const preMrk = this.mark();
             const t = func();
             if (t === null || this.pos.overallPos === preMrk.overallPos) {
@@ -86,7 +85,7 @@ export class Parser {
             }
             res.push(t);
         }
-        if (star || res.length > 0) {
+        if (res.length >= lb) {
             return res;
         }
         this.reset(mrk);

@@ -135,7 +135,7 @@ export class Parser {
                 let $$res: Nullable<SUM> = null;
                 if (true
                     && ($scope$head = this.matchFAC($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<SUM_$0>(() => this.matchSUM_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<SUM_$0>(() => this.matchSUM_$0($$dpth + 1, $$cr), 0, -1)) !== null
                 ) {
                     $$res = new SUM($scope$head, $scope$tail);
                 }
@@ -165,7 +165,7 @@ export class Parser {
                 let $$res: Nullable<FAC> = null;
                 if (true
                     && ($scope$head = this.matchATOM($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<FAC_$0>(() => this.matchFAC_$0($$dpth + 1, $$cr), true)) !== null
+                    && ($scope$tail = this.loop<FAC_$0>(() => this.matchFAC_$0($$dpth + 1, $$cr), 0, -1)) !== null
                 ) {
                     $$res = new FAC($scope$head, $scope$tail);
                 }
@@ -265,13 +265,12 @@ export class Parser {
     }
     // @ts-ignore: loopPlus may not be called
     private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
-        return this.loop(func, false) as Nullable<[T, ...T[]]>;
+        return this.loop(func, 1, -1) as Nullable<[T, ...T[]]>;
     }
-    // @ts-ignore: loop may not be called
-    private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
+    private loop<T>(func: $$RuleType<T>, lb: number, ub: number): Nullable<T[]> {
         const mrk = this.mark();
         const res: T[] = [];
-        for (;;) {
+        while (ub === -1 || res.length < ub) {
             const preMrk = this.mark();
             const t = func();
             if (t === null || this.pos.overallPos === preMrk.overallPos) {
@@ -279,7 +278,7 @@ export class Parser {
             }
             res.push(t);
         }
-        if (star || res.length > 0) {
+        if (res.length >= lb) {
             return res;
         }
         this.reset(mrk);

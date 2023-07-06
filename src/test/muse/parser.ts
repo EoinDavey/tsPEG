@@ -210,7 +210,7 @@ export class Parser {
             () => {
                 let $$res: Nullable<Program> = null;
                 if (true
-                    && this.loop<Melody>(() => this.matchMelody($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Melody>(() => this.matchMelody($$dpth + 1, $$cr), 0, -1) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.Program, };
@@ -227,10 +227,10 @@ export class Parser {
                     && this.regexAccept(String.raw`(?:melody)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchKID($$dpth + 1, $$cr) !== null
-                    && this.loop<Melody_$0>(() => this.matchMelody_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Melody_$0>(() => this.matchMelody_$0($$dpth + 1, $$cr), 0, -1) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:start)`, "", $$dpth + 1, $$cr) !== null
-                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:end)`, "", $$dpth + 1, $$cr) !== null
                 ) {
@@ -321,7 +321,7 @@ export class Parser {
                     && this.regexAccept(String.raw`(?:to)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchExpr($$dpth + 1, $$cr) !== null
-                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:end)`, "", $$dpth + 1, $$cr) !== null
                 ) {
@@ -341,7 +341,7 @@ export class Parser {
                     && this.matchExpr($$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:then)`, "", $$dpth + 1, $$cr) !== null
-                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null
                     && this.matchIfStmt_$0($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.IfStmt, };
@@ -375,7 +375,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:else)`, "", $$dpth + 1, $$cr) !== null
-                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:end)`, "", $$dpth + 1, $$cr) !== null
                 ) {
@@ -390,7 +390,7 @@ export class Parser {
                 let $$res: Nullable<FuncExpr> = null;
                 if (true
                     && this.matchExpr($$dpth + 1, $$cr) !== null
-                    && this.loop<FuncExpr_$0>(() => this.matchFuncExpr_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<FuncExpr_$0>(() => this.matchFuncExpr_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.FuncExpr, };
                 }
@@ -404,7 +404,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchExpr($$dpth + 1, $$cr) !== null
-                    && this.loop<string>(() => this.regexAccept(String.raw`(?: )`, "", $$dpth + 1, $$cr), true) !== null
+                    && this.loop<string>(() => this.regexAccept(String.raw`(?: )`, "", $$dpth + 1, $$cr), 0, -1) !== null
                     && this.negate(() => this.regexAccept(String.raw`(?:\n)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.FuncExpr_$0, };
@@ -422,7 +422,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchComp($$dpth + 1, $$cr) !== null
-                    && this.loop<Eq_$0>(() => this.matchEq_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Eq_$0>(() => this.matchEq_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.Eq, };
                 }
@@ -450,7 +450,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchSum($$dpth + 1, $$cr) !== null
-                    && this.loop<Comp_$0>(() => this.matchComp_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Comp_$0>(() => this.matchComp_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.Comp, };
                 }
@@ -479,7 +479,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchProduct($$dpth + 1, $$cr) !== null
-                    && this.loop<Sum_$0>(() => this.matchSum_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Sum_$0>(() => this.matchSum_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.Sum, };
                 }
@@ -508,7 +508,7 @@ export class Parser {
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.matchAtom($$dpth + 1, $$cr) !== null
-                    && this.loop<Product_$0>(() => this.matchProduct_$0($$dpth + 1, $$cr), true) !== null
+                    && this.loop<Product_$0>(() => this.matchProduct_$0($$dpth + 1, $$cr), 0, -1) !== null
                 ) {
                     $$res = {kind: ASTKinds.Product, };
                 }
@@ -673,7 +673,7 @@ export class Parser {
         return this.regexAccept(String.raw`(?:[a-zA-Z_]+)`, "", $$dpth + 1, $$cr);
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.loop<string>(() => this.regexAccept(String.raw`(?:\s)`, "", $$dpth + 1, $$cr), true);
+        return this.loop<string>(() => this.regexAccept(String.raw`(?:\s)`, "", $$dpth + 1, $$cr), 0, -1);
     }
     public test(): boolean {
         const mrk = this.mark();
@@ -699,13 +699,12 @@ export class Parser {
     }
     // @ts-ignore: loopPlus may not be called
     private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
-        return this.loop(func, false) as Nullable<[T, ...T[]]>;
+        return this.loop(func, 1, -1) as Nullable<[T, ...T[]]>;
     }
-    // @ts-ignore: loop may not be called
-    private loop<T>(func: $$RuleType<T>, star: boolean = false): Nullable<T[]> {
+    private loop<T>(func: $$RuleType<T>, lb: number, ub: number): Nullable<T[]> {
         const mrk = this.mark();
         const res: T[] = [];
-        for (;;) {
+        while (ub === -1 || res.length < ub) {
             const preMrk = this.mark();
             const t = func();
             if (t === null || this.pos.overallPos === preMrk.overallPos) {
@@ -713,7 +712,7 @@ export class Parser {
             }
             res.push(t);
         }
-        if (star || res.length > 0) {
+        if (res.length >= lb) {
             return res;
         }
         this.reset(mrk);
