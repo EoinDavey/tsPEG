@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## 3.3.0 - 2023/07/06
 
 ### Added
 
