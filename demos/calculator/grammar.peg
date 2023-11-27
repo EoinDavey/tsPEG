@@ -1,21 +1,21 @@
-// A grammar for parsing integer calculator expressions which
-// supports order of operations and grouping with parentheses (brackets).
+// A grammar for parsing integer calculator expressions which supports order of operations and
+// grouping with parentheses (brackets).
 // e.g. "10 + 5*2", "(20 - 15/3) - 2".
 
-// An expression at the top level is a sequence of summands
-// A + B + ... + C (some of the + can be - instead)
-// where each summand might be a product of terms
+// We use a $ marker to require that the match goes the whole way to the end of the input.
+EXPR := s=SUM $
+
+// An expression at the top level is a sequence of summands A + B + ... + C (some of the +'s can be
+// -'s instead) where each summand might be a product of terms
 SUM  := head=FAC tail={ op='\+|-' sm=FAC }*
 
-// A product is a sequence of terms
-// A * B * .... * C (some of the * can be / instead)
+// A product is a sequence of terms A * B * .... * C (some of the *'s can be /'s instead)
 FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*
 
-// Each term is either an integer or some new expression wrapped
-// in parentheses.
+// Each term is either an integer or some new expression wrapped in parentheses.
 // We also eat up any whitespace at this point.
 ATOM := _ val=INT _ | _ '\(' val=SUM '\)' _
 INT  := val='-?[0-9]+'
 
-// This rule matches any whitespace
+// This rule matches any whitespace.
 _    := '\s*'

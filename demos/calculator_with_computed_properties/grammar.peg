@@ -2,6 +2,10 @@
 // supports order of operations and grouping with parentheses (brackets).
 // e.g. "10 + 5*2", "(20 - 15/3) - 2".
 
+// We use a $ marker to require that the match goes the whole way to the end of the input.
+EXPR := s=SUM $
+        .value = number { return s.value; }
+
 // An expression at the top level is a sequence of summands
 // A + B + ... + C (some of the + can be - instead)
 // where each summand might be a product of terms

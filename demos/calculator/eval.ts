@@ -1,7 +1,7 @@
 import * as Parser from './parser';
 
-export function evaluate(input : Parser.SUM) : number {
-    return calcSum(input);
+export function evaluate(input : Parser.EXPR) : number {
+    return calcSum(input.s);
 }
 
 function calcInt(at : Parser.INT) : number {
