@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2016",
-    "module": "commonjs",
+    "module": "nodenext",
     "strict": true,
-    "moduleResolution": "node",
-    "outDir": "build"
+    "outDir": "jsbuild"
   }
 }

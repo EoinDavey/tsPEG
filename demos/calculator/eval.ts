@@ -1,12 +1,7 @@
 import * as Parser from './parser';
 
-export function evaluate(input : string) : number | null {
-    const p = new Parser.Parser(input);
-    const tree = p.parse();
-    if(tree.err === null && tree.ast)
-        return calcSum(tree.ast);
-    console.log('' + tree.err);
-    return null;
+export function evaluate(input : Parser.SUM) : number {
+    return calcSum(input);
 }
 
 function calcInt(at : Parser.INT) : number {
