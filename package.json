@@ -41,7 +41,8 @@
         "preset": "ts-jest",
         "testPathIgnorePatterns": [
             "/node_modules/",
-            "^.+\\.js$"
+            "^.+\\.js$",
+            "/demos/"
         ]
     },
     "dependencies": {
