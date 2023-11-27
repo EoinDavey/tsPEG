@@ -1,0 +1,38 @@
+// A grammar for parsing integer calculator expressions which
+// supports order of operations and grouping with parentheses (brackets).
+// e.g. "10 + 5*2", "(20 - 15/3) - 2".
+
+// An expression at the top level is a sequence of summands
+// A + B + ... + C (some of the + can be - instead)
+// where each summand might be a product of terms
+SUM  := head=FAC tail={ op='\+|-' sm=FAC }*
+        .value = number {
+            return this.tail.reduce(
+                (x, y) => y.op === '+' ?  x + y.sm.value : x - y.sm.value,
+                this.head.value
+            );
+        }
+
+// A product is a sequence of terms
+// A * B * .... * C (some of the * can be / instead)
+FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*
+        .value = number {
+            return this.tail.reduce(
+                (x, y) => y.op === '*' ?  x * y.sm.value : x / y.sm.value,
+                this.head.value
+            );
+        }
+
+// Each term is either an integer or some new expression wrapped
+// in parentheses.
+// We also eat up any whitespace at this point.
+ATOM := _ val=INT _
+        .value = number { return this.val.value; }
+        | _ '\(' val=SUM '\)' _
+        .value = number { return this.val.value; }
+
+INT  := val='-?[0-9]+'
+        .value = number { return parseInt(this.val); }
+
+// This rule matches any whitespace
+_    := '\s*'
