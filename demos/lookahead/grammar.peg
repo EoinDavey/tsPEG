@@ -1,0 +1,22 @@
+// This grammar matches any sequence like 'aaaabbbbcccc'' where the number of a's, b's and c's are
+// all equal.
+// e.g. We want to match 'aabbcc', 'aaabbbccc' but not 'aaaaabbc' or 'aaabbb'.
+// This set of strings is not a context-free language
+// (See https://en.wikipedia.org/wiki/Pumping_lemma_for_context-free_languages) but we can still
+// define a parser for it by using the lookahead operator &.
+
+// Our strategy is to first use the 'A' rule which matches sequences aaabbb where there are
+// the same number of a's and b's. We also check that there is at least one 'c' after the a's and
+// b's. The trick is then that we apply the lookahead operator & to this match so that
+// after we successfully ensure there are the same number of a's and b's, we return back to the
+// start of the input.
+// Next we skip over all the a's (and require there are not 0 of them) and check that there are
+// the same number of b's as c's.
+// If we successfully reach the end of the input then we must have the same number of a's, b's
+// and c's as required.
+S := &{A 'c'} 'a'+ B $
+
+// This rule matches any sequence 'a..ab..b' with the same number of a's and b's.
+A := 'a' A? 'b'
+// This rule matches any sequence 'b..bc..c' with the same number of b's and c's.
+B := 'b' B? 'c'
