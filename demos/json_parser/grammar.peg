@@ -1,0 +1,61 @@
+---
+// A recursive type declaration of a JSON value.
+type value = boolean | null | string | number | value[] | {[key: string]: value}
+---
+
+JSON_text := OBJECT | ARRAY
+
+VALUE := OBJECT | ARRAY | NUMBER | STRING
+         | s='true|false' .value = boolean { return s==='true';}
+         | s='null' .value = null { return null; }
+
+OBJECT := BEGIN_OBJECT body={h=MEMBER t={VALUE_SEPARATOR v=MEMBER}*}? END_OBJECT
+    .value = {[index: string]: value} {
+        return this.body === null ?  {}
+        : Object.fromEntries([[this.body.h.s.value, this.body.h.v.value]].concat(
+            this.body.t.map(m => [m.v.s.value, m.v.v.value])));
+     }
+BEGIN_OBJECT := _ '{' _
+END_OBJECT := _ '}' _
+VALUE_SEPARATOR := _ ',' _
+MEMBER := s=STRING NAME_SEPARATOR v=VALUE
+NAME_SEPARATOR := _ ':' _
+
+ARRAY := BEGIN_ARRAY body={h=VALUE t={VALUE_SEPARATOR v=VALUE}*}? END_ARRAY
+    .value = value[] {
+        return this.body === null ? [] : [this.body.h.value].concat(this.body.t.map(x=>x.v.value));
+     }
+BEGIN_ARRAY := _ '\[' _
+END_ARRAY := _ ']' _
+
+NUMBER := m='-'? i=INT f=FRAC? e=EXP?
+     // We cheat slightly and use Javascripts parseFloat to handle converting the number string
+     // to a float.
+    .value = number { return parseFloat((this.m??'') + this.i + (this.f??'') + (this.e??'')); }
+INT := '0|[1-9][0-9]*'
+FRAC := '\.[0-9]+'
+EXP := '[eE][+-]?[0-9]+'
+
+STRING := '"' s=CHARS '"'
+       // We need to interpret any escaped characters which we do with this function.
+       .value = string {
+           let out = "";
+           const esc = {
+               '"': '"', '\\': '\\', '/': '/', 'b': '\b',
+               'f': '\f', 'n': '\n', 'r': '\r', 't': '\t',
+           } as {[key: string]: string};
+           for (let i = 0; i < s.length; ++i) {
+               if (s[i] !== "\\") {
+                   out += s[i];
+                   continue;
+               }
+               out += esc[s[i+1]];
+               ++i;
+           }
+           return out;
+       }
+
+CHARS := '([^"\\\u0000-\u001F]|\\["\\/bfnrt])*'u
+
+// Whitespace
+_ := '\s*'

@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2016",
+    "module": "nodenext",
+    "strict": true,
+    "outDir": "jsbuild"
+  }
+}

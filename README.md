@@ -20,6 +20,12 @@ npm install -g tspeg
 - Tight typing, generates classes for all production rules, differentiable using discriminated unions.
 - Memoisation (packrat parsing) support for guaranteed `O(n)` parse times.
 
+## Demos
+
+The `demos` directory in the git repo contains several example grammars with explanations.
+These include 2 variants on a "calculator" which can evaluate expressions like `10 * (2-4)`
+and a fully functional JSON parser.
+
 ## CLI Usage
 
 The CLI invocation syntax is as follows
