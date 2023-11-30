@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.1 - 2023/30/11
+
+- Minor dependency version updates.
+
 ## 3.3.0 - 2023/07/06
 
 ### Added
