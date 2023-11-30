@@ -251,7 +251,7 @@ export class Generator {
 
     public writeChoiceParseFnBody(name: string, alt: ALT): Block {
         const namedTypes = this.getNamedTypes(alt);
-        if(namedTypes.length === 0 && alt.matches.length === 1)
+        if(namedTypes.length === 0 && alt.matches.length === 1 && !hasAttrs(alt))
             return this.writeRuleAliasFnBody(alt.matches[0].rule);
         return [
             `return this.run<${name}>($$dpth,`,
