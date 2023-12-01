@@ -1,0 +1,4 @@
+A := 'match something'
+    .value = string { return 'test'; }
+B := A
+    .value = number { return 1; }
