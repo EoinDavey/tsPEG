@@ -20,6 +20,23 @@ function memoName(id: string): string {
     return addScope(id + "$memo");
 }
 
+function getNamedTypes(alt: ALT): [string, string][] {
+    const types: [string, string][] = [];
+    for (const match of alt.matches) {
+        if (!match.named)
+            continue;
+        const rn = matchType(match.rule);
+        types.push([match.named.name, rn]);
+    }
+    return types;
+}
+
+
+// Rules with no named matches, no attrs and only one match are rule aliases
+function isAlias(alt: ALT): boolean {
+    return getNamedTypes(alt).length === 0 && alt.matches.length === 1 && !hasAttrs(alt);
+}
+
 function memoedBody(memo: string, body: Block): Block {
     return [
         'return this.memoise(',
@@ -127,15 +144,8 @@ export class Generator {
     }
 
     public writeChoice(name: string, alt: ALT): Block {
-        const namedTypes: [string, string][] = [];
-        for (const match of alt.matches) {
-            if (match.named) {
-                const at = match.rule;
-                namedTypes.push([match.named.name, matchType(at)]);
-            }
-        }
-        // Rules with no named matches, no attrs and only one match are rule aliases
-        if (namedTypes.length === 0 && alt.matches.length === 1 && !hasAttrs(alt)) {
+        const namedTypes = getNamedTypes(alt);
+        if (isAlias(alt)) {
             const at = alt.matches[0].rule;
             return [`export type ${name} = ${matchType(at)};`];
         }
@@ -227,17 +237,6 @@ export class Generator {
         ];
     }
 
-    public getNamedTypes(alt: ALT): [string, string][] {
-        const types: [string, string][] = [];
-        for (const match of alt.matches) {
-            if (!match.named)
-                continue;
-            const rn = matchType(match.rule);
-            types.push([match.named.name, rn]);
-        }
-        return types;
-    }
-
     public getUnnamedTypes(alt: ALT): string[] {
         const types: string[] = [];
         for (const match of alt.matches) {
@@ -250,8 +249,8 @@ export class Generator {
     }
 
     public writeChoiceParseFnBody(name: string, alt: ALT): Block {
-        const namedTypes = this.getNamedTypes(alt);
-        if(namedTypes.length === 0 && alt.matches.length === 1)
+        const namedTypes = getNamedTypes(alt);
+        if(isAlias(alt))
             return this.writeRuleAliasFnBody(alt.matches[0].rule);
         return [
             `return this.run<${name}>($$dpth,`,
