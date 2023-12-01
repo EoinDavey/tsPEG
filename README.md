@@ -281,6 +281,11 @@ rule := hello='Hello World'
         .value = myType { return myFunc(this.hello); }
 ```
 
+Another possible use for the header is for suppressing linting errors as in
+[#51](https://github.com/EoinDavey/tsPEG/issues/51). I would recommend excluding any
+tsPEG generated files from linting directly through the linter config (e.g. `.eslintignore`)
+but if you choose you can instead disable specific linting rules using the header.
+
 ## Kind Checking
 
 *tsPEG* uses [discriminated unions](https://www.typescriptlang.org/docs/handbook/advanced-types.html#discriminated-unions) to distinguish between types of AST nodes. Each AST node type has a field called `kind` which contains some value from the `ASTKinds` enum. This `kind` field can be used to differentiate between AST results.
