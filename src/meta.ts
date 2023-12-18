@@ -1815,23 +1815,23 @@ export class Parser {
         return null;
     }
     private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
-        return this.run<string>(dpth,
-            () => {
-                const reg = new RegExp(match, "y" + mods);
-                const mrk = this.mark();
-                reg.lastIndex = mrk.overallPos;
-                const res = this.tryConsume(reg);
-                if(cr) {
-                    cr.record(mrk, res, {
-                        kind: "RegexMatch",
-                        // We substring from 3 to len - 1 to strip off the
-                        // non-capture group syntax added as a WebKit workaround
-                        literal: match.substring(3, match.length - 1),
-                        negated: this.negating,
-                    });
-                }
-                return res;
+        const reg = new RegExp(match, "y" + mods);
+        const mrk = this.mark();
+        reg.lastIndex = mrk.overallPos;
+        const res = this.tryConsume(reg);
+        if(cr) {
+            cr.record(mrk, res, {
+                kind: "RegexMatch",
+                // We substring from 3 to len - 1 to strip off the
+                // non-capture group syntax added as a WebKit workaround
+                literal: match.substring(3, match.length - 1),
+                negated: this.negating,
             });
+        }
+        if(res !== null)
+            return res;
+        this.reset(mrk);
+        return null;
     }
     private tryConsume(reg: RegExp): Nullable<string> {
         const res = reg.exec(this.input);
