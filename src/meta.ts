@@ -73,6 +73,28 @@
 * CODE_SECTION := _ '\{' start=@ CODE_REC? end=@ _ '\}'
 * CODE_REC := { '[^{}\'"`]+' | TS_STRING | '\{' CODE_REC _ '\}' }*
 */
+export interface Recorder {
+    procStartErrorRun(): void
+    procAliasStart(name: string, pos: PosInfo): void
+    procStartRegex(match: string, pos: PosInfo): void
+    procRegexSuccess(res: string, pos: PosInfo): void 
+    procRegexReset(pos: PosInfo): void
+    procStartRun(name: string, pos: PosInfo): void
+    procEndRun(name: string): void
+    procRunSuccess(name: string, pos: PosInfo): void
+    procRunReset(name: string, pos: PosInfo): void 
+}
+class EmptyRecorder implements Recorder {
+    public procStartErrorRun(): void {}
+    public procAliasStart(name: string, pos: PosInfo): void {}
+    public procStartRegex(match: string, pos: PosInfo): void {}
+    public procRegexSuccess(res: string, pos: PosInfo): void {}
+    public procRegexReset(pos: PosInfo): void {}
+    public procStartRun(name: string, pos: PosInfo): void {}
+    public procEndRun(name: string): void {}
+    public procRunSuccess(name: string, pos: PosInfo): void {}
+    public procRunReset(name: string, pos: PosInfo): void {}
+}
 type Nullable<T> = T | null;
 type $$RuleType<T> = () => Nullable<T>;
 export interface ASTNodeIntf {
@@ -497,9 +519,12 @@ export class Parser {
     private pos: PosInfo;
     private negating: boolean = false;
     private memoSafe: boolean = true;
-    constructor(input: string) {
+    private recorder: Recorder
+    public debugEnabled: boolean = true;
+    constructor(input: string, recorder?: Recorder) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
+        this.recorder = recorder ?? new EmptyRecorder();
     }
     public reset(pos: PosInfo) {
         this.pos = pos;
@@ -511,6 +536,7 @@ export class Parser {
     }
     public matchGRAM($$dpth: number, $$cr?: ErrorTracker): Nullable<GRAM> {
         return this.run<GRAM>($$dpth,
+            "GRAM",
             () => {
                 let $scope$header: Nullable<Nullable<HDR>>;
                 let $scope$rules: Nullable<[RULEDEF, ...RULEDEF[]]>;
@@ -527,6 +553,7 @@ export class Parser {
     }
     public matchHDR($$dpth: number, $$cr?: ErrorTracker): Nullable<HDR> {
         return this.run<HDR>($$dpth,
+            "HDR",
             () => {
                 let $scope$content: Nullable<string>;
                 let $$res: Nullable<HDR> = null;
@@ -542,6 +569,7 @@ export class Parser {
     }
     public matchRULEDEF($$dpth: number, $$cr?: ErrorTracker): Nullable<RULEDEF> {
         return this.run<RULEDEF>($$dpth,
+            "RULEDEF",
             () => {
                 let $scope$namestart: Nullable<PosInfo>;
                 let $scope$name: Nullable<NAME>;
@@ -566,6 +594,7 @@ export class Parser {
     }
     public matchRULE($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE> {
         return this.run<RULE>($$dpth,
+            "RULE",
             () => {
                 let $scope$head: Nullable<ALT>;
                 let $scope$tail: Nullable<RULE_$0[]>;
@@ -581,6 +610,7 @@ export class Parser {
     }
     public matchRULE_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE_$0> {
         return this.run<RULE_$0>($$dpth,
+            "RULE_$0",
             () => {
                 let $scope$alt: Nullable<ALT>;
                 let $$res: Nullable<RULE_$0> = null;
@@ -597,6 +627,7 @@ export class Parser {
     }
     public matchALT($$dpth: number, $$cr?: ErrorTracker): Nullable<ALT> {
         return this.run<ALT>($$dpth,
+            "ALT",
             () => {
                 let $scope$matches: Nullable<[MATCHSPEC, ...MATCHSPEC[]]>;
                 let $scope$attrs: Nullable<ATTR[]>;
@@ -612,6 +643,7 @@ export class Parser {
     }
     public matchMATCHSPEC($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCHSPEC> {
         return this.run<MATCHSPEC>($$dpth,
+            "MATCHSPEC",
             () => {
                 let $scope$named: Nullable<Nullable<MATCHSPEC_$0>>;
                 let $scope$rule: Nullable<MATCH>;
@@ -628,6 +660,7 @@ export class Parser {
     }
     public matchMATCHSPEC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCHSPEC_$0> {
         return this.run<MATCHSPEC_$0>($$dpth,
+            "MATCHSPEC_$0",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$name: Nullable<NAME>;
@@ -651,13 +684,16 @@ export class Parser {
         ]);
     }
     public matchMATCH_1($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCH_1> {
+        this.recorder.procAliasStart("MATCH_1", this.mark());
         return this.matchSPECIAL($$dpth + 1, $$cr);
     }
     public matchMATCH_2($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCH_2> {
+        this.recorder.procAliasStart("MATCH_2", this.mark());
         return this.matchPOSTOP($$dpth + 1, $$cr);
     }
     public matchSPECIAL($$dpth: number, $$cr?: ErrorTracker): Nullable<SPECIAL> {
         return this.run<SPECIAL>($$dpth,
+            "SPECIAL",
             () => {
                 let $scope$op: Nullable<string>;
                 let $$res: Nullable<SPECIAL> = null;
@@ -671,6 +707,7 @@ export class Parser {
     }
     public matchPOSTOP($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP> {
         return this.run<POSTOP>($$dpth,
+            "POSTOP",
             () => {
                 let $scope$pre: Nullable<PREOP>;
                 let $scope$op: Nullable<Nullable<POSTOP_$0>>;
@@ -692,6 +729,7 @@ export class Parser {
     }
     public matchPOSTOP_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0_1> {
         return this.run<POSTOP_$0_1>($$dpth,
+            "POSTOP_$0_1",
             () => {
                 let $scope$op: Nullable<string>;
                 let $$res: Nullable<POSTOP_$0_1> = null;
@@ -704,10 +742,12 @@ export class Parser {
             });
     }
     public matchPOSTOP_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0_2> {
+        this.recorder.procAliasStart("POSTOP_$0_2", this.mark());
         return this.matchRANGESPEC($$dpth + 1, $$cr);
     }
     public matchPREOP($$dpth: number, $$cr?: ErrorTracker): Nullable<PREOP> {
         return this.run<PREOP>($$dpth,
+            "PREOP",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$op: Nullable<Nullable<string>>;
@@ -733,6 +773,7 @@ export class Parser {
     }
     public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
         return this.run<ATOM_1>($$dpth,
+            "ATOM_1",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$name: Nullable<NAME>;
@@ -749,6 +790,7 @@ export class Parser {
     }
     public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
         return this.run<ATOM_2>($$dpth,
+            "ATOM_2",
             () => {
                 let $scope$match: Nullable<STRLIT>;
                 let $$res: Nullable<ATOM_2> = null;
@@ -762,6 +804,7 @@ export class Parser {
     }
     public matchATOM_3($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_3> {
         return this.run<ATOM_3>($$dpth,
+            "ATOM_3",
             () => {
                 let $scope$sub: Nullable<RULE>;
                 let $$res: Nullable<ATOM_3> = null;
@@ -778,10 +821,12 @@ export class Parser {
             });
     }
     public matchATOM_4($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_4> {
+        this.recorder.procAliasStart("ATOM_4", this.mark());
         return this.matchEOF($$dpth + 1, $$cr);
     }
     public matchEOF($$dpth: number, $$cr?: ErrorTracker): Nullable<EOF> {
         return this.run<EOF>($$dpth,
+            "EOF",
             () => {
                 let $scope$symb: Nullable<string>;
                 let $$res: Nullable<EOF> = null;
@@ -795,6 +840,7 @@ export class Parser {
     }
     public matchATTR($$dpth: number, $$cr?: ErrorTracker): Nullable<ATTR> {
         return this.run<ATTR>($$dpth,
+            "ATTR",
             () => {
                 let $scope$name: Nullable<NAME>;
                 let $scope$type: Nullable<TS_TYPE>;
@@ -817,10 +863,12 @@ export class Parser {
             });
     }
     public matchNAME($$dpth: number, $$cr?: ErrorTracker): Nullable<NAME> {
+        this.recorder.procAliasStart("NAME", this.mark());
         return this.regexAccept(String.raw`(?:[a-zA-Z_][a-zA-Z0-9_]*)`, "", $$dpth + 1, $$cr);
     }
     public matchSTRLIT($$dpth: number, $$cr?: ErrorTracker): Nullable<STRLIT> {
         return this.run<STRLIT>($$dpth,
+            "STRLIT",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$val: Nullable<string>;
@@ -840,6 +888,7 @@ export class Parser {
     }
     public matchRANGESPEC($$dpth: number, $$cr?: ErrorTracker): Nullable<RANGESPEC> {
         return this.run<RANGESPEC>($$dpth,
+            "RANGESPEC",
             () => {
                 let $scope$a: Nullable<string>;
                 let $scope$u: Nullable<Nullable<RANGESPEC_$0>>;
@@ -857,6 +906,7 @@ export class Parser {
     }
     public matchRANGESPEC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<RANGESPEC_$0> {
         return this.run<RANGESPEC_$0>($$dpth,
+            "RANGESPEC_$0",
             () => {
                 let $scope$b: Nullable<Nullable<string>>;
                 let $$res: Nullable<RANGESPEC_$0> = null;
@@ -870,10 +920,12 @@ export class Parser {
             });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
+        this.recorder.procAliasStart("_", this.mark());
         return this.regexAccept(String.raw`(?:(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*)`, "", $$dpth + 1, $$cr);
     }
     public matchTS_TYPE($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE> {
         return this.run<TS_TYPE>($$dpth,
+            "TS_TYPE",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$end: Nullable<PosInfo>;
@@ -897,16 +949,20 @@ export class Parser {
         ]);
     }
     public matchTS_TYPE_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_1> {
+        this.recorder.procAliasStart("TS_TYPE_$0_1", this.mark());
         return this.matchTS_FUNCTION($$dpth + 1, $$cr);
     }
     public matchTS_TYPE_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_2> {
+        this.recorder.procAliasStart("TS_TYPE_$0_2", this.mark());
         return this.matchTS_CONSTRUCTOR($$dpth + 1, $$cr);
     }
     public matchTS_TYPE_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_3> {
+        this.recorder.procAliasStart("TS_TYPE_$0_3", this.mark());
         return this.matchTS_EXPR($$dpth + 1, $$cr);
     }
     public matchTS_EXPR($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_EXPR> {
         return this.run<TS_EXPR>($$dpth,
+            "TS_EXPR",
             () => {
                 let $$res: Nullable<TS_EXPR> = null;
                 if (true
@@ -921,6 +977,7 @@ export class Parser {
     }
     public matchTS_EXPR_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_EXPR_$0> {
         return this.run<TS_EXPR_$0>($$dpth,
+            "TS_EXPR_$0",
             () => {
                 let $$res: Nullable<TS_EXPR_$0> = null;
                 if (true
@@ -935,6 +992,7 @@ export class Parser {
     }
     public matchTS_PRIM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM> {
         return this.run<TS_PRIM>($$dpth,
+            "TS_PRIM",
             () => {
                 let $$res: Nullable<TS_PRIM> = null;
                 if (true
@@ -958,6 +1016,7 @@ export class Parser {
     }
     public matchTS_PRIM_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_1> {
         return this.run<TS_PRIM_$0_1>($$dpth,
+            "TS_PRIM_$0_1",
             () => {
                 let $$res: Nullable<TS_PRIM_$0_1> = null;
                 if (true
@@ -973,16 +1032,20 @@ export class Parser {
             });
     }
     public matchTS_PRIM_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_2> {
+        this.recorder.procAliasStart("TS_PRIM_$0_2", this.mark());
         return this.matchTS_TYPE_QUERY($$dpth + 1, $$cr);
     }
     public matchTS_PRIM_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_3> {
+        this.recorder.procAliasStart("TS_PRIM_$0_3", this.mark());
         return this.matchTS_TYPE_REF($$dpth + 1, $$cr);
     }
     public matchTS_PRIM_$0_4($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_4> {
+        this.recorder.procAliasStart("TS_PRIM_$0_4", this.mark());
         return this.matchTS_PROPERTY_NAME($$dpth + 1, $$cr);
     }
     public matchTS_PRIM_$0_5($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_5> {
         return this.run<TS_PRIM_$0_5>($$dpth,
+            "TS_PRIM_$0_5",
             () => {
                 let $$res: Nullable<TS_PRIM_$0_5> = null;
                 if (true
@@ -998,6 +1061,7 @@ export class Parser {
     }
     public matchTS_PRIM_$0_6($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_6> {
         return this.run<TS_PRIM_$0_6>($$dpth,
+            "TS_PRIM_$0_6",
             () => {
                 let $$res: Nullable<TS_PRIM_$0_6> = null;
                 if (true
@@ -1014,6 +1078,7 @@ export class Parser {
     }
     public matchTS_PRIM_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$0> {
         return this.run<TS_PRIM_$0_$0>($$dpth,
+            "TS_PRIM_$0_$0",
             () => {
                 let $$res: Nullable<TS_PRIM_$0_$0> = null;
                 if (true
@@ -1030,6 +1095,7 @@ export class Parser {
     }
     public matchTS_PRIM_$0_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$0_$0> {
         return this.run<TS_PRIM_$0_$0_$0>($$dpth,
+            "TS_PRIM_$0_$0_$0",
             () => {
                 let $$res: Nullable<TS_PRIM_$0_$0_$0> = null;
                 if (true
@@ -1045,6 +1111,7 @@ export class Parser {
     }
     public matchTS_PRIM_$0_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$1> {
         return this.run<TS_PRIM_$0_$1>($$dpth,
+            "TS_PRIM_$0_$1",
             () => {
                 let $$res: Nullable<TS_PRIM_$0_$1> = null;
                 if (true
@@ -1059,6 +1126,7 @@ export class Parser {
     }
     public matchTS_PRIM_$0_$1_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$1_$0> {
         return this.run<TS_PRIM_$0_$1_$0>($$dpth,
+            "TS_PRIM_$0_$1_$0",
             () => {
                 let $$res: Nullable<TS_PRIM_$0_$1_$0> = null;
                 if (true
@@ -1074,6 +1142,7 @@ export class Parser {
     }
     public matchTS_TYPE_REF($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF> {
         return this.run<TS_TYPE_REF>($$dpth,
+            "TS_TYPE_REF",
             () => {
                 let $$res: Nullable<TS_TYPE_REF> = null;
                 if (true
@@ -1089,6 +1158,7 @@ export class Parser {
     }
     public matchTS_TYPE_REF_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF_$0> {
         return this.run<TS_TYPE_REF_$0>($$dpth,
+            "TS_TYPE_REF_$0",
             () => {
                 let $$res: Nullable<TS_TYPE_REF_$0> = null;
                 if (true
@@ -1102,6 +1172,7 @@ export class Parser {
     }
     public matchTS_TYPE_REF_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF_$1> {
         return this.run<TS_TYPE_REF_$1>($$dpth,
+            "TS_TYPE_REF_$1",
             () => {
                 let $$res: Nullable<TS_TYPE_REF_$1> = null;
                 if (true
@@ -1115,6 +1186,7 @@ export class Parser {
     }
     public matchTS_TYPE_QUERY($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_QUERY> {
         return this.run<TS_TYPE_QUERY>($$dpth,
+            "TS_TYPE_QUERY",
             () => {
                 let $$res: Nullable<TS_TYPE_QUERY> = null;
                 if (true
@@ -1132,6 +1204,7 @@ export class Parser {
     }
     public matchTS_TYPE_QUERY_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_QUERY_$0> {
         return this.run<TS_TYPE_QUERY_$0>($$dpth,
+            "TS_TYPE_QUERY_$0",
             () => {
                 let $$res: Nullable<TS_TYPE_QUERY_$0> = null;
                 if (true
@@ -1145,6 +1218,7 @@ export class Parser {
     }
     public matchTS_FUNCTION($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_FUNCTION> {
         return this.run<TS_FUNCTION>($$dpth,
+            "TS_FUNCTION",
             () => {
                 let $$res: Nullable<TS_FUNCTION> = null;
                 if (true
@@ -1168,6 +1242,7 @@ export class Parser {
     }
     public matchTS_CONSTRUCTOR($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_CONSTRUCTOR> {
         return this.run<TS_CONSTRUCTOR>($$dpth,
+            "TS_CONSTRUCTOR",
             () => {
                 let $$res: Nullable<TS_CONSTRUCTOR> = null;
                 if (true
@@ -1183,6 +1258,7 @@ export class Parser {
     }
     public matchTS_GENERIC_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS> {
         return this.run<TS_GENERIC_PARAMS>($$dpth,
+            "TS_GENERIC_PARAMS",
             () => {
                 let $$res: Nullable<TS_GENERIC_PARAMS> = null;
                 if (true
@@ -1200,6 +1276,7 @@ export class Parser {
     }
     public matchTS_GENERIC_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS_$0> {
         return this.run<TS_GENERIC_PARAMS_$0>($$dpth,
+            "TS_GENERIC_PARAMS_$0",
             () => {
                 let $$res: Nullable<TS_GENERIC_PARAMS_$0> = null;
                 if (true
@@ -1213,6 +1290,7 @@ export class Parser {
     }
     public matchTS_GENERIC_PARAMS_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS_$0_$0> {
         return this.run<TS_GENERIC_PARAMS_$0_$0>($$dpth,
+            "TS_GENERIC_PARAMS_$0_$0",
             () => {
                 let $$res: Nullable<TS_GENERIC_PARAMS_$0_$0> = null;
                 if (true
@@ -1228,6 +1306,7 @@ export class Parser {
     }
     public matchTS_GENERIC_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAM> {
         return this.run<TS_GENERIC_PARAM>($$dpth,
+            "TS_GENERIC_PARAM",
             () => {
                 let $$res: Nullable<TS_GENERIC_PARAM> = null;
                 if (true
@@ -1242,6 +1321,7 @@ export class Parser {
     }
     public matchTS_GENERIC_PARAM_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAM_$0> {
         return this.run<TS_GENERIC_PARAM_$0>($$dpth,
+            "TS_GENERIC_PARAM_$0",
             () => {
                 let $$res: Nullable<TS_GENERIC_PARAM_$0> = null;
                 if (true
@@ -1257,6 +1337,7 @@ export class Parser {
     }
     public matchTS_GENERIC_ARGS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS> {
         return this.run<TS_GENERIC_ARGS>($$dpth,
+            "TS_GENERIC_ARGS",
             () => {
                 let $$res: Nullable<TS_GENERIC_ARGS> = null;
                 if (true
@@ -1274,6 +1355,7 @@ export class Parser {
     }
     public matchTS_GENERIC_ARGS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS_$0> {
         return this.run<TS_GENERIC_ARGS_$0>($$dpth,
+            "TS_GENERIC_ARGS_$0",
             () => {
                 let $$res: Nullable<TS_GENERIC_ARGS_$0> = null;
                 if (true
@@ -1287,6 +1369,7 @@ export class Parser {
     }
     public matchTS_GENERIC_ARGS_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS_$0_$0> {
         return this.run<TS_GENERIC_ARGS_$0_$0>($$dpth,
+            "TS_GENERIC_ARGS_$0_$0",
             () => {
                 let $$res: Nullable<TS_GENERIC_ARGS_$0_$0> = null;
                 if (true
@@ -1309,6 +1392,7 @@ export class Parser {
     }
     public matchTS_PARAM_LIST_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_1> {
         return this.run<TS_PARAM_LIST_1>($$dpth,
+            "TS_PARAM_LIST_1",
             () => {
                 let $$res: Nullable<TS_PARAM_LIST_1> = null;
                 if (true
@@ -1324,6 +1408,7 @@ export class Parser {
     }
     public matchTS_PARAM_LIST_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_2> {
         return this.run<TS_PARAM_LIST_2>($$dpth,
+            "TS_PARAM_LIST_2",
             () => {
                 let $$res: Nullable<TS_PARAM_LIST_2> = null;
                 if (true
@@ -1338,6 +1423,7 @@ export class Parser {
     }
     public matchTS_PARAM_LIST_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_3> {
         return this.run<TS_PARAM_LIST_3>($$dpth,
+            "TS_PARAM_LIST_3",
             () => {
                 let $$res: Nullable<TS_PARAM_LIST_3> = null;
                 if (true
@@ -1351,6 +1437,7 @@ export class Parser {
     }
     public matchTS_PARAM_LIST_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$0> {
         return this.run<TS_PARAM_LIST_$0>($$dpth,
+            "TS_PARAM_LIST_$0",
             () => {
                 let $$res: Nullable<TS_PARAM_LIST_$0> = null;
                 if (true
@@ -1366,6 +1453,7 @@ export class Parser {
     }
     public matchTS_PARAM_LIST_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$1> {
         return this.run<TS_PARAM_LIST_$1>($$dpth,
+            "TS_PARAM_LIST_$1",
             () => {
                 let $$res: Nullable<TS_PARAM_LIST_$1> = null;
                 if (true
@@ -1381,6 +1469,7 @@ export class Parser {
     }
     public matchTS_PARAM_LIST_$2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$2> {
         return this.run<TS_PARAM_LIST_$2>($$dpth,
+            "TS_PARAM_LIST_$2",
             () => {
                 let $$res: Nullable<TS_PARAM_LIST_$2> = null;
                 if (true
@@ -1396,6 +1485,7 @@ export class Parser {
     }
     public matchTS_REQUIRED_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAMS> {
         return this.run<TS_REQUIRED_PARAMS>($$dpth,
+            "TS_REQUIRED_PARAMS",
             () => {
                 let $$res: Nullable<TS_REQUIRED_PARAMS> = null;
                 if (true
@@ -1410,6 +1500,7 @@ export class Parser {
     }
     public matchTS_REQUIRED_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAMS_$0> {
         return this.run<TS_REQUIRED_PARAMS_$0>($$dpth,
+            "TS_REQUIRED_PARAMS_$0",
             () => {
                 let $$res: Nullable<TS_REQUIRED_PARAMS_$0> = null;
                 if (true
@@ -1425,6 +1516,7 @@ export class Parser {
     }
     public matchTS_REQUIRED_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAM> {
         return this.run<TS_REQUIRED_PARAM>($$dpth,
+            "TS_REQUIRED_PARAM",
             () => {
                 let $$res: Nullable<TS_REQUIRED_PARAM> = null;
                 if (true
@@ -1442,6 +1534,7 @@ export class Parser {
     }
     public matchTS_OPTIONAL_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAMS> {
         return this.run<TS_OPTIONAL_PARAMS>($$dpth,
+            "TS_OPTIONAL_PARAMS",
             () => {
                 let $$res: Nullable<TS_OPTIONAL_PARAMS> = null;
                 if (true
@@ -1457,6 +1550,7 @@ export class Parser {
     }
     public matchTS_OPTIONAL_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAMS_$0> {
         return this.run<TS_OPTIONAL_PARAMS_$0>($$dpth,
+            "TS_OPTIONAL_PARAMS_$0",
             () => {
                 let $$res: Nullable<TS_OPTIONAL_PARAMS_$0> = null;
                 if (true
@@ -1471,6 +1565,7 @@ export class Parser {
     }
     public matchTS_OPTIONAL_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAM> {
         return this.run<TS_OPTIONAL_PARAM>($$dpth,
+            "TS_OPTIONAL_PARAM",
             () => {
                 let $$res: Nullable<TS_OPTIONAL_PARAM> = null;
                 if (true
@@ -1489,6 +1584,7 @@ export class Parser {
     }
     public matchTS_REST_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REST_PARAM> {
         return this.run<TS_REST_PARAM>($$dpth,
+            "TS_REST_PARAM",
             () => {
                 let $$res: Nullable<TS_REST_PARAM> = null;
                 if (true
@@ -1517,6 +1613,7 @@ export class Parser {
     }
     public matchTS_TYPE_MEMBER_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_1> {
         return this.run<TS_TYPE_MEMBER_1>($$dpth,
+            "TS_TYPE_MEMBER_1",
             () => {
                 let $$res: Nullable<TS_TYPE_MEMBER_1> = null;
                 if (true
@@ -1534,6 +1631,7 @@ export class Parser {
     }
     public matchTS_TYPE_MEMBER_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_2> {
         return this.run<TS_TYPE_MEMBER_2>($$dpth,
+            "TS_TYPE_MEMBER_2",
             () => {
                 let $$res: Nullable<TS_TYPE_MEMBER_2> = null;
                 if (true
@@ -1557,6 +1655,7 @@ export class Parser {
     }
     public matchTS_TYPE_MEMBER_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_3> {
         return this.run<TS_TYPE_MEMBER_3>($$dpth,
+            "TS_TYPE_MEMBER_3",
             () => {
                 let $$res: Nullable<TS_TYPE_MEMBER_3> = null;
                 if (true
@@ -1582,6 +1681,7 @@ export class Parser {
     }
     public matchTS_TYPE_MEMBER_4($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_4> {
         return this.run<TS_TYPE_MEMBER_4>($$dpth,
+            "TS_TYPE_MEMBER_4",
             () => {
                 let $$res: Nullable<TS_TYPE_MEMBER_4> = null;
                 if (true
@@ -1607,6 +1707,7 @@ export class Parser {
     }
     public matchTS_TYPE_MEMBER_5($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_5> {
         return this.run<TS_TYPE_MEMBER_5>($$dpth,
+            "TS_TYPE_MEMBER_5",
             () => {
                 let $$res: Nullable<TS_TYPE_MEMBER_5> = null;
                 if (true
@@ -1639,12 +1740,15 @@ export class Parser {
         ]);
     }
     public matchTS_PROPERTY_NAME_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_1> {
+        this.recorder.procAliasStart("TS_PROPERTY_NAME_1", this.mark());
         return this.matchNAME($$dpth + 1, $$cr);
     }
     public matchTS_PROPERTY_NAME_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_2> {
+        this.recorder.procAliasStart("TS_PROPERTY_NAME_2", this.mark());
         return this.matchTS_STRING($$dpth + 1, $$cr);
     }
     public matchTS_PROPERTY_NAME_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_3> {
+        this.recorder.procAliasStart("TS_PROPERTY_NAME_3", this.mark());
         return this.matchTS_NUM($$dpth + 1, $$cr);
     }
     public matchTS_STRING($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING> {
@@ -1656,6 +1760,7 @@ export class Parser {
     }
     public matchTS_STRING_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_1> {
         return this.run<TS_STRING_1>($$dpth,
+            "TS_STRING_1",
             () => {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<TS_STRING_1> = null;
@@ -1671,6 +1776,7 @@ export class Parser {
     }
     public matchTS_STRING_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_2> {
         return this.run<TS_STRING_2>($$dpth,
+            "TS_STRING_2",
             () => {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<TS_STRING_2> = null;
@@ -1686,6 +1792,7 @@ export class Parser {
     }
     public matchTS_STRING_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_3> {
         return this.run<TS_STRING_3>($$dpth,
+            "TS_STRING_3",
             () => {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<TS_STRING_3> = null;
@@ -1700,10 +1807,12 @@ export class Parser {
             });
     }
     public matchTS_NUM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_NUM> {
+        this.recorder.procAliasStart("TS_NUM", this.mark());
         return this.regexAccept(String.raw`(?:-?[0-9]+(?:\.[0-9]+)?)`, "", $$dpth + 1, $$cr);
     }
     public matchCODE_SECTION($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_SECTION> {
         return this.run<CODE_SECTION>($$dpth,
+            "CODE_SECTION",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$end: Nullable<PosInfo>;
@@ -1723,6 +1832,7 @@ export class Parser {
             });
     }
     public matchCODE_REC($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC> {
+        this.recorder.procAliasStart("CODE_REC", this.mark());
         return this.loop<CODE_REC_$0>(() => this.matchCODE_REC_$0($$dpth + 1, $$cr), 0, -1);
     }
     public matchCODE_REC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0> {
@@ -1733,13 +1843,16 @@ export class Parser {
         ]);
     }
     public matchCODE_REC_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_1> {
+        this.recorder.procAliasStart("CODE_REC_$0_1", this.mark());
         return this.regexAccept(String.raw`(?:[^{}\'"\`]+)`, "", $$dpth + 1, $$cr);
     }
     public matchCODE_REC_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_2> {
+        this.recorder.procAliasStart("CODE_REC_$0_2", this.mark());
         return this.matchTS_STRING($$dpth + 1, $$cr);
     }
     public matchCODE_REC_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_3> {
         return this.run<CODE_REC_$0_3>($$dpth,
+            "CODE_REC_$0_3",
             () => {
                 let $$res: Nullable<CODE_REC_$0_3> = null;
                 if (true
@@ -1765,6 +1878,7 @@ export class Parser {
         const res = this.matchGRAM(0);
         if (res)
             return {ast: res, errs: []};
+        this.recorder.procStartErrorRun()
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.clearMemos();
@@ -1796,11 +1910,18 @@ export class Parser {
         this.reset(mrk);
         return null;
     }
-    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
+    // @ts-ignore: It's possible that run won't be called
+    private run<T>($$dpth: number, $$name: string, fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
+        this.recorder.procStartRun($$name, mrk);
         const res = fn()
-        if (res !== null)
+        if (res !== null) {
+            this.recorder.procRunSuccess($$name, this.mark());
+            this.recorder.procEndRun($$name);
             return res;
+        }
+        this.recorder.procRunReset($$name, mrk);
+        this.recorder.procEndRun($$name);
         this.reset(mrk);
         return null;
     }
@@ -1817,6 +1938,7 @@ export class Parser {
     private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         const reg = new RegExp(match, "y" + mods);
         const mrk = this.mark();
+        this.recorder.procStartRegex(match, mrk);
         reg.lastIndex = mrk.overallPos;
         const res = this.tryConsume(reg);
         if(cr) {
@@ -1828,8 +1950,11 @@ export class Parser {
                 negated: this.negating,
             });
         }
-        if(res !== null)
+        if(res !== null) {
+            this.recorder.procRegexSuccess(res, this.mark());
             return res;
+        }
+        this.recorder.procRegexReset(mrk);
         this.reset(mrk);
         return null;
     }

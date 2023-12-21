@@ -2,6 +2,28 @@
 * INPUT GRAMMAR:
 * test := '\p{Alpha}+'
 */
+export interface Recorder {
+    procStartErrorRun(): void
+    procAliasStart(name: string, pos: PosInfo): void
+    procStartRegex(match: string, pos: PosInfo): void
+    procRegexSuccess(res: string, pos: PosInfo): void 
+    procRegexReset(pos: PosInfo): void
+    procStartRun(name: string, pos: PosInfo): void
+    procEndRun(name: string): void
+    procRunSuccess(name: string, pos: PosInfo): void
+    procRunReset(name: string, pos: PosInfo): void 
+}
+class EmptyRecorder implements Recorder {
+    public procStartErrorRun(): void {}
+    public procAliasStart(name: string, pos: PosInfo): void {}
+    public procStartRegex(match: string, pos: PosInfo): void {}
+    public procRegexSuccess(res: string, pos: PosInfo): void {}
+    public procRegexReset(pos: PosInfo): void {}
+    public procStartRun(name: string, pos: PosInfo): void {}
+    public procEndRun(name: string): void {}
+    public procRunSuccess(name: string, pos: PosInfo): void {}
+    public procRunReset(name: string, pos: PosInfo): void {}
+}
 type Nullable<T> = T | null;
 type $$RuleType<T> = () => Nullable<T>;
 export interface ASTNodeIntf {
@@ -16,9 +38,12 @@ export class Parser {
     private pos: PosInfo;
     private negating: boolean = false;
     private memoSafe: boolean = true;
-    constructor(input: string) {
+    private recorder: Recorder
+    public debugEnabled: boolean = true;
+    constructor(input: string, recorder?: Recorder) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
+        this.recorder = recorder ?? new EmptyRecorder();
     }
     public reset(pos: PosInfo) {
         this.pos = pos;
@@ -29,6 +54,7 @@ export class Parser {
     public clearMemos(): void {
     }
     public matchtest($$dpth: number, $$cr?: ErrorTracker): Nullable<test> {
+        this.recorder.procAliasStart("test", this.mark());
         return this.regexAccept(String.raw`(?:\p{Alpha}+)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
@@ -43,6 +69,7 @@ export class Parser {
         const res = this.matchtest(0);
         if (res)
             return {ast: res, errs: []};
+        this.recorder.procStartErrorRun()
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.clearMemos();
@@ -75,11 +102,17 @@ export class Parser {
         return null;
     }
     // @ts-ignore: It's possible that run won't be called
-    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
+    private run<T>($$dpth: number, $$name: string, fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
+        this.recorder.procStartRun($$name, mrk);
         const res = fn()
-        if (res !== null)
+        if (res !== null) {
+            this.recorder.procRunSuccess($$name, this.mark());
+            this.recorder.procEndRun($$name);
             return res;
+        }
+        this.recorder.procRunReset($$name, mrk);
+        this.recorder.procEndRun($$name);
         this.reset(mrk);
         return null;
     }
@@ -96,6 +129,7 @@ export class Parser {
     private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         const reg = new RegExp(match, "yu" + mods);
         const mrk = this.mark();
+        this.recorder.procStartRegex(match, mrk);
         reg.lastIndex = mrk.overallPos;
         const res = this.tryConsume(reg);
         if(cr) {
@@ -107,8 +141,11 @@ export class Parser {
                 negated: this.negating,
             });
         }
-        if(res !== null)
+        if(res !== null) {
+            this.recorder.procRegexSuccess(res, this.mark());
             return res;
+        }
+        this.recorder.procRegexReset(mrk);
         this.reset(mrk);
         return null;
     }

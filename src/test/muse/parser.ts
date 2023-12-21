@@ -193,6 +193,7 @@ export class Parser {
     private pos: PosInfo;
     private negating: boolean = false;
     private memoSafe: boolean = true;
+    public debugEnabled: boolean = false;
     constructor(input: string) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
@@ -722,8 +723,9 @@ export class Parser {
     private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
         const res = fn()
-        if (res !== null)
+        if (res !== null) {
             return res;
+        }
         this.reset(mrk);
         return null;
     }
@@ -751,8 +753,9 @@ export class Parser {
                 negated: this.negating,
             });
         }
-        if(res !== null)
+        if(res !== null) {
             return res;
+        }
         this.reset(mrk);
         return null;
     }

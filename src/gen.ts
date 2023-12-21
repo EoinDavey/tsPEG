@@ -31,7 +31,6 @@ function getNamedTypes(alt: ALT): [string, string][] {
     return types;
 }
 
-
 // Rules with no named matches, no attrs and only one match are rule aliases
 function isAlias(alt: ALT): boolean {
     return getNamedTypes(alt).length === 0 && alt.matches.length === 1 && !hasAttrs(alt);
@@ -69,18 +68,20 @@ export class Generator {
     private enableMemos: boolean;
     private regexFlags: string;
     private includeGrammar: boolean;
+    private debugAnnotations: boolean;
 
     private input: string;
     private checkers: Checker[] = [];
     private header: string | null;
     private boundedRecRules: Set<string>;
 
-    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true) {
+    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true, debugAnnotations = false) {
         this.input = input;
         this.numEnums = numEnums;
         this.enableMemos = enableMemos;
         this.regexFlags = regexFlags;
         this.includeGrammar = includeGrammar;
+        this.debugAnnotations = debugAnnotations;
         const p = new Parser(this.input);
         const res = p.parse();
         if (res.errs.length > 0)
@@ -222,10 +223,10 @@ export class Generator {
         return checks;
     }
 
-    public writeRuleAliasFnBody(expr: MATCH): Block {
-        return [
-                `return ${matchRule(expr)};`,
-            ];
+    public writeRuleAliasFnBody(name: string, expr: MATCH): Block {
+        return (this.debugAnnotations
+            ? [`this.recorder.procAliasStart("${name}", this.mark());`] : [])
+            .concat([`return ${matchRule(expr)};`]);
     }
 
     public writeChoiceParseFn(name: string, alt: ALT, memo = false): Block {
@@ -251,10 +252,11 @@ export class Generator {
     public writeChoiceParseFnBody(name: string, alt: ALT): Block {
         const namedTypes = getNamedTypes(alt);
         if(isAlias(alt))
-            return this.writeRuleAliasFnBody(alt.matches[0].rule);
+            return this.writeRuleAliasFnBody(name, alt.matches[0].rule);
         return [
             `return this.run<${name}>($$dpth,`,
             [
+                ...(this.debugAnnotations ? [`"${name}",`] : []),
                 "() => {",
                 [
                     ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
@@ -387,6 +389,7 @@ export class Generator {
                 [
                     "return {ast: res, errs: []};",
                 ],
+                ...(this.debugAnnotations ? ["this.recorder.procStartErrorRun()"] : []),
                 "this.reset(mrk);",
                 "const rec = new ErrorTracker();",
                 "this.clearMemos();",
@@ -428,6 +431,7 @@ export class Generator {
             ruleClasses: this.writeRuleClasses(this.expandedGram),
             ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
             parseResult: this.writeParseResultClass(this.expandedGram),
+            debugAnnotations: this.debugAnnotations,
             usesEOF: usesEOF(this.expandedGram),
             includeGrammar: this.includeGrammar,
         });
@@ -435,8 +439,8 @@ export class Generator {
     }
 }
 
-export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true): string {
-    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar)
+export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true, debugAnnotations: boolean = false): string {
+    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar, debugAnnotations)
         .addChecker(BannedNamesChecker)
         .addChecker(RulesExistChecker)
         .addChecker(NoRuleNameCollisionChecker)

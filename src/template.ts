@@ -2,17 +2,49 @@ import { Block } from "./util";
 
 export interface TemplateOpts {
     inputStr: string,
+
     header: Block,
-    memos: Block,
-    memoClearFn: Block,
     kinds: Block,
-    regexFlags: string,
+    memoClearFn: Block,
+    memos: Block,
+    parseResult: Block,
     ruleClasses: Block,
     ruleParseFns: Block,
-    parseResult: Block,
-    usesEOF?: boolean,
-    includeGrammar?: boolean,
+
+    debugAnnotations: boolean,
+    includeGrammar: boolean,
+    regexFlags: string,
+    usesEOF: boolean,
 }
+
+const recorder : Block = [
+    "export interface Recorder {",
+    [
+        "procStartErrorRun(): void",
+        "procAliasStart(name: string, pos: PosInfo): void",
+        "procStartRegex(match: string, pos: PosInfo): void",
+        "procRegexSuccess(res: string, pos: PosInfo): void ",
+        "procRegexReset(pos: PosInfo): void",
+        "procStartRun(name: string, pos: PosInfo): void",
+        "procEndRun(name: string): void",
+        "procRunSuccess(name: string, pos: PosInfo): void",
+        "procRunReset(name: string, pos: PosInfo): void ",
+    ],
+    "}",
+    "class EmptyRecorder implements Recorder {",
+    [
+        "public procStartErrorRun(): void {}",
+        "public procAliasStart(name: string, pos: PosInfo): void {}",
+        "public procStartRegex(match: string, pos: PosInfo): void {}",
+        "public procRegexSuccess(res: string, pos: PosInfo): void {}",
+        "public procRegexReset(pos: PosInfo): void {}",
+        "public procStartRun(name: string, pos: PosInfo): void {}",
+        "public procEndRun(name: string): void {}",
+        "public procRunSuccess(name: string, pos: PosInfo): void {}",
+        "public procRunReset(name: string, pos: PosInfo): void {}",
+    ],
+    "}",
+];
 
 export function expandTemplate(opts: TemplateOpts): Block {
         return [
@@ -26,6 +58,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
         ]
         : [],
     "*/",
+    ...(opts.debugAnnotations ? recorder : []),
     ...opts.header,
     "type Nullable<T> = T | null;",
     "type $$RuleType<T> = () => Nullable<T>;",
@@ -42,10 +75,13 @@ export function expandTemplate(opts: TemplateOpts): Block {
         "private pos: PosInfo;",
         "private negating: boolean = false;",
         "private memoSafe: boolean = true;",
-        "constructor(input: string) {",
+        ...(opts.debugAnnotations ? ["private recorder: Recorder"] : []),
+        `public debugEnabled: boolean = ${opts.debugAnnotations ? 'true' : 'false'};`,
+        `constructor(input: string${opts.debugAnnotations ? ', recorder?: Recorder' : ''}) {`,
         [
             "this.pos = {overallPos: 0, line: 1, offset: 0};",
             "this.input = input;",
+            ...(opts.debugAnnotations ? ["this.recorder = recorder ?? new EmptyRecorder();"] : []),
         ],
         "}",
         "public reset(pos: PosInfo) {",
@@ -98,14 +134,24 @@ export function expandTemplate(opts: TemplateOpts): Block {
         ],
         "}",
         "// @ts-ignore: It's possible that run won't be called",
-        "private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {",
+        `private run<T>($$dpth: number, ${opts.debugAnnotations ? '$$name: string, ' : ''}fn: $$RuleType<T>): Nullable<T> {`,
         [
             "const mrk = this.mark();",
+            ...(opts.debugAnnotations ? ["this.recorder.procStartRun($$name, mrk);"] : []),
             "const res = fn()",
-            "if (res !== null)",
+            "if (res !== null) {",
             [
+                ...(opts.debugAnnotations ? [
+                    "this.recorder.procRunSuccess($$name, this.mark());",
+                    "this.recorder.procEndRun($$name);",
+                ] : []),
                 "return res;",
             ],
+            "}",
+            ...(opts.debugAnnotations ? [
+                "this.recorder.procRunReset($$name, mrk);",
+                "this.recorder.procEndRun($$name);",
+            ] : []),
             "this.reset(mrk);",
             "return null;",
         ],
@@ -130,6 +176,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
         [
             `const reg = new RegExp(match, "y${opts.regexFlags}" + mods);`,
             "const mrk = this.mark();",
+            ...(opts.debugAnnotations ? ["this.recorder.procStartRegex(match, mrk);"] : []),
             "reg.lastIndex = mrk.overallPos;",
             "const res = this.tryConsume(reg);",
             "if(cr) {",
@@ -145,8 +192,12 @@ export function expandTemplate(opts: TemplateOpts): Block {
                 "});",
             ],
             "}",
-            "if(res !== null)",
-            "    return res;",
+            "if(res !== null) {", [
+                ...(opts.debugAnnotations ? ["this.recorder.procRegexSuccess(res, this.mark());"] : []),
+                "return res;",
+            ],
+            "}",
+            ...(opts.debugAnnotations ? ["this.recorder.procRegexReset(mrk);"] : []),
             "this.reset(mrk);",
             "return null;",
         ],

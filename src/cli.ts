@@ -52,6 +52,11 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
                 desc: "Additional regex flags to be supplied to regex literals. e.g. " +
                     "--regex-flags=u will enable unicode support",
             },
+            "debug-annotations": {
+                type: "boolean",
+                default: false,
+                desc: "Generate parser compatible with debug mode",
+            },
         });
     },
     argv => {
@@ -59,11 +64,12 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
         const outputFile = argv.output_file as string | undefined;
         const regexFlags = argv["regex-flags"];
         const includeGrammar = argv["include-grammar-comment"];
+        const debugAnnotations: boolean = argv["debug-annotations"];
         try {
             validateRegexFlags(regexFlags);
             const inGram = fs.readFileSync(grammarFile, { encoding: "utf8" });
             validateIncludeGrammarFlag(includeGrammar, inGram);
-            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags, includeGrammar);
+            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags, includeGrammar, debugAnnotations);
             if(outputFile !== undefined) {
                 fs.writeFileSync(outputFile, parser);
             } else {
