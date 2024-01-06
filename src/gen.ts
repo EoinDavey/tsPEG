@@ -91,7 +91,9 @@ export class Generator {
         this.expandedGram = this.astToExpandedGram(res.ast);
         this.unexpandedGram = res.ast.rules.map(def => {
             return {
-                name: def.name,
+                id: {
+                    name: def.name,
+                },
                 rule: def.rule.list,
                 pos: def.namestart,
             };
@@ -127,16 +129,16 @@ export class Generator {
         return this.enableMemos
             ? this.expandedGram
             : this.expandedGram
-                .filter(rule => this.boundedRecRules.has(rule.name));
+                .filter(rule => this.boundedRecRules.has(rule.id.name));
     }
 
     public writeMemos(): Block {
         return this.memoRules().map(rule =>
-                `protected ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
+                `protected ${memoName(rule.id.name)}: Map<number, [Nullable<${rule.id.name}>, PosInfo]> = new Map();`);
     }
 
     public writeMemoClearFn(): Block {
-        const ls: Block = this.memoRules().map(rule => `this.${memoName(rule.name)}.clear();`);
+        const ls: Block = this.memoRules().map(rule => `this.${memoName(rule.id.name)}.clear();`);
         return [
             'public clearMemos(): void {',
             ls,
@@ -179,7 +181,7 @@ export class Generator {
     }
 
     public writeRuleClass(ruledef: Ruledef): Block {
-        const nm = ruledef.name;
+        const nm = ruledef.id.name;
         const union = altNames(ruledef);
         const choices: Block = [];
         altNames(ruledef).forEach((name, i) => {
@@ -193,7 +195,7 @@ export class Generator {
         const types: string[] = [];
         const rules: Block = [];
         for (const ruledef of gram) {
-            types.push(ruledef.name);
+            types.push(ruledef.id.name);
             rules.push(...this.writeRuleClass(ruledef));
         }
         return rules;
@@ -320,12 +322,12 @@ export class Generator {
     }
 
     public writeRuleParseFns(ruledef: Ruledef): Block {
-        const nm = ruledef.name;
+        const nm = ruledef.id.name;
         const nms: string[] = altNames(ruledef);
 
         if(this.boundedRecRules.has(nm)) {
             if(nms.length === 1) {
-                // Only 1, skip the union
+                // Only 1, skip the union.
                 const body = this.writeChoiceParseFnBody(nms[0], ruledef.rule[0]);
                 if(nm !== nms[0])
                     throw `${nm} != ${nms[0]}`;
@@ -370,7 +372,7 @@ export class Generator {
         const fns: Block = [];
         for (const ruledef of gram)
             fns.push(...this.writeRuleParseFns(ruledef));
-        const S: string = gram[0].name;
+        const S: string = gram[0].id.name;
         return [...fns,
             "public test(): boolean {",
             [
@@ -403,7 +405,7 @@ export class Generator {
 
     public writeParseResultClass(gram: Grammar): Block {
         const head = gram[0];
-        const startname = head.name;
+        const startname = head.id.name;
         return ["export interface ParseResult {",
             [
                 `ast: Nullable<${startname}>;`,

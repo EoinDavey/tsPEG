@@ -20,28 +20,6 @@
 *         .value = number { return parseInt(this.val); }
 * _    := '\s*'
 */
-export interface Recorder {
-    procStartErrorRun(): void
-    procAliasStart(name: string, pos: PosInfo): void
-    procStartRegex(match: string, pos: PosInfo): void
-    procRegexSuccess(res: string, pos: PosInfo): void 
-    procRegexReset(pos: PosInfo): void
-    procStartRun(name: string, pos: PosInfo): void
-    procEndRun(name: string): void
-    procRunSuccess(name: string, pos: PosInfo): void
-    procRunReset(name: string, pos: PosInfo): void 
-}
-class EmptyRecorder implements Recorder {
-    public procStartErrorRun(): void {}
-    public procAliasStart(name: string, pos: PosInfo): void {}
-    public procStartRegex(match: string, pos: PosInfo): void {}
-    public procRegexSuccess(res: string, pos: PosInfo): void {}
-    public procRegexReset(pos: PosInfo): void {}
-    public procStartRun(name: string, pos: PosInfo): void {}
-    public procEndRun(name: string): void {}
-    public procRunSuccess(name: string, pos: PosInfo): void {}
-    public procRunReset(name: string, pos: PosInfo): void {}
-}
 type Nullable<T> = T | null;
 type $$RuleType<T> = () => Nullable<T>;
 export interface ASTNodeIntf {
@@ -137,12 +115,10 @@ export class Parser {
     private pos: PosInfo;
     private negating: boolean = false;
     private memoSafe: boolean = true;
-    private recorder: Recorder
-    public debugEnabled: boolean = true;
-    constructor(input: string, recorder?: Recorder) {
+    public debugEnabled: boolean = false;
+    constructor(input: string) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
-        this.recorder = recorder ?? new EmptyRecorder();
     }
     public reset(pos: PosInfo) {
         this.pos = pos;
@@ -154,7 +130,6 @@ export class Parser {
     }
     public matchSUM($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM> {
         return this.run<SUM>($$dpth,
-            "SUM",
             () => {
                 let $scope$head: Nullable<FAC>;
                 let $scope$tail: Nullable<SUM_$0[]>;
@@ -170,7 +145,6 @@ export class Parser {
     }
     public matchSUM_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM_$0> {
         return this.run<SUM_$0>($$dpth,
-            "SUM_$0",
             () => {
                 let $scope$op: Nullable<string>;
                 let $scope$sm: Nullable<FAC>;
@@ -186,7 +160,6 @@ export class Parser {
     }
     public matchFAC($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC> {
         return this.run<FAC>($$dpth,
-            "FAC",
             () => {
                 let $scope$head: Nullable<ATOM>;
                 let $scope$tail: Nullable<FAC_$0[]>;
@@ -202,7 +175,6 @@ export class Parser {
     }
     public matchFAC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC_$0> {
         return this.run<FAC_$0>($$dpth,
-            "FAC_$0",
             () => {
                 let $scope$op: Nullable<string>;
                 let $scope$sm: Nullable<ATOM>;
@@ -224,7 +196,6 @@ export class Parser {
     }
     public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
         return this.run<ATOM_1>($$dpth,
-            "ATOM_1",
             () => {
                 let $scope$val: Nullable<INT>;
                 let $$res: Nullable<ATOM_1> = null;
@@ -240,7 +211,6 @@ export class Parser {
     }
     public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
         return this.run<ATOM_2>($$dpth,
-            "ATOM_2",
             () => {
                 let $scope$val: Nullable<SUM>;
                 let $$res: Nullable<ATOM_2> = null;
@@ -258,7 +228,6 @@ export class Parser {
     }
     public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
         return this.run<INT>($$dpth,
-            "INT",
             () => {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<INT> = null;
@@ -271,7 +240,6 @@ export class Parser {
             });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        this.recorder.procAliasStart("_", this.mark());
         return this.regexAccept(String.raw`(?:\s*)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
@@ -286,7 +254,6 @@ export class Parser {
         const res = this.matchSUM(0);
         if (res)
             return {ast: res, errs: []};
-        this.recorder.procStartErrorRun()
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.clearMemos();
@@ -319,17 +286,12 @@ export class Parser {
         return null;
     }
     // @ts-ignore: It's possible that run won't be called
-    private run<T>($$dpth: number, $$name: string, fn: $$RuleType<T>): Nullable<T> {
+    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
-        this.recorder.procStartRun($$name, mrk);
         const res = fn()
         if (res !== null) {
-            this.recorder.procRunSuccess($$name, this.mark());
-            this.recorder.procEndRun($$name);
             return res;
         }
-        this.recorder.procRunReset($$name, mrk);
-        this.recorder.procEndRun($$name);
         this.reset(mrk);
         return null;
     }
@@ -346,7 +308,6 @@ export class Parser {
     private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         const reg = new RegExp(match, "y" + mods);
         const mrk = this.mark();
-        this.recorder.procStartRegex(match, mrk);
         reg.lastIndex = mrk.overallPos;
         const res = this.tryConsume(reg);
         if(cr) {
@@ -359,10 +320,8 @@ export class Parser {
             });
         }
         if(res !== null) {
-            this.recorder.procRegexSuccess(res, this.mark());
             return res;
         }
-        this.recorder.procRegexReset(mrk);
         this.reset(mrk);
         return null;
     }

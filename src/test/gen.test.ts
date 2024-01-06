@@ -139,7 +139,7 @@ describe("extractRule test", () => {
             expect(res.ast).not.toBeNull();
             const names : string[] = res.ast!.rules.map(x => extractRules(x.rule.list, x.name))
                 .reduce((x, y) => x.concat(y))
-                .map(x => x.name);
+                .map(x => x.id.name);
             expect(names.sort()).toEqual(tc.rulenames.sort());
         });
     }

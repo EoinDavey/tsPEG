@@ -40,7 +40,7 @@ export const RulesExistChecker: Checker = {
     Check: (g: Grammar): CheckError | null => {
         const ruleNames: Set<string> = new Set();
         for(const ruledef of g)
-            ruleNames.add(ruledef.name);
+            ruleNames.add(ruledef.id.name);
         for(const ruledef of g) {
             for(const alt of ruledef.rule) {
                 for(const match of alt.matches) {
@@ -77,17 +77,17 @@ export const NoRuleNameCollisionChecker: Checker = {
     Check: (g: Grammar): CheckError | null => {
         const seen: Set<string> = new Set();
         for(const ruledef of g) {
-            if(seen.has(ruledef.name))
-                return ruleCollisionNameErr(ruledef.name);
+            if(seen.has(ruledef.id.name))
+                return ruleCollisionNameErr(ruledef.id.name);
 
             // Stop after adding ruledef.name if === 1 alternative
             // as altNames(ruledef) will only contain ruledef.name
-            seen.add(ruledef.name);
+            seen.add(ruledef.id.name);
             if(ruledef.rule.length === 1)
                 continue;
             for(const name of altNames(ruledef)) {
                 if(seen.has(name))
-                    return ruleCollisionNameErr(ruledef.name);
+                    return ruleCollisionNameErr(ruledef.id.name);
                 seen.add(name);
             }
         }
@@ -110,8 +110,8 @@ const keywords: string[] = [
 export const NoKeywords: Checker = {
     Check: (g: Grammar): CheckError | null => {
         for(const ruledef of g){
-            if(keywords.includes(ruledef.name)){
-                return new CheckError(`Rule name "${ruledef.name}" is a reserved Typescript keyword`, ruledef.pos);
+            if(keywords.includes(ruledef.id.name)){
+                return new CheckError(`Rule name "${ruledef.id.name}" is a reserved Typescript keyword`, ruledef.pos);
             }
         }
         return null;

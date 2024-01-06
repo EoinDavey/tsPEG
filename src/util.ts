@@ -3,8 +3,11 @@ import { CheckError } from "./checks";
 
 export type Rule = ALT[];
 export type Grammar = Ruledef[];
+export type RuleID = {
+    name: string
+}
 export interface Ruledef {
-    name: string;
+    id: RuleID;
     rule: Rule;
     // pos is possibly undefined as subrules don't have
     // a well defined definition location
@@ -19,8 +22,8 @@ export function indentBlock(blk: string[]): string[] {
 
 export function altNames(rd: Ruledef): string[] {
     if(rd.rule.length === 1)
-        return [rd.name];
-    return rd.rule.map((_, i) => `${rd.name}_${i + 1}`);
+        return [rd.id.name];
+    return rd.rule.map((_, i) => `${rd.id.name}_${i + 1}`);
 }
 
 export function writeBlock(blk: Block): string[] {
@@ -61,7 +64,7 @@ export function escapeBackticks(s: string): string {
 
 export function getRuleFromGram(gram: Grammar, name: string): Ruledef | null {
     for(const rule of gram)
-        if(rule.name === name)
+        if(rule.id.name === name)
             return rule;
     return null;
 }

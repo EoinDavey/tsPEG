@@ -154,28 +154,6 @@
 * Keyword     := 'm[áa]' | 'n[oó]' | 'nuair-a' | 'f[ií]or|br[eé]ag'
 *     | 'gn[ií]omh' | 'chun-cinn' | 'neamhn[ií]' | 'toradh' | 'creatlach'
 */
-export interface Recorder {
-    procStartErrorRun(): void
-    procAliasStart(name: string, pos: PosInfo): void
-    procStartRegex(match: string, pos: PosInfo): void
-    procRegexSuccess(res: string, pos: PosInfo): void 
-    procRegexReset(pos: PosInfo): void
-    procStartRun(name: string, pos: PosInfo): void
-    procEndRun(name: string): void
-    procRunSuccess(name: string, pos: PosInfo): void
-    procRunReset(name: string, pos: PosInfo): void 
-}
-class EmptyRecorder implements Recorder {
-    public procStartErrorRun(): void {}
-    public procAliasStart(name: string, pos: PosInfo): void {}
-    public procStartRegex(match: string, pos: PosInfo): void {}
-    public procRegexSuccess(res: string, pos: PosInfo): void {}
-    public procRegexReset(pos: PosInfo): void {}
-    public procStartRun(name: string, pos: PosInfo): void {}
-    public procEndRun(name: string): void {}
-    public procRunSuccess(name: string, pos: PosInfo): void {}
-    public procRunReset(name: string, pos: PosInfo): void {}
-}
 
 import { Context } from "setanta/node_build/ctx";
 import { PossibleResolution, Value } from "setanta/node_build/values";
@@ -974,12 +952,10 @@ export class Parser {
     private pos: PosInfo;
     private negating: boolean = false;
     private memoSafe: boolean = true;
-    private recorder: Recorder
-    public debugEnabled: boolean = true;
-    constructor(input: string, recorder?: Recorder) {
+    public debugEnabled: boolean = false;
+    constructor(input: string) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
-        this.recorder = recorder ?? new EmptyRecorder();
     }
     public reset(pos: PosInfo) {
         this.pos = pos;
@@ -991,7 +967,6 @@ export class Parser {
     }
     public matchProgram($$dpth: number, $$cr?: ErrorTracker): Nullable<Program> {
         return this.run<Program>($$dpth,
-            "Program",
             () => {
                 let $scope$stmts: Nullable<AsgnStmt[]>;
                 let $$res: Nullable<Program> = null;
@@ -1021,51 +996,39 @@ export class Parser {
         ]);
     }
     public matchAsgnStmt_1($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_1> {
-        this.recorder.procAliasStart("AsgnStmt_1", this.mark());
         return this.matchIfStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_2($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_2> {
-        this.recorder.procAliasStart("AsgnStmt_2", this.mark());
         return this.matchBlockStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_3($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_3> {
-        this.recorder.procAliasStart("AsgnStmt_3", this.mark());
         return this.matchNuairStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_4($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_4> {
-        this.recorder.procAliasStart("AsgnStmt_4", this.mark());
         return this.matchLeStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_5($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_5> {
-        this.recorder.procAliasStart("AsgnStmt_5", this.mark());
         return this.matchCCStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_6($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_6> {
-        this.recorder.procAliasStart("AsgnStmt_6", this.mark());
         return this.matchBrisStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_7($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_7> {
-        this.recorder.procAliasStart("AsgnStmt_7", this.mark());
         return this.matchCtlchStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_8($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_8> {
-        this.recorder.procAliasStart("AsgnStmt_8", this.mark());
         return this.matchGniomhStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_9($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_9> {
-        this.recorder.procAliasStart("AsgnStmt_9", this.mark());
         return this.matchToradhStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_10($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_10> {
-        this.recorder.procAliasStart("AsgnStmt_10", this.mark());
         return this.matchAssgnStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_11($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_11> {
-        this.recorder.procAliasStart("AsgnStmt_11", this.mark());
         return this.matchDefnStmt($$dpth + 1, $$cr);
     }
     public matchAsgnStmt_12($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnStmt_12> {
-        this.recorder.procAliasStart("AsgnStmt_12", this.mark());
         return this.matchExpr($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt> {
@@ -1082,44 +1045,34 @@ export class Parser {
         ]);
     }
     public matchNonAsgnStmt_1($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_1> {
-        this.recorder.procAliasStart("NonAsgnStmt_1", this.mark());
         return this.matchIfStmt($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt_2($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_2> {
-        this.recorder.procAliasStart("NonAsgnStmt_2", this.mark());
         return this.matchNuairStmt($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt_3($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_3> {
-        this.recorder.procAliasStart("NonAsgnStmt_3", this.mark());
         return this.matchLeStmt($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt_4($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_4> {
-        this.recorder.procAliasStart("NonAsgnStmt_4", this.mark());
         return this.matchCCStmt($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt_5($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_5> {
-        this.recorder.procAliasStart("NonAsgnStmt_5", this.mark());
         return this.matchBrisStmt($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt_6($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_6> {
-        this.recorder.procAliasStart("NonAsgnStmt_6", this.mark());
         return this.matchToradhStmt($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt_7($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_7> {
-        this.recorder.procAliasStart("NonAsgnStmt_7", this.mark());
         return this.matchBlockStmt($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt_8($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_8> {
-        this.recorder.procAliasStart("NonAsgnStmt_8", this.mark());
         return this.matchAssgnStmt($$dpth + 1, $$cr);
     }
     public matchNonAsgnStmt_9($$dpth: number, $$cr?: ErrorTracker): Nullable<NonAsgnStmt_9> {
-        this.recorder.procAliasStart("NonAsgnStmt_9", this.mark());
         return this.matchExpr($$dpth + 1, $$cr);
     }
     public matchIfStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt> {
         return this.run<IfStmt>($$dpth,
-            "IfStmt",
             () => {
                 let $scope$expr: Nullable<Expr>;
                 let $scope$stmt: Nullable<NonAsgnStmt>;
@@ -1141,7 +1094,6 @@ export class Parser {
     }
     public matchIfStmt_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0> {
         return this.run<IfStmt_$0>($$dpth,
-            "IfStmt_$0",
             () => {
                 let $scope$stmt: Nullable<NonAsgnStmt>;
                 let $$res: Nullable<IfStmt_$0> = null;
@@ -1158,7 +1110,6 @@ export class Parser {
     }
     public matchBlockStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<BlockStmt> {
         return this.run<BlockStmt>($$dpth,
-            "BlockStmt",
             () => {
                 let $scope$blk: Nullable<AsgnStmt[]>;
                 let $$res: Nullable<BlockStmt> = null;
@@ -1176,7 +1127,6 @@ export class Parser {
     }
     public matchNuairStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<NuairStmt> {
         return this.run<NuairStmt>($$dpth,
-            "NuairStmt",
             () => {
                 let $scope$expr: Nullable<Expr>;
                 let $scope$stmt: Nullable<NonAsgnStmt>;
@@ -1195,7 +1145,6 @@ export class Parser {
     }
     public matchLeStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<LeStmt> {
         return this.run<LeStmt>($$dpth,
-            "LeStmt",
             () => {
                 let $scope$id: Nullable<ID>;
                 let $scope$strt: Nullable<Expr>;
@@ -1228,7 +1177,6 @@ export class Parser {
     }
     public matchLeStmt_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<LeStmt_$0> {
         return this.run<LeStmt_$0>($$dpth,
-            "LeStmt_$0",
             () => {
                 let $scope$step: Nullable<Expr>;
                 let $$res: Nullable<LeStmt_$0> = null;
@@ -1244,7 +1192,6 @@ export class Parser {
     }
     public matchDefnStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<DefnStmt> {
         return this.run<DefnStmt>($$dpth,
-            "DefnStmt",
             () => {
                 let $scope$idstart: Nullable<PosInfo>;
                 let $scope$id: Nullable<ID>;
@@ -1268,7 +1215,6 @@ export class Parser {
     }
     public matchAssgnStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<AssgnStmt> {
         return this.run<AssgnStmt>($$dpth,
-            "AssgnStmt",
             () => {
                 let $scope$lstart: Nullable<PosInfo>;
                 let $scope$lhs: Nullable<Postfix>;
@@ -1293,7 +1239,6 @@ export class Parser {
     }
     public matchGniomhStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<GniomhStmt> {
         return this.run<GniomhStmt>($$dpth,
-            "GniomhStmt",
             () => {
                 let $scope$id: Nullable<ID>;
                 let $scope$args: Nullable<Nullable<CSIDs>>;
@@ -1322,7 +1267,6 @@ export class Parser {
     }
     public matchCtlchStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<CtlchStmt> {
         return this.run<CtlchStmt>($$dpth,
-            "CtlchStmt",
             () => {
                 let $scope$id: Nullable<ID>;
                 let $scope$tuis: Nullable<Nullable<CtlchStmt_$0>>;
@@ -1347,7 +1291,6 @@ export class Parser {
     }
     public matchCtlchStmt_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<CtlchStmt_$0> {
         return this.run<CtlchStmt_$0>($$dpth,
-            "CtlchStmt_$0",
             () => {
                 let $scope$parentstart: Nullable<PosInfo>;
                 let $scope$id: Nullable<ID>;
@@ -1368,7 +1311,6 @@ export class Parser {
     }
     public matchBrisStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<BrisStmt> {
         return this.run<BrisStmt>($$dpth,
-            "BrisStmt",
             () => {
                 let $$res: Nullable<BrisStmt> = null;
                 if (true
@@ -1382,7 +1324,6 @@ export class Parser {
     }
     public matchCCStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<CCStmt> {
         return this.run<CCStmt>($$dpth,
-            "CCStmt",
             () => {
                 let $$res: Nullable<CCStmt> = null;
                 if (true
@@ -1396,7 +1337,6 @@ export class Parser {
     }
     public matchToradhStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<ToradhStmt> {
         return this.run<ToradhStmt>($$dpth,
-            "ToradhStmt",
             () => {
                 let $scope$exp: Nullable<Nullable<Expr>>;
                 let $$res: Nullable<ToradhStmt> = null;
@@ -1412,12 +1352,10 @@ export class Parser {
             });
     }
     public matchExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<Expr> {
-        this.recorder.procAliasStart("Expr", this.mark());
         return this.matchAnd($$dpth + 1, $$cr);
     }
     public matchAnd($$dpth: number, $$cr?: ErrorTracker): Nullable<And> {
         return this.run<And>($$dpth,
-            "And",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Or>;
@@ -1437,7 +1375,6 @@ export class Parser {
     }
     public matchAnd_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<And_$0> {
         return this.run<And_$0>($$dpth,
-            "And_$0",
             () => {
                 let $scope$trm: Nullable<Or>;
                 let $$res: Nullable<And_$0> = null;
@@ -1453,7 +1390,6 @@ export class Parser {
     }
     public matchOr($$dpth: number, $$cr?: ErrorTracker): Nullable<Or> {
         return this.run<Or>($$dpth,
-            "Or",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Eq>;
@@ -1473,7 +1409,6 @@ export class Parser {
     }
     public matchOr_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Or_$0> {
         return this.run<Or_$0>($$dpth,
-            "Or_$0",
             () => {
                 let $scope$trm: Nullable<Eq>;
                 let $$res: Nullable<Or_$0> = null;
@@ -1489,7 +1424,6 @@ export class Parser {
     }
     public matchEq($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq> {
         return this.run<Eq>($$dpth,
-            "Eq",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Comp>;
@@ -1509,7 +1443,6 @@ export class Parser {
     }
     public matchEq_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq_$0> {
         return this.run<Eq_$0>($$dpth,
-            "Eq_$0",
             () => {
                 let $scope$op: Nullable<string>;
                 let $scope$trm: Nullable<Comp>;
@@ -1526,7 +1459,6 @@ export class Parser {
     }
     public matchComp($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp> {
         return this.run<Comp>($$dpth,
-            "Comp",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Sum>;
@@ -1546,7 +1478,6 @@ export class Parser {
     }
     public matchComp_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp_$0> {
         return this.run<Comp_$0>($$dpth,
-            "Comp_$0",
             () => {
                 let $scope$op: Nullable<Compare>;
                 let $scope$trm: Nullable<Sum>;
@@ -1563,7 +1494,6 @@ export class Parser {
     }
     public matchSum($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum> {
         return this.run<Sum>($$dpth,
-            "Sum",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Product>;
@@ -1583,7 +1513,6 @@ export class Parser {
     }
     public matchSum_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum_$0> {
         return this.run<Sum_$0>($$dpth,
-            "Sum_$0",
             () => {
                 let $scope$op: Nullable<PlusMinus>;
                 let $scope$trm: Nullable<Product>;
@@ -1600,7 +1529,6 @@ export class Parser {
     }
     public matchProduct($$dpth: number, $$cr?: ErrorTracker): Nullable<Product> {
         return this.run<Product>($$dpth,
-            "Product",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Prefix>;
@@ -1620,7 +1548,6 @@ export class Parser {
     }
     public matchProduct_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Product_$0> {
         return this.run<Product_$0>($$dpth,
-            "Product_$0",
             () => {
                 let $scope$op: Nullable<MulDiv>;
                 let $scope$trm: Nullable<Prefix>;
@@ -1637,7 +1564,6 @@ export class Parser {
     }
     public matchPrefix($$dpth: number, $$cr?: ErrorTracker): Nullable<Prefix> {
         return this.run<Prefix>($$dpth,
-            "Prefix",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$op: Nullable<Nullable<string>>;
@@ -1658,7 +1584,6 @@ export class Parser {
     }
     public matchPostfix($$dpth: number, $$cr?: ErrorTracker): Nullable<Postfix> {
         return this.run<Postfix>($$dpth,
-            "Postfix",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$at: Nullable<ObjLookups>;
@@ -1678,7 +1603,6 @@ export class Parser {
     }
     public matchObjLookups($$dpth: number, $$cr?: ErrorTracker): Nullable<ObjLookups> {
         return this.run<ObjLookups>($$dpth,
-            "ObjLookups",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$attrs: Nullable<ObjLookups_$0[]>;
@@ -1698,7 +1622,6 @@ export class Parser {
     }
     public matchObjLookups_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<ObjLookups_$0> {
         return this.run<ObjLookups_$0>($$dpth,
-            "ObjLookups_$0",
             () => {
                 let $scope$id: Nullable<ID>;
                 let $$res: Nullable<ObjLookups_$0> = null;
@@ -1720,7 +1643,6 @@ export class Parser {
     }
     public matchPostOp_1($$dpth: number, $$cr?: ErrorTracker): Nullable<PostOp_1> {
         return this.run<PostOp_1>($$dpth,
-            "PostOp_1",
             () => {
                 let $scope$args: Nullable<Nullable<CSArgs>>;
                 let $$res: Nullable<PostOp_1> = null;
@@ -1737,7 +1659,6 @@ export class Parser {
     }
     public matchPostOp_2($$dpth: number, $$cr?: ErrorTracker): Nullable<PostOp_2> {
         return this.run<PostOp_2>($$dpth,
-            "PostOp_2",
             () => {
                 let $scope$expr: Nullable<Expr>;
                 let $$res: Nullable<PostOp_2> = null;
@@ -1766,7 +1687,6 @@ export class Parser {
     }
     public matchAtom_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_1> {
         return this.run<Atom_1>($$dpth,
-            "Atom_1",
             () => {
                 let $scope$trm: Nullable<Expr>;
                 let $$res: Nullable<Atom_1> = null;
@@ -1783,36 +1703,28 @@ export class Parser {
             });
     }
     public matchAtom_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_2> {
-        this.recorder.procAliasStart("Atom_2", this.mark());
         return this.matchID($$dpth + 1, $$cr);
     }
     public matchAtom_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_3> {
-        this.recorder.procAliasStart("Atom_3", this.mark());
         return this.matchTeacs($$dpth + 1, $$cr);
     }
     public matchAtom_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_4> {
-        this.recorder.procAliasStart("Atom_4", this.mark());
         return this.matchInt($$dpth + 1, $$cr);
     }
     public matchAtom_5($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_5> {
-        this.recorder.procAliasStart("Atom_5", this.mark());
         return this.matchBool($$dpth + 1, $$cr);
     }
     public matchAtom_6($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_6> {
-        this.recorder.procAliasStart("Atom_6", this.mark());
         return this.matchNeamhni($$dpth + 1, $$cr);
     }
     public matchAtom_7($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_7> {
-        this.recorder.procAliasStart("Atom_7", this.mark());
         return this.matchListLit($$dpth + 1, $$cr);
     }
     public matchAtom_8($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_8> {
-        this.recorder.procAliasStart("Atom_8", this.mark());
         return this.matchGniomhExpr($$dpth + 1, $$cr);
     }
     public matchGniomhExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<GniomhExpr> {
         return this.run<GniomhExpr>($$dpth,
-            "GniomhExpr",
             () => {
                 let $scope$args: Nullable<Nullable<CSIDs>>;
                 let $scope$stmts: Nullable<AsgnStmt[]>;
@@ -1838,7 +1750,6 @@ export class Parser {
     }
     public matchListLit($$dpth: number, $$cr?: ErrorTracker): Nullable<ListLit> {
         return this.run<ListLit>($$dpth,
-            "ListLit",
             () => {
                 let $scope$els: Nullable<Nullable<CSArgs>>;
                 let $$res: Nullable<ListLit> = null;
@@ -1856,7 +1767,6 @@ export class Parser {
     }
     public matchCSArgs($$dpth: number, $$cr?: ErrorTracker): Nullable<CSArgs> {
         return this.run<CSArgs>($$dpth,
-            "CSArgs",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$head: Nullable<Expr>;
@@ -1876,7 +1786,6 @@ export class Parser {
     }
     public matchCSArgs_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<CSArgs_$0> {
         return this.run<CSArgs_$0>($$dpth,
-            "CSArgs_$0",
             () => {
                 let $scope$exp: Nullable<Expr>;
                 let $$res: Nullable<CSArgs_$0> = null;
@@ -1892,7 +1801,6 @@ export class Parser {
     }
     public matchCSIDs($$dpth: number, $$cr?: ErrorTracker): Nullable<CSIDs> {
         return this.run<CSIDs>($$dpth,
-            "CSIDs",
             () => {
                 let $scope$head: Nullable<ID>;
                 let $scope$tail: Nullable<CSIDs_$0[]>;
@@ -1908,7 +1816,6 @@ export class Parser {
     }
     public matchCSIDs_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<CSIDs_$0> {
         return this.run<CSIDs_$0>($$dpth,
-            "CSIDs_$0",
             () => {
                 let $scope$id: Nullable<ID>;
                 let $$res: Nullable<CSIDs_$0> = null;
@@ -1924,7 +1831,6 @@ export class Parser {
     }
     public matchID($$dpth: number, $$cr?: ErrorTracker): Nullable<ID> {
         return this.run<ID>($$dpth,
-            "ID",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$id: Nullable<string>;
@@ -1944,7 +1850,6 @@ export class Parser {
     }
     public matchID_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<ID_$0> {
         return this.run<ID_$0>($$dpth,
-            "ID_$0",
             () => {
                 let $$res: Nullable<ID_$0> = null;
                 if (true
@@ -1958,7 +1863,6 @@ export class Parser {
     }
     public matchBool($$dpth: number, $$cr?: ErrorTracker): Nullable<Bool> {
         return this.run<Bool>($$dpth,
-            "Bool",
             () => {
                 let $scope$bool: Nullable<string>;
                 let $$res: Nullable<Bool> = null;
@@ -1973,7 +1877,6 @@ export class Parser {
     }
     public matchNeamhni($$dpth: number, $$cr?: ErrorTracker): Nullable<Neamhni> {
         return this.run<Neamhni>($$dpth,
-            "Neamhni",
             () => {
                 let $$res: Nullable<Neamhni> = null;
                 if (true
@@ -1987,7 +1890,6 @@ export class Parser {
     }
     public matchInt($$dpth: number, $$cr?: ErrorTracker): Nullable<Int> {
         return this.run<Int>($$dpth,
-            "Int",
             () => {
                 let $scope$int: Nullable<string>;
                 let $$res: Nullable<Int> = null;
@@ -2002,7 +1904,6 @@ export class Parser {
     }
     public matchTeacs($$dpth: number, $$cr?: ErrorTracker): Nullable<Teacs> {
         return this.run<Teacs>($$dpth,
-            "Teacs",
             () => {
                 let $scope$lit: Nullable<Teacs_$0>;
                 let $$res: Nullable<Teacs> = null;
@@ -2023,7 +1924,6 @@ export class Parser {
     }
     public matchTeacs_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Teacs_$0_1> {
         return this.run<Teacs_$0_1>($$dpth,
-            "Teacs_$0_1",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$val: Nullable<string>;
@@ -2043,7 +1943,6 @@ export class Parser {
     }
     public matchTeacs_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Teacs_$0_2> {
         return this.run<Teacs_$0_2>($$dpth,
-            "Teacs_$0_2",
             () => {
                 let $scope$start: Nullable<PosInfo>;
                 let $scope$val: Nullable<string>;
@@ -2062,11 +1961,9 @@ export class Parser {
             });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        this.recorder.procAliasStart("_", this.mark());
         return this.loop<wspace>(() => this.matchwspace($$dpth + 1, $$cr), 0, -1);
     }
     public matchwspace($$dpth: number, $$cr?: ErrorTracker): Nullable<wspace> {
-        this.recorder.procAliasStart("wspace", this.mark());
         return this.regexAccept(String.raw`(?:(?:\s|>--(?:(?!--<).)*(--<|\n|$)))`, "", $$dpth + 1, $$cr);
     }
     public matchgap($$dpth: number, $$cr?: ErrorTracker): Nullable<gap> {
@@ -2077,31 +1974,24 @@ export class Parser {
         ]);
     }
     public matchgap_1($$dpth: number, $$cr?: ErrorTracker): Nullable<gap_1> {
-        this.recorder.procAliasStart("gap_1", this.mark());
         return this.matchwspace($$dpth + 1, $$cr);
     }
     public matchgap_2($$dpth: number, $$cr?: ErrorTracker): Nullable<gap_2> {
-        this.recorder.procAliasStart("gap_2", this.mark());
         return this.regexAccept(String.raw`(?:[^a-zA-Z0-9áéíóúÁÉÍÓÚ])`, "", $$dpth + 1, $$cr);
     }
     public matchgap_3($$dpth: number, $$cr?: ErrorTracker): Nullable<gap_3> {
-        this.recorder.procAliasStart("gap_3", this.mark());
         return this.regexAccept(String.raw`(?:$)`, "", $$dpth + 1, $$cr);
     }
     public matchPlusMinus($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus> {
-        this.recorder.procAliasStart("PlusMinus", this.mark());
         return this.regexAccept(String.raw`(?:\+|-)`, "", $$dpth + 1, $$cr);
     }
     public matchAsgnOp($$dpth: number, $$cr?: ErrorTracker): Nullable<AsgnOp> {
-        this.recorder.procAliasStart("AsgnOp", this.mark());
         return this.regexAccept(String.raw`(?:=|\+=|\*=|-=|%=|\/=|\/\/=)`, "", $$dpth + 1, $$cr);
     }
     public matchMulDiv($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv> {
-        this.recorder.procAliasStart("MulDiv", this.mark());
         return this.regexAccept(String.raw`(?:\*|\/\/|%|\/)`, "", $$dpth + 1, $$cr);
     }
     public matchCompare($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare> {
-        this.recorder.procAliasStart("Compare", this.mark());
         return this.regexAccept(String.raw`(?:<=|>=|<|>)`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword> {
@@ -2118,39 +2008,30 @@ export class Parser {
         ]);
     }
     public matchKeyword_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_1> {
-        this.recorder.procAliasStart("Keyword_1", this.mark());
         return this.regexAccept(String.raw`(?:m[áa])`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_2> {
-        this.recorder.procAliasStart("Keyword_2", this.mark());
         return this.regexAccept(String.raw`(?:n[oó])`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_3> {
-        this.recorder.procAliasStart("Keyword_3", this.mark());
         return this.regexAccept(String.raw`(?:nuair-a)`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_4> {
-        this.recorder.procAliasStart("Keyword_4", this.mark());
         return this.regexAccept(String.raw`(?:f[ií]or|br[eé]ag)`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword_5($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_5> {
-        this.recorder.procAliasStart("Keyword_5", this.mark());
         return this.regexAccept(String.raw`(?:gn[ií]omh)`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword_6($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_6> {
-        this.recorder.procAliasStart("Keyword_6", this.mark());
         return this.regexAccept(String.raw`(?:chun-cinn)`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword_7($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_7> {
-        this.recorder.procAliasStart("Keyword_7", this.mark());
         return this.regexAccept(String.raw`(?:neamhn[ií])`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword_8($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_8> {
-        this.recorder.procAliasStart("Keyword_8", this.mark());
         return this.regexAccept(String.raw`(?:toradh)`, "", $$dpth + 1, $$cr);
     }
     public matchKeyword_9($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_9> {
-        this.recorder.procAliasStart("Keyword_9", this.mark());
         return this.regexAccept(String.raw`(?:creatlach)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
@@ -2165,7 +2046,6 @@ export class Parser {
         const res = this.matchProgram(0);
         if (res)
             return {ast: res, errs: []};
-        this.recorder.procStartErrorRun()
         this.reset(mrk);
         const rec = new ErrorTracker();
         this.clearMemos();
@@ -2198,17 +2078,12 @@ export class Parser {
         return null;
     }
     // @ts-ignore: It's possible that run won't be called
-    private run<T>($$dpth: number, $$name: string, fn: $$RuleType<T>): Nullable<T> {
+    private run<T>($$dpth: number, fn: $$RuleType<T>): Nullable<T> {
         const mrk = this.mark();
-        this.recorder.procStartRun($$name, mrk);
         const res = fn()
         if (res !== null) {
-            this.recorder.procRunSuccess($$name, this.mark());
-            this.recorder.procEndRun($$name);
             return res;
         }
-        this.recorder.procRunReset($$name, mrk);
-        this.recorder.procEndRun($$name);
         this.reset(mrk);
         return null;
     }
@@ -2225,7 +2100,6 @@ export class Parser {
     private regexAccept(match: string, mods: string, dpth: number, cr?: ErrorTracker): Nullable<string> {
         const reg = new RegExp(match, "y" + mods);
         const mrk = this.mark();
-        this.recorder.procStartRegex(match, mrk);
         reg.lastIndex = mrk.overallPos;
         const res = this.tryConsume(reg);
         if(cr) {
@@ -2238,10 +2112,8 @@ export class Parser {
             });
         }
         if(res !== null) {
-            this.recorder.procRegexSuccess(res, this.mark());
             return res;
         }
-        this.recorder.procRegexReset(mrk);
         this.reset(mrk);
         return null;
     }

@@ -8,6 +8,7 @@
     "noUnusedLocals": true
   },
   "exclude": [
-      "demos"
+      "demos",
+      "bak"
   ]
 }

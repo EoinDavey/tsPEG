@@ -49,7 +49,7 @@ export function atomRule(at: ATOM): string {
 // structure of the grammar.
 export function extractRules(rule: Rule, name: string, pos?: PosInfo): Ruledef[] {
     let cnt = 0;
-    const rules: Ruledef[] = [{name, rule, pos}];
+    const rules: Ruledef[] = [{id: {name: name}, rule, pos}];
     for (const alt of rule) {
         for (const match of alt.matches) {
             // Check if special rule

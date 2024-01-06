@@ -120,7 +120,7 @@ function leftRecEdges(r: Rule, nullableAtoms: Set<ATOM>): Set<string> {
 // leftRecGraph returns a graph object containing all direct left recursion edges.
 // (with a given nullable atoms context).
 function leftRecGraph(gram: Grammar, nullableAtoms: Set<ATOM>): Map<string, Set<string>> {
-    return new Map(gram.map(r => [r.name, leftRecEdges(r.rule, nullableAtoms)]));
+    return new Map(gram.map(r => [r.id.name, leftRecEdges(r.rule, nullableAtoms)]));
 }
 
 // leftRecClosure uses the left recursion graph to extend direct rule references to a graph
@@ -201,7 +201,7 @@ export function leftRecCycles(gram: Grammar, nullableAtoms: Set<ATOM>): string[]
 
     for(const g of gram) {
         vis.clear();
-        cycleRec(g.name, g.name);
+        cycleRec(g.id.name, g.id.name);
     }
     return cycles;
 }
