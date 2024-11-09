@@ -1,4 +1,0 @@
-node_modules
-ts_build
-src/**/parser.ts
-src/meta.ts

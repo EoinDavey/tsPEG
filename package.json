@@ -16,23 +16,23 @@
         "test": "./gen-tests.sh && jest && npm run lint-all -- --max-warnings=0",
         "clean": "rm -rf tsbuild",
         "lint": "eslint",
-        "lint-all": "eslint --ext .ts src/"
+        "lint-all": "eslint src/"
     },
     "license": "MPL-2.0",
     "files": [
         "tsbuild/*.js"
     ],
     "devDependencies": {
+        "@eslint/js": "^9.14.0",
         "@types/jest": "^29.5.0",
-        "@types/node": "^20.3.1",
+        "@types/node": "^22.9.0",
         "@types/yargs": "^17.0.3",
-        "@typescript-eslint/eslint-plugin": "^6.13.1",
-        "@typescript-eslint/parser": "^6.13.1",
-        "eslint": "^8.36.0",
+        "eslint": "^9.14.0",
         "jest": "^29.5.0",
         "setanta": "^0.10.0",
         "ts-jest": "^29.0.5",
-        "typescript": "^5.0.2"
+        "typescript": "^5.0.2",
+        "typescript-eslint": "^8.13.0"
     },
     "bin": {
         "tspeg": "tsbuild/cli.js"
