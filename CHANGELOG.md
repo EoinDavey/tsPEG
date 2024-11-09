@@ -1,11 +1,12 @@
 # Changelog
 
-## Upcoming
+## 3.3.2 - 2023/11/09
 
 ### Fixed
 
 - Bug where rules with single match, no named types but with computed properties would generate
   invalid typescript.
+- Dependency updates.
 
 ## 3.3.1 - 2023/30/11
 
