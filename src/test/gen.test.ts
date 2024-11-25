@@ -75,7 +75,7 @@ describe("Parser Test", () => {
         },
         {
             inp: "rule :=",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\$"],
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@|#", "\\$"],
         },
         {
             inp: "rule := 'unterminated",
@@ -83,11 +83,11 @@ describe("Parser Test", () => {
         },
         {
             inp: "rule := 'unmatched-op' | ",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\$"],
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@|#", "\\$"],
         },
         {
             inp: "rule := 'can\\'t repeat @ special rule' @*",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "$EOF", "\\&|!", "\\'", "{", "@", "\\.", "\\|", "\\$"],
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "$EOF", "\\&|!", "\\'", "{", "@|#", "\\.", "\\|", "\\$"],
         },
     ];
     for(const tc of tcs) {
