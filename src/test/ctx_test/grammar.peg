@@ -1,0 +1,58 @@
+---
+// A grammar for parsing integer calculator expressions which
+// supports order of operations and grouping with parentheses (brackets).
+// e.g. "10 + 5*2", "(20 - 15/3) - 2".
+
+type Variables = Map<string, number>;
+---
+
+// Use use # to retrieve the context object.
+// We use a $ marker to require that the match goes the whole way to the end of the input.
+EXPR := v=VAR _ '=' _ s=SUM $ ctx=#
+        .value = number { const vars = ctx as Variables; vars.set(v.name, s.value); return s.value; }
+        | s=SUM $
+        .value = number { return s.value; }
+
+// An expression at the top level is a sequence of summands
+// A + B + ... + C (some of the + can be - instead)
+// where each summand might be a product of terms
+SUM  := head=FAC tail={ op='\+|-' sm=FAC }*
+        .value = number {
+            return this.tail.reduce(
+                (x, y) => y.op === '+' ?  x + y.sm.value : x - y.sm.value,
+                this.head.value
+            );
+        }
+
+// A product is a sequence of terms
+// A * B * .... * C (some of the * can be / instead)
+FAC  := head=ATOM tail={ op='\*|/' sm=ATOM }*
+        .value = number {
+            return this.tail.reduce(
+                (x, y) => y.op === '*' ?  x * y.sm.value : x / y.sm.value,
+                this.head.value
+            );
+        }
+
+// Each term is either an integer, a variable or some new expression wrapped
+// in parentheses.
+// We also eat up any whitespace at this point.
+ATOM := _ v=VAR _ ctx=#
+        .value = number {
+            const vars = ctx as Variables;
+            if(!vars.has(this.v.name)) throw new Error(`Variable "${this.v.name}" is not defined`);
+            return vars.get(this.v.name) ?? 0;
+        }
+        | _ val=INT _
+        .value = number { return this.val.value; }
+        | _ '\(' val=SUM '\)' _
+        .value = number { return this.val.value; }
+
+INT  := val='-?[0-9]+'
+        .value = number { return parseInt(this.val); }
+
+VAR  := n='[a-zA-Z_][a-zA-Z0-9_]*'
+        .name = string { return this.n; }
+
+// This rule matches any whitespace
+_    := '\s*'
