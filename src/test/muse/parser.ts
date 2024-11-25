@@ -190,12 +190,14 @@ export type ID = string;
 export type _ = string[];
 export class Parser {
     private readonly input: string;
+    private ctx: unknown;
     private pos: PosInfo;
     private negating: boolean = false;
     private memoSafe: boolean = true;
-    constructor(input: string) {
+    constructor(input: string, context?: unknown) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
+        this.ctx = context;
     }
     public reset(pos: PosInfo) {
         this.pos = pos;
@@ -697,6 +699,9 @@ export class Parser {
     public mark(): PosInfo {
         return this.pos;
     }
+    public context(): unknown {
+        return this.ctx;
+    }
     // @ts-ignore: loopPlus may not be called
     private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
         return this.loop(func, 1, -1) as Nullable<[T, ...T[]]>;
@@ -806,8 +811,8 @@ export class Parser {
         return $scope$result;
     }
 }
-export function parse(s: string): ParseResult {
-    const p = new Parser(s);
+export function parse(s: string, c?: unknown): ParseResult {
+    const p = new Parser(s, c);
     return p.parse();
 }
 export interface ParseResult {

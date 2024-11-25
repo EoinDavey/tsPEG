@@ -39,13 +39,15 @@ export function expandTemplate(opts: TemplateOpts): Block {
     "export class Parser {",
     [
         "private readonly input: string;",
+        "private ctx: unknown;",
         "private pos: PosInfo;",
         "private negating: boolean = false;",
         "private memoSafe: boolean = true;",
-        "constructor(input: string) {",
+        "constructor(input: string, context?: unknown) {",
         [
             "this.pos = {overallPos: 0, line: 1, offset: 0};",
             "this.input = input;",
+            "this.ctx = context;",
         ],
         "}",
         "public reset(pos: PosInfo) {",
@@ -64,6 +66,11 @@ export function expandTemplate(opts: TemplateOpts): Block {
         "public mark(): PosInfo {",
         [
             "return this.pos;",
+        ],
+        "}",
+        "public context(): unknown {",
+        [
+            "return this.ctx;",
         ],
         "}",
         "// @ts-ignore: loopPlus may not be called",
@@ -236,9 +243,9 @@ export function expandTemplate(opts: TemplateOpts): Block {
     ],
     "}",
 
-    "export function parse(s: string): ParseResult {",
+    "export function parse(s: string, c?: unknown): ParseResult {",
     [
-        "const p = new Parser(s);",
+        "const p = new Parser(s, c);",
         "return p.parse();",
     ],
     "}",

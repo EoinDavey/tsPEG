@@ -9,7 +9,7 @@
 * ALT       := matches=MATCHSPEC+ attrs=ATTR*
 * MATCHSPEC := _ named={start=@ name=NAME _ '=' _}? rule=MATCH // TODO rename to match
 * MATCH     := SPECIAL | POSTOP
-* SPECIAL   := op='@'
+* SPECIAL   := op='@|#'
 * POSTOP    := pre=PREOP op={ op='\+|\*|\?' | RANGESPEC }?
 *             .optional = boolean { return this.op?.kind === ASTKinds.POSTOP_$0_1 && this.op.op === '?';}
 * PREOP     := start=@ op='\&|!'? at=ATOM
@@ -494,12 +494,14 @@ export interface CODE_REC_$0_3 {
 }
 export class Parser {
     private readonly input: string;
+    private ctx: unknown;
     private pos: PosInfo;
     private negating: boolean = false;
     private memoSafe: boolean = true;
-    constructor(input: string) {
+    constructor(input: string, context?: unknown) {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
+        this.ctx = context;
     }
     public reset(pos: PosInfo) {
         this.pos = pos;
@@ -662,7 +664,7 @@ export class Parser {
                 let $scope$op: Nullable<string>;
                 let $$res: Nullable<SPECIAL> = null;
                 if (true
-                    && ($scope$op = this.regexAccept(String.raw`(?:@)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw`(?:@|#)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.SPECIAL, op: $scope$op};
                 }
@@ -1775,6 +1777,9 @@ export class Parser {
     public mark(): PosInfo {
         return this.pos;
     }
+    public context(): unknown {
+        return this.ctx;
+    }
     // @ts-ignore: loopPlus may not be called
     private loopPlus<T>(func: $$RuleType<T>): Nullable<[T, ...T[]]> {
         return this.loop(func, 1, -1) as Nullable<[T, ...T[]]>;
@@ -1890,8 +1895,8 @@ export class Parser {
         return res;
     }
 }
-export function parse(s: string): ParseResult {
-    const p = new Parser(s);
+export function parse(s: string, c?: unknown): ParseResult {
+    const p = new Parser(s, c);
     return p.parse();
 }
 export interface ParseResult {

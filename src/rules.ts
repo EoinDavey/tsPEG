@@ -5,7 +5,7 @@ import { Rule, Ruledef, assertValidRegex, escapeBackticks } from "./util";
 export function matchRule(expr: MATCH): string {
     // Check if special rule
     if (expr.kind === ASTKinds.SPECIAL)
-        return "this.mark()";
+        return expr.op === '@' ? "this.mark()" : "this.context()";
     if (expr.op === null)
         return preRule(expr.pre);
     if (expr.op.kind === ASTKinds.RANGESPEC)

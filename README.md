@@ -23,7 +23,7 @@ npm install -g tspeg
 ## Demos
 
 The `demos` directory in the git repo contains several example grammars with explanations.
-These include 2 variants on a "calculator" which can evaluate expressions like `10 * (2-4)`
+These include 3 variants on a "calculator" which can evaluate expressions like `10 * (2-4)`
 and a fully functional JSON parser.
 
 ## CLI Usage
@@ -50,7 +50,7 @@ Flags supported:
 
 ## Parser Usage
 
-The generated module exports a `parse` function that accepts an input string, and returns a
+The generated module exports a `parse` function that accepts an input string, an optional `context` and returns a
 `ParseResult` object like this:
 
 ```TypeScript
@@ -59,7 +59,7 @@ class ParseResult {
     errs: SyntaxErr[];
 }
 
-export function parse(input: string): ParseResult {
+export function parse(input: string, context?: unkown): ParseResult {
     ...
 }
 ```
@@ -366,6 +366,63 @@ interface sum {
     right: string
 }
 ```
+
+## Context
+
+tsPEG supports a special match expression "`#`" for storing the context of the parsing, i.e. an optional object passed to the `parse` function.
+The type of the stored context object is `unknown` and has to be cast to the proper type before using it.
+
+### Example
+
+The context can be used to store information that is needed during the parsing process.
+For example, you may want to add variables to a calculator that can be used in the expressions:
+
+```
+v = 5
+11 * v
+```
+
+The context can be used to store the values of the variables and use then in the expressions.
+You define the appropriate context object and pass it to the `parse` function:
+
+```TypeScript
+const variables = new Map<string, number>();
+...
+const tree = parse(s, variables);
+```
+
+In the grammar, you can store the context object using the special `#` match expression:
+
+```
+// An EXPRession is either the assignment of a variable or a SUM.
+// The context object is stored into ctx. In the computed property
+// it is cast to the proper type (Variables).
+EXPR := v=VAR _ '=' _ s=SUM $ ctx=#
+        .value = number { const vars = ctx as Variables; vars.set(v.name, s.value); return s.value; }
+        | s=SUM $
+        .value = number { return s.value; }
+```
+
+The context object is again used to return the value of the variable:
+
+```
+// Each term is either an integer, a variable or some new expression wrapped
+// in parentheses.
+// The context object is stored into ctx. In the computed property
+// it is cast to the proper type (Variables).
+ATOM := _ v=VAR _ ctx=#
+        .value = number {
+            const vars = ctx as Variables;
+            if(!vars.has(this.v.name)) throw new Error(`Variable "${this.v.name}" is not defined`);
+            return vars.get(this.v.name) ?? 0;
+        }
+        | _ val=INT _
+        .value = number { return this.val.value; }
+        | _ '\(' val=SUM '\)' _
+        .value = number { return this.val.value; }
+```
+
+See `calculator_with_context` in the `demos` directory for a complete example.
 
 ## EOF Matching
 

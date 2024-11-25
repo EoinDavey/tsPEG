@@ -3,7 +3,7 @@ import { ASTKinds, ATOM, MATCH, PREOP } from "./meta";
 export function matchType(expr: MATCH): string {
     // Check if special rule
     if (expr.kind === ASTKinds.SPECIAL)
-        return "PosInfo";
+        return expr.op === "@" ? "PosInfo" : "unknown";
     if (expr.op === null)
         return preType(expr.pre);
     if (expr.op.kind === ASTKinds.RANGESPEC){
