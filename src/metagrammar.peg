@@ -8,7 +8,7 @@ RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
 ALT       := matches=MATCHSPEC+ attrs=ATTR*
 MATCHSPEC := _ named={start=@ name=NAME _ '=' _}? rule=MATCH // TODO rename to match
 MATCH     := SPECIAL | POSTOP
-SPECIAL   := op='@'
+SPECIAL   := op='@|#'
 POSTOP    := pre=PREOP op={ op='\+|\*|\?' | RANGESPEC }?
             .optional = boolean { return this.op?.kind === ASTKinds.POSTOP_$0_1 && this.op.op === '?';}
 PREOP     := start=@ op='\&|!'? at=ATOM
