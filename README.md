@@ -43,8 +43,8 @@ Flags supported:
   increased memory usage.
 - `--num-enums`: Use numeric enums instead of strings for AST kinds. Slightly reduces memory
   footprint of syntax trees.
-- `--union-enums`: Use union types of either string or number constants (depending on `--num-enums`),
-  instead of TypeScript's `enum` syntax. Useful e.g. when compiling with the flag
+- `--union-enums`: Use a union of either string or number constants (depending on `--num-enums`),
+  instead of TypeScript's `enum` syntax. Useful if you don't like enums or when compiling with the flag
   [erasableSyntaxOnly](https://www.typescriptlang.org/tsconfig/#erasableSyntaxOnly).
 - `--regex-flags`: Add additional flags to all generated regex expressions. For example: Set
   `--regex-flags=u` to enable

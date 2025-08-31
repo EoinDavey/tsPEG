@@ -39,7 +39,7 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
             "union-enums": {
                 type: "boolean",
                 default: false,
-                desc: "Use unions instead of enums for AST kinds",
+                desc: "Use a string constants instead of an enum for AST kinds. Use this if you don't like enums or want to enable TypeScript's --erasableSyntaxOnly flag, see https://www.typescriptlang.org/tsconfig/#erasableSyntaxOnly.",
             },
             "enable-memo": {
                 type: "boolean",

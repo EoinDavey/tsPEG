@@ -31,6 +31,15 @@ function getNamedTypes(alt: ALT): [string, string][] {
     return types;
 }
 
+function buildAstKindsByName(expandedGram: Grammar, numEnums: boolean): ReadonlyMap<string, string> {
+    const astKinds = ([] as string[]).concat(...expandedGram.map(altNames));
+    const astKindsByName = new Map<string, string>();
+    astKinds.forEach((kind, index) => {
+        astKindsByName.set(kind, numEnums ? String(index) : `"${kind}"`);
+    });
+    return astKindsByName;
+}
+
 // Rules with no named matches, no attrs and only one match are rule aliases
 function isAlias(alt: ALT): boolean {
     return getNamedTypes(alt).length === 0 && alt.matches.length === 1 && !hasAttrs(alt);
@@ -74,7 +83,7 @@ export class Generator {
     private checkers: Checker[] = [];
     private header: string | null;
     private boundedRecRules: Set<string>;
-    private astKindsByName: Map<string, string> = new Map();
+    private readonly astKindsByName: ReadonlyMap<string, string>;
 
     public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true, unionEnums = false) {
         this.input = input;
@@ -99,6 +108,7 @@ export class Generator {
         });
         this.header = res.ast.header?.content ?? null;
         this.boundedRecRules = getRulesToMarkForBoundedRecursion(this.unexpandedGram);
+        this.astKindsByName = buildAstKindsByName(this.expandedGram, this.numEnums);
     }
 
     private astToExpandedGram(g: GRAM): Grammar {
@@ -116,9 +126,6 @@ export class Generator {
         if(usesEOF(this.expandedGram))
             astKinds.push("$EOF");
         if (this.unionEnums) {
-            astKinds.forEach((kind, index) => {
-                this.astKindsByName.set(kind, this.numEnums ? String(index) : `"${kind}"`);
-            });
             return [
                 "export const ASTKinds = {",
                 this.numEnums
