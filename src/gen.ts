@@ -73,7 +73,9 @@ export class Generator {
     public expandedGram: Grammar;
     // unexpandedGram is the grammar with no subrules expanded.
     public unexpandedGram: Grammar;
+    // Whether to use strings or numbers for AST kinds
     private numEnums: boolean;
+    // Whether to use an enum or a union of string/number constants for AST kinds
     private unionEnums: boolean;
     private enableMemos: boolean;
     private regexFlags: string;

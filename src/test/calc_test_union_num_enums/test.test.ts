@@ -16,6 +16,7 @@ describe("test calculator", () => {
             expect(res.ast).not.toBeNull();
             const ast = res.ast!;
             expect(ast.value).toEqual(tc.exp);
+            expect(ast.kind).toEqual(0);
         });
     }
 });

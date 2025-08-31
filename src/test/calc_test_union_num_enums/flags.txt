@@ -1,1 +1,1 @@
---num-enums --union-enums
+--num-enums --erasable-syntax

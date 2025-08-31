@@ -36,7 +36,7 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
                 default: false,
                 desc: "Use numeric enums for AST kinds",
             },
-            "union-enums": {
+            "erasable-syntax": {
                 type: "boolean",
                 default: false,
                 desc: "Use a string constants instead of an enum for AST kinds. Use this if you don't like enums or want to enable TypeScript's --erasableSyntaxOnly flag, see https://www.typescriptlang.org/tsconfig/#erasableSyntaxOnly.",
@@ -68,7 +68,7 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
             validateRegexFlags(regexFlags);
             const inGram = fs.readFileSync(grammarFile, { encoding: "utf8" });
             validateIncludeGrammarFlag(includeGrammar, inGram);
-            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags, includeGrammar, argv["union-enums"]);
+            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags, includeGrammar, argv["erasable-syntax"]);
             if(outputFile !== undefined) {
                 fs.writeFileSync(outputFile, parser);
             } else {
