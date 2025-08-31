@@ -91,6 +91,7 @@ export class Generator {
         this.unexpandedGram = res.ast.rules.map(def => {
             return {
                 name: def.name,
+                subNames: def.rule.list.map(alt => alt.rulename?.name),
                 rule: def.rule.list,
                 pos: def.namestart,
             };

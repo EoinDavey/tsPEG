@@ -5,8 +5,9 @@ HDR       := '---' content='((?!---)(.|\r\n|\n))*' '---'
 RULEDEF   := _ namestart=@ name=NAME nameend=@ _ ':=' _ rule=RULE _
 RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
-ALT       := matches=MATCHSPEC+ attrs=ATTR*
+ALT       := rulename=RULENAME? matches=MATCHSPEC+ attrs=ATTR*
 MATCHSPEC := _ named={start=@ name=NAME _ '=' _}? rule=MATCH // TODO rename to match
+RULENAME  := '<' name=NAME '>' _
 MATCH     := SPECIAL | POSTOP
 SPECIAL   := op='@'
 POSTOP    := pre=PREOP op={ op='\+|\*|\?' | RANGESPEC }?

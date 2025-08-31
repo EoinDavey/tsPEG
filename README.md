@@ -316,10 +316,55 @@ function makeChoice(c: Choice) {
 The names of the ASTKinds enum entries vary.
 
 - For simples rules like `Rule := name='regex'` the kind will be `ASTKinds.Rule`.
-- For rules with multiple choices such as `Rule := choiceA='regexA' | choiceB='regexB'` the `kind` will either be one of `ASTKinds.Rule_1` or `ASTKinds.Rule_2` depending on which rule was matched. In general they are of the form `ASTKinds.<RuleName>_N` for the `N`th choice.
+- For rules with multiple choices such as `Rule := choiceA='regexA' | choiceB='regexB'` the `kind` will either be one of `ASTKinds.Rule_1` or `ASTKinds.Rule_2` depending on which rule was matched. In general they are of the form `ASTKinds.<RuleName>_N` for the `N`th choice. If you want a custom name for each choice, see below.
 - Rules that directly reference a different rule like `rule := otherrule` don't get their own AST type, so inherit the `kind` from the other rule.
-- Sub-rules are given the kind `ASTKinds.<ParentRule>_$N` for the `N`th subrule of rule `ParentRule`. For example in the rule `Rule := sub={ name='regex' }` the `kind` for the sub-rule is `ASTKinds.Rule_$0`.
+- Sub-rules are given the kind `ASTKinds.<ParentRule>_$N` for the `N`th subrule of rule `ParentRule`. For example in the rule `Rule := sub={ name='regex' }` the `kind` for the sub-rule is `ASTKinds.Rule_$0`. If you want a custom name for each sub-rule, see below.
 - If in doubt it's simple to inspect the generated parser file to find what the correct kind name is. The compiler will also be sure to tell you when you're wrong.
+
+Sometimes you might want to use a custom name for the ASTKind enum entries, instead
+of the default with an index. When you use the parser, it makes your code easier
+to read and prevents having to update your code when you add choices or sub rules
+to your grammar. Use `<name>` at the beginning of a rule to specify a custom name:
+
+```
+Choice := <Word> Word | <Int> Int
+Word   := word='[a-z]+'
+Int    := val='[0-9]+'
+```
+
+This will give you the following names for the `ASTKinds` enum:
+
+```ts
+export enum ASTKinds {
+    Choice_Word = "Choice_Word", // instead of "Choice_0"
+    Choice_Int = "Choice_Int", // instead of "Choice_1"
+    Word = "Word",
+    Int = "Int",
+}
+```
+
+This also works for sub-rules, e.g.:
+
+```
+Choice   := <ID> { <Word> Word | <Int> Int } | <Operator> Operator
+Word     := word='[a-z]+'
+Int      := val='[0-9]+'
+Operator := '\+|-'
+```
+
+Which will generate:
+
+```ts
+export enum ASTKinds {
+    Choice_ID = "Choice_ID",
+    Choice_Operator = "Choice_Operator",
+    Choice_$ID_Word = "Choice_$ID_Word",
+    Choice_$ID_Int = "Choice_$ID_Int",
+    Word = "Word",
+    Int = "Int",
+    Operator = "Operator",
+}
+```
 
 ## Position tracking
 
