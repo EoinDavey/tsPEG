@@ -36,6 +36,11 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
                 default: false,
                 desc: "Use numeric enums for AST kinds",
             },
+            "union-enums": {
+                type: "boolean",
+                default: false,
+                desc: "Use unions instead of enums for AST kinds",
+            },
             "enable-memo": {
                 type: "boolean",
                 default: false,
@@ -63,7 +68,7 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
             validateRegexFlags(regexFlags);
             const inGram = fs.readFileSync(grammarFile, { encoding: "utf8" });
             validateIncludeGrammarFlag(includeGrammar, inGram);
-            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags, includeGrammar);
+            const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags, includeGrammar, argv["union-enums"]);
             if(outputFile !== undefined) {
                 fs.writeFileSync(outputFile, parser);
             } else {

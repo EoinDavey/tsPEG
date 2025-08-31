@@ -10,7 +10,7 @@ for dir in src/test/*; do
         continue
     fi
     if [[ -e ${dir}/flags.txt ]]; then
-        cat ${dir}/flags.txt | xargs -I {} node ./tsbuild/cli.js {} ${dir}/grammar.peg ${dir}/parser.ts
+        node ./tsbuild/cli.js $(cat ${dir}/flags.txt) ${dir}/grammar.peg ${dir}/parser.ts
     else
         node ./tsbuild/cli.js ${dir}/grammar.peg ${dir}/parser.ts
     fi

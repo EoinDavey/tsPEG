@@ -31,7 +31,6 @@ function getNamedTypes(alt: ALT): [string, string][] {
     return types;
 }
 
-
 // Rules with no named matches, no attrs and only one match are rule aliases
 function isAlias(alt: ALT): boolean {
     return getNamedTypes(alt).length === 0 && alt.matches.length === 1 && !hasAttrs(alt);
@@ -66,6 +65,7 @@ export class Generator {
     // unexpandedGram is the grammar with no subrules expanded.
     public unexpandedGram: Grammar;
     private numEnums: boolean;
+    private unionEnums: boolean;
     private enableMemos: boolean;
     private regexFlags: string;
     private includeGrammar: boolean;
@@ -74,10 +74,12 @@ export class Generator {
     private checkers: Checker[] = [];
     private header: string | null;
     private boundedRecRules: Set<string>;
+    private astKindsByName: Map<string, string> = new Map();
 
-    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true) {
+    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true, unionEnums = false) {
         this.input = input;
         this.numEnums = numEnums;
+        this.unionEnums = unionEnums;
         this.enableMemos = enableMemos;
         this.regexFlags = regexFlags;
         this.includeGrammar = includeGrammar;
@@ -113,6 +115,23 @@ export class Generator {
         const astKinds = ([] as string[]).concat(...this.expandedGram.map(altNames));
         if(usesEOF(this.expandedGram))
             astKinds.push("$EOF");
+        if (this.unionEnums) {
+            astKinds.forEach((kind, index) => {
+                this.astKindsByName.set(kind, this.numEnums ? String(index) : `"${kind}"`);
+            });
+            return [
+                "export const ASTKinds = {",
+                this.numEnums
+                    ? astKinds.map((x, i) => `${x}: ${i},`)
+                    : astKinds.map(x => `${x}: "${x}",`),
+                "} as const",
+                "export type ASTKinds = ",
+                this.numEnums
+                    ? astKinds.map((x, i) => `| ${i}`)
+                    : astKinds.map(x => `| "${x}"`),
+                ";",
+            ];
+        }
         return [
             "export enum ASTKinds {",
             this.numEnums
@@ -154,7 +173,7 @@ export class Generator {
             return [
                 `export class ${name} {`,
                 [
-                    `public kind: ASTKinds.${name} = ASTKinds.${name};`,
+                    `public kind: ${this.astKindsType(name)} = ASTKinds.${name};`,
                     ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
                     ...alt.attrs.map((x) => `public ${x.name}: ${getMatchedSubstr(x.type, this.input)};`),
                      `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
@@ -170,7 +189,7 @@ export class Generator {
         return [
             `export interface ${name} {`,
             [
-                `kind: ASTKinds.${name};`,
+                `kind: ${this.astKindsType(name)};`,
                 ...namedTypes.map((x) => `${x[0]}: ${x[1]};`),
             ],
             "}",
@@ -433,10 +452,17 @@ export class Generator {
         });
         return writeBlock(parseBlock).join("\n");
     }
+
+    private astKindsType(name: string): string {
+        if (this.unionEnums) {
+            return this.astKindsByName.get(name) ?? "never"; 
+        }
+        return `ASTKinds.${name}`;
+    }
 }
 
-export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true): string {
-    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar)
+export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true, unionEnums = false): string {
+    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar, unionEnums)
         .addChecker(BannedNamesChecker)
         .addChecker(RulesExistChecker)
         .addChecker(NoRuleNameCollisionChecker)
