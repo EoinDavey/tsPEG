@@ -11,6 +11,7 @@ export interface TemplateOpts {
     ruleParseFns: Block,
     parseResult: Block,
     usesEOF?: boolean,
+    eofType: string,
     includeGrammar?: boolean,
 }
 
@@ -221,9 +222,9 @@ export function expandTemplate(opts: TemplateOpts): Block {
         ],
         "}",
         ...(opts.usesEOF
-            ? ["private match$EOF(et?: ErrorTracker): Nullable<{kind: ASTKinds.$EOF}> {",
+            ? [`private match$EOF(et?: ErrorTracker): Nullable<{kind: ${opts.eofType}}> {`,
             [
-                "const res: {kind: ASTKinds.$EOF} | null = this.finished() ? { kind: ASTKinds.$EOF } : null;",
+                `const res: {kind: ${opts.eofType}} | null = this.finished() ? { kind: ASTKinds.$EOF } : null;`,
                 "if(et)",
                 [
                     "et.record(this.mark(), res, { kind: \"EOF\", negated: this.negating });",

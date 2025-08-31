@@ -448,6 +448,7 @@ export class Generator {
             ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
             parseResult: this.writeParseResultClass(this.expandedGram),
             usesEOF: usesEOF(this.expandedGram),
+            eofType: this.unionEnums ? this.astKindsType("$EOF") : `ASTKinds.$EOF`,
             includeGrammar: this.includeGrammar,
         });
         return writeBlock(parseBlock).join("\n");
