@@ -24,7 +24,7 @@ export class Parser {
         this.pos = {overallPos: 0, line: 1, offset: 0};
         this.input = input;
     }
-    public reset(pos: PosInfo) {
+    public reset(pos: PosInfo): void {
         this.pos = pos;
     }
     public finished(): boolean {
@@ -214,7 +214,7 @@ class ErrorTracker {
     private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};
     private regexset: Set<string> = new Set();
     private pmatches: MatchAttempt[] = [];
-    public record(pos: PosInfo, result: any, att: MatchAttempt) {
+    public record(pos: PosInfo, result: any, att: MatchAttempt): void {
         if ((result === null) === att.negated)
             return;
         if (pos.overallPos > this.mxpos.overallPos) {
