@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as fs from "fs";
+import path from "path";
 import * as yargs from "yargs";
 import { SyntaxErrs, buildParser } from "./gen";
 import { CheckError } from "./checks";
@@ -70,6 +71,7 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
             validateIncludeGrammarFlag(includeGrammar, inGram);
             const parser = buildParser(inGram, argv["num-enums"], argv["enable-memo"], regexFlags, includeGrammar, argv["erasable-syntax"]);
             if(outputFile !== undefined) {
+                fs.mkdirSync(path.dirname(outputFile), { recursive: true });
                 fs.writeFileSync(outputFile, parser);
             } else {
                 process.stdout.write(parser);
