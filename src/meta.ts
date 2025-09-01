@@ -6,8 +6,9 @@
 * RULEDEF   := _ namestart=@ name=NAME nameend=@ _ ':=' _ rule=RULE _
 * RULE      := head=ALT tail={_ '\|' _ alt=ALT }*
 *           .list = ALT[] { return [this.head, ...this.tail.map((x) => x.alt)]; }
-* ALT       := matches=MATCHSPEC+ attrs=ATTR*
+* ALT       := rulename=RULENAME? matches=MATCHSPEC+ attrs=ATTR*
 * MATCHSPEC := _ named={start=@ name=NAME _ '=' _}? rule=MATCH // TODO rename to match
+* RULENAME  := '<' name=NAME '>' _
 * MATCH     := SPECIAL | POSTOP
 * SPECIAL   := op='@'
 * POSTOP    := pre=PREOP op={ op='\+|\*|\?' | RANGESPEC }?
@@ -87,6 +88,7 @@ export enum ASTKinds {
     ALT = "ALT",
     MATCHSPEC = "MATCHSPEC",
     MATCHSPEC_$0 = "MATCHSPEC_$0",
+    RULENAME = "RULENAME",
     MATCH_1 = "MATCH_1",
     MATCH_2 = "MATCH_2",
     SPECIAL = "SPECIAL",
@@ -204,6 +206,7 @@ export interface RULE_$0 {
 }
 export interface ALT {
     kind: ASTKinds.ALT;
+    rulename: Nullable<RULENAME>;
     matches: [MATCHSPEC, ...MATCHSPEC[]];
     attrs: ATTR[];
 }
@@ -215,6 +218,10 @@ export interface MATCHSPEC {
 export interface MATCHSPEC_$0 {
     kind: ASTKinds.MATCHSPEC_$0;
     start: PosInfo;
+    name: NAME;
+}
+export interface RULENAME {
+    kind: ASTKinds.RULENAME;
     name: NAME;
 }
 export type MATCH = MATCH_1 | MATCH_2;
@@ -598,14 +605,16 @@ export class Parser {
     public matchALT($$dpth: number, $$cr?: ErrorTracker): Nullable<ALT> {
         return this.run<ALT>($$dpth,
             () => {
+                let $scope$rulename: Nullable<Nullable<RULENAME>>;
                 let $scope$matches: Nullable<[MATCHSPEC, ...MATCHSPEC[]]>;
                 let $scope$attrs: Nullable<ATTR[]>;
                 let $$res: Nullable<ALT> = null;
                 if (true
+                    && (($scope$rulename = this.matchRULENAME($$dpth + 1, $$cr)) || true)
                     && ($scope$matches = this.loopPlus<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, $$cr))) !== null
                     && ($scope$attrs = this.loop<ATTR>(() => this.matchATTR($$dpth + 1, $$cr), 0, -1)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.ALT, matches: $scope$matches, attrs: $scope$attrs};
+                    $$res = {kind: ASTKinds.ALT, rulename: $scope$rulename, matches: $scope$matches, attrs: $scope$attrs};
                 }
                 return $$res;
             });
@@ -640,6 +649,22 @@ export class Parser {
                     && this.match_($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.MATCHSPEC_$0, start: $scope$start, name: $scope$name};
+                }
+                return $$res;
+            });
+    }
+    public matchRULENAME($$dpth: number, $$cr?: ErrorTracker): Nullable<RULENAME> {
+        return this.run<RULENAME>($$dpth,
+            () => {
+                let $scope$name: Nullable<NAME>;
+                let $$res: Nullable<RULENAME> = null;
+                if (true
+                    && this.regexAccept(String.raw`(?:<)`, "", $$dpth + 1, $$cr) !== null
+                    && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
+                    && this.regexAccept(String.raw`(?:>)`, "", $$dpth + 1, $$cr) !== null
+                    && this.match_($$dpth + 1, $$cr) !== null
+                ) {
+                    $$res = {kind: ASTKinds.RULENAME, name: $scope$name};
                 }
                 return $$res;
             });

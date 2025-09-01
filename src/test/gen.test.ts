@@ -11,6 +11,15 @@ describe("Parser Test", () => {
             inp: "rule := 'regex'",
         },
         {
+            inp: "rule := <Foo> 'foo'",
+        },
+        {
+            inp: "rule := <Foo> 'foo' | <Bar> 'bar'",
+        },
+        {
+            inp: "rule := <Foo> 'foo' { <Bar> 'bar' | <Baz> 'baz' }?",
+        },
+        {
             inp: String.raw`rule := 'string \' with \' quote \' inside \' \' \''`,
         },
         {
@@ -75,7 +84,7 @@ describe("Parser Test", () => {
         },
         {
             inp: "rule :=",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\$"],
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\$", "<"],
         },
         {
             inp: "rule := 'unterminated",
@@ -83,7 +92,7 @@ describe("Parser Test", () => {
         },
         {
             inp: "rule := 'unmatched-op' | ",
-            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\$"],
+            expmatches: ["[a-zA-Z_][a-zA-Z0-9_]*", "\\&|!", "\\'", "{", "@", "\\$", "<"],
         },
         {
             inp: "rule := 'can\\'t repeat @ special rule' @*",

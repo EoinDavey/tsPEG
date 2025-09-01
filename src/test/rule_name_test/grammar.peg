@@ -1,0 +1,6 @@
+// Test for custom rule names
+
+Choice   := <ID> { <Word> word=Word | <Int> int=Int } | <Operator> op=Operator
+Word     := word='[a-z]+'
+Int      := val='[0-9]+'
+Operator := '\+|-'
