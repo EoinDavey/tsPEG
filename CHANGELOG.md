@@ -1,5 +1,11 @@
 # Changelog
 
+## Upcoming
+
+### Added
+
+- `--erasable-syntax`: Compile with support for [`erasableSyntaxOnly`](https://www.typescriptlang.org/tsconfig/#erasableSyntaxOnly) (#56).
+
 ## 3.3.2 - 2023/11/09
 
 ### Fixed
