@@ -31,6 +31,14 @@ function getNamedTypes(alt: ALT): [string, string][] {
     return types;
 }
 
+function buildAstKindsByName(expandedGram: Grammar, numEnums: boolean): ReadonlyMap<string, string> {
+    const astKinds = ([] as string[]).concat(...expandedGram.map(altNames));
+    const astKindsByName = new Map<string, string>();
+    astKinds.forEach((kind, index) => {
+        astKindsByName.set(kind, numEnums ? String(index) : `"${kind}"`);
+    });
+    return astKindsByName;
+}
 
 // Rules with no named matches, no attrs and only one match are rule aliases
 function isAlias(alt: ALT): boolean {
@@ -65,7 +73,10 @@ export class Generator {
     public expandedGram: Grammar;
     // unexpandedGram is the grammar with no subrules expanded.
     public unexpandedGram: Grammar;
+    // Whether to use strings or numbers for AST kinds
     private numEnums: boolean;
+    // Whether to use an enum or a union of string/number constants for AST kinds
+    private erasableSyntax: boolean;
     private enableMemos: boolean;
     private regexFlags: string;
     private includeGrammar: boolean;
@@ -74,10 +85,12 @@ export class Generator {
     private checkers: Checker[] = [];
     private header: string | null;
     private boundedRecRules: Set<string>;
+    private readonly astKindsByName: ReadonlyMap<string, string>;
 
-    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true) {
+    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true, erasableSyntax = false) {
         this.input = input;
         this.numEnums = numEnums;
+        this.erasableSyntax = erasableSyntax;
         this.enableMemos = enableMemos;
         this.regexFlags = regexFlags;
         this.includeGrammar = includeGrammar;
@@ -97,6 +110,7 @@ export class Generator {
         });
         this.header = res.ast.header?.content ?? null;
         this.boundedRecRules = getRulesToMarkForBoundedRecursion(this.unexpandedGram);
+        this.astKindsByName = buildAstKindsByName(this.expandedGram, this.numEnums);
     }
 
     private astToExpandedGram(g: GRAM): Grammar {
@@ -113,6 +127,20 @@ export class Generator {
         const astKinds = ([] as string[]).concat(...this.expandedGram.map(altNames));
         if(usesEOF(this.expandedGram))
             astKinds.push("$EOF");
+        if (this.erasableSyntax) {
+            return [
+                "export const ASTKinds = {",
+                this.numEnums
+                    ? astKinds.map((x, i) => `${x}: ${i},`)
+                    : astKinds.map(x => `${x}: "${x}",`),
+                "} as const",
+                "export type ASTKinds = ",
+                this.numEnums
+                    ? astKinds.map((x, i) => `| ${i}`)
+                    : astKinds.map(x => `| "${x}"`),
+                ";",
+            ];
+        }
         return [
             "export enum ASTKinds {",
             this.numEnums
@@ -154,7 +182,7 @@ export class Generator {
             return [
                 `export class ${name} {`,
                 [
-                    `public kind: ASTKinds.${name} = ASTKinds.${name};`,
+                    `public kind: ${this.astKindsType(name)} = ASTKinds.${name};`,
                     ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
                     ...alt.attrs.map((x) => `public ${x.name}: ${getMatchedSubstr(x.type, this.input)};`),
                      `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
@@ -170,7 +198,7 @@ export class Generator {
         return [
             `export interface ${name} {`,
             [
-                `kind: ASTKinds.${name};`,
+                `kind: ${this.astKindsType(name)};`,
                 ...namedTypes.map((x) => `${x[0]}: ${x[1]};`),
             ],
             "}",
@@ -429,14 +457,22 @@ export class Generator {
             ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
             parseResult: this.writeParseResultClass(this.expandedGram),
             usesEOF: usesEOF(this.expandedGram),
+            eofType: this.erasableSyntax ? this.astKindsType("$EOF") : `ASTKinds.$EOF`,
             includeGrammar: this.includeGrammar,
         });
         return writeBlock(parseBlock).join("\n");
     }
+
+    private astKindsType(name: string): string {
+        if (this.erasableSyntax) {
+            return this.astKindsByName.get(name) ?? "never"; 
+        }
+        return `ASTKinds.${name}`;
+    }
 }
 
-export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true): string {
-    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar)
+export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true, erasableSyntax = false): string {
+    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar, erasableSyntax)
         .addChecker(BannedNamesChecker)
         .addChecker(RulesExistChecker)
         .addChecker(NoRuleNameCollisionChecker)

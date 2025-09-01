@@ -11,6 +11,7 @@ export interface TemplateOpts {
     ruleParseFns: Block,
     parseResult: Block,
     usesEOF?: boolean,
+    eofType: string,
     includeGrammar?: boolean,
 }
 
@@ -48,7 +49,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
             "this.input = input;",
         ],
         "}",
-        "public reset(pos: PosInfo) {",
+        "public reset(pos: PosInfo): void {",
         [
             "this.pos = pos;",
         ],
@@ -221,9 +222,9 @@ export function expandTemplate(opts: TemplateOpts): Block {
         ],
         "}",
         ...(opts.usesEOF
-            ? ["private match$EOF(et?: ErrorTracker): Nullable<{kind: ASTKinds.$EOF}> {",
+            ? [`private match$EOF(et?: ErrorTracker): Nullable<{kind: ${opts.eofType}}> {`,
             [
-                "const res: {kind: ASTKinds.$EOF} | null = this.finished() ? { kind: ASTKinds.$EOF } : null;",
+                `const res: {kind: ${opts.eofType}} | null = this.finished() ? { kind: ASTKinds.$EOF } : null;`,
                 "if(et)",
                 [
                     "et.record(this.mark(), res, { kind: \"EOF\", negated: this.negating });",
@@ -284,7 +285,7 @@ export function expandTemplate(opts: TemplateOpts): Block {
         "private mxpos: PosInfo = {overallPos: -1, line: -1, offset: -1};",
         "private regexset: Set<string> = new Set();",
         "private pmatches: MatchAttempt[] = [];",
-        "public record(pos: PosInfo, result: any, att: MatchAttempt) {",
+        "public record(pos: PosInfo, result: any, att: MatchAttempt): void {",
         [
             "if ((result === null) === att.negated)",
             [
