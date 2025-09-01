@@ -76,7 +76,7 @@ export class Generator {
     // Whether to use strings or numbers for AST kinds
     private numEnums: boolean;
     // Whether to use an enum or a union of string/number constants for AST kinds
-    private unionEnums: boolean;
+    private erasableSyntax: boolean;
     private enableMemos: boolean;
     private regexFlags: string;
     private includeGrammar: boolean;
@@ -87,10 +87,10 @@ export class Generator {
     private boundedRecRules: Set<string>;
     private readonly astKindsByName: ReadonlyMap<string, string>;
 
-    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true, unionEnums = false) {
+    public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true, erasableSyntax = false) {
         this.input = input;
         this.numEnums = numEnums;
-        this.unionEnums = unionEnums;
+        this.erasableSyntax = erasableSyntax;
         this.enableMemos = enableMemos;
         this.regexFlags = regexFlags;
         this.includeGrammar = includeGrammar;
@@ -127,7 +127,7 @@ export class Generator {
         const astKinds = ([] as string[]).concat(...this.expandedGram.map(altNames));
         if(usesEOF(this.expandedGram))
             astKinds.push("$EOF");
-        if (this.unionEnums) {
+        if (this.erasableSyntax) {
             return [
                 "export const ASTKinds = {",
                 this.numEnums
@@ -457,22 +457,22 @@ export class Generator {
             ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
             parseResult: this.writeParseResultClass(this.expandedGram),
             usesEOF: usesEOF(this.expandedGram),
-            eofType: this.unionEnums ? this.astKindsType("$EOF") : `ASTKinds.$EOF`,
+            eofType: this.erasableSyntax ? this.astKindsType("$EOF") : `ASTKinds.$EOF`,
             includeGrammar: this.includeGrammar,
         });
         return writeBlock(parseBlock).join("\n");
     }
 
     private astKindsType(name: string): string {
-        if (this.unionEnums) {
+        if (this.erasableSyntax) {
             return this.astKindsByName.get(name) ?? "never"; 
         }
         return `ASTKinds.${name}`;
     }
 }
 
-export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true, unionEnums = false): string {
-    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar, unionEnums)
+export function buildParser(s: string, numEnums: boolean, enableMemos: boolean, regexFlags: string, includeGrammar = true, erasableSyntax = false): string {
+    const gen = new Generator(s, numEnums, enableMemos, regexFlags, includeGrammar, erasableSyntax)
         .addChecker(BannedNamesChecker)
         .addChecker(RulesExistChecker)
         .addChecker(NoRuleNameCollisionChecker)

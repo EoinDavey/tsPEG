@@ -39,7 +39,7 @@ yargs.command("$0 <grammar> [output_file]", "Build parser from grammar",
             "erasable-syntax": {
                 type: "boolean",
                 default: false,
-                desc: "Use a string constants instead of an enum for AST kinds. Use this if you don't like enums or want to enable TypeScript's --erasableSyntaxOnly flag, see https://www.typescriptlang.org/tsconfig/#erasableSyntaxOnly.",
+                desc: "Ensures the generated parser compiles under --erasableSyntaxOnly compiler flag. For example, uses string or number constants instead of an enum for AST kinds. See https://www.typescriptlang.org/tsconfig/#erasableSyntaxOnly.",
             },
             "enable-memo": {
                 type: "boolean",
