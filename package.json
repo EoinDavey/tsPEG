@@ -37,14 +37,6 @@
     "bin": {
         "tspeg": "tsbuild/cli.js"
     },
-    "jest": {
-        "preset": "ts-jest",
-        "testPathIgnorePatterns": [
-            "/node_modules/",
-            "^.+\\.js$",
-            "/demos/"
-        ]
-    },
     "dependencies": {
         "yargs": "^17.7.2"
     }
