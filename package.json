@@ -19,6 +19,9 @@
         "lint-all": "eslint src/"
     },
     "license": "MPL-2.0",
+    "engines": {
+        "node": ">=14.0.0"
+    },
     "files": [
         "tsbuild/*.js"
     ],
@@ -38,6 +41,6 @@
         "tspeg": "tsbuild/cli.js"
     },
     "dependencies": {
-        "yargs": "^17.7.2"
+        "yargs": "^18.0.0"
     }
 }
