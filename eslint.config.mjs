@@ -1,12 +1,13 @@
 import tslint from "typescript-eslint";
 import jslint from "@eslint/js";
+import { defineConfig } from "eslint/config";
 
-export default [
+export default defineConfig([
     {
         ignores: ["**/node_modules", "**/tsbuild", "src/**/parser.ts", "src/meta.ts"],
     },
     jslint.configs.recommended,
-    ...tslint.configs.strict,
+    tslint.configs.strict,
     {
         rules: {
             eqeqeq: ["error", "always"],
@@ -52,4 +53,4 @@ export default [
             "@typescript-eslint/no-non-null-assertion": "off",
         },
     },
-];
+]);
