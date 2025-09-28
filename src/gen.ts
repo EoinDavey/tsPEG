@@ -159,7 +159,7 @@ export class Generator {
 
     public writeMemos(): Block {
         return this.memoRules().map(rule =>
-                `protected ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
+            `protected ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
     }
 
     public writeMemoClearFn(): Block {
@@ -185,10 +185,10 @@ export class Generator {
                     `public kind: ${this.astKindsType(name)} = ASTKinds.${name};`,
                     ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
                     ...alt.attrs.map((x) => `public ${x.name}: ${getMatchedSubstr(x.type, this.input)};`),
-                     `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
+                    `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
                     namedTypes.map((x) => `this.${x[0]} = ${x[0]};`),
                     ...alt.attrs.map(x => [`this.${x.name} = ((): ${getMatchedSubstr(x.type, this.input)} => {`,
-                            getMatchedSubstr(x.code, this.input).trim(),
+                        getMatchedSubstr(x.code, this.input).trim(),
                         "})();"]),
                     "}",
                 ],
@@ -252,8 +252,8 @@ export class Generator {
 
     public writeRuleAliasFnBody(expr: MATCH): Block {
         return [
-                `return ${matchRule(expr)};`,
-            ];
+            `return ${matchRule(expr)};`,
+        ];
     }
 
     public writeChoiceParseFn(name: string, alt: ALT, memo = false): Block {
@@ -292,8 +292,8 @@ export class Generator {
                     ") {",
                     [
                         hasAttrs(alt)
-                        ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
-                        : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
+                            ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
+                            : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
                     ],
                     "}",
                     "return $$res;",
@@ -308,40 +308,40 @@ export class Generator {
         const posVar = addScope("pos");
         const oldMemoSafe = addScope("oldMemoSafe");
         const t: Block = [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
-        [
-            'const fn = () => {',
-            body,
-            '};',
-            `const ${posVar} = this.mark();`,
-            `const memo = this.${memo}.get(${posVar}.overallPos);`,
-            'if(memo !== undefined) {',
-            '    this.reset(memo[1]);',
-            '    return memo[0];',
-            '}',
-            `const ${oldMemoSafe} = this.memoSafe;`,
-            'this.memoSafe = false;',
-            `this.${memo}.set(${posVar}.overallPos, [null, ${posVar}]);`,
-            `let lastRes: Nullable<${name}> = null;`,
-            `let lastPos: PosInfo = ${posVar};`,
-            'for(;;) {',
             [
-                `this.reset(${posVar});`,
-                'const res = fn();',
-                'const end = this.mark();',
-                'if(end.overallPos <= lastPos.overallPos)',
+                'const fn = () => {',
+                body,
+                '};',
+                `const ${posVar} = this.mark();`,
+                `const memo = this.${memo}.get(${posVar}.overallPos);`,
+                'if(memo !== undefined) {',
+                '    this.reset(memo[1]);',
+                '    return memo[0];',
+                '}',
+                `const ${oldMemoSafe} = this.memoSafe;`,
+                'this.memoSafe = false;',
+                `this.${memo}.set(${posVar}.overallPos, [null, ${posVar}]);`,
+                `let lastRes: Nullable<${name}> = null;`,
+                `let lastPos: PosInfo = ${posVar};`,
+                'for(;;) {',
                 [
-                    'break;',
+                    `this.reset(${posVar});`,
+                    'const res = fn();',
+                    'const end = this.mark();',
+                    'if(end.overallPos <= lastPos.overallPos)',
+                    [
+                        'break;',
+                    ],
+                    'lastRes = res;',
+                    'lastPos = end;',
+                    `this.${memo}.set(${posVar}.overallPos, [lastRes, lastPos]);`,
                 ],
-                'lastRes = res;',
-                'lastPos = end;',
-                `this.${memo}.set(${posVar}.overallPos, [lastRes, lastPos]);`,
+                '}',
+                'this.reset(lastPos);',
+                `this.memoSafe = ${oldMemoSafe};`,
+                'return lastRes;',
             ],
-            '}',
-            'this.reset(lastPos);',
-            `this.memoSafe = ${oldMemoSafe};`,
-            'return lastRes;',
-        ],
-    '}'];
+            '}'];
         return t;
     }
 

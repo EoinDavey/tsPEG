@@ -41,6 +41,7 @@ export default defineConfig([
             "no-var": "error",
             "prefer-const": "warn",
 
+            "@stylistic/indent": ["warn", 4],
             "@stylistic/brace-style": ["warn", "1tbs"],
             "@stylistic/comma-spacing": "warn",
             "@stylistic/key-spacing": "warn",
