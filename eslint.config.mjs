@@ -1,6 +1,7 @@
 import tslint from "typescript-eslint";
 import jslint from "@eslint/js";
 import { defineConfig } from "eslint/config";
+import stylistic from '@stylistic/eslint-plugin'
 
 export default defineConfig([
     {
@@ -9,6 +10,9 @@ export default defineConfig([
     jslint.configs.recommended,
     tslint.configs.strict,
     {
+        plugins: {
+          '@stylistic': stylistic
+        },
         rules: {
             eqeqeq: ["error", "always"],
             "no-promise-executor-return": "error",
@@ -24,13 +28,6 @@ export default defineConfig([
             "no-useless-concat": "error",
             "no-shadow": "error",
 
-            "brace-style": ["warn", "1tbs", {
-                allowSingleLine: true,
-            }],
-
-            "comma-spacing": "warn",
-            "key-spacing": "warn",
-            semi: ["error", "always"],
             "space-infix-ops": "warn",
 
             "sort-imports": ["warn", {
@@ -41,10 +38,15 @@ export default defineConfig([
                 allowSeparatedGroups: false,
             }],
 
-            "arrow-spacing": "warn",
-            "comma-dangle": ["warn", "always-multiline"],
             "no-var": "error",
             "prefer-const": "warn",
+
+            "@stylistic/brace-style": ["warn", "1tbs"],
+            "@stylistic/comma-spacing": "warn",
+            "@stylistic/key-spacing": "warn",
+            "@stylistic/semi": ["warn", "always"],
+            "@stylistic/arrow-spacing": "warn",
+            "@stylistic/comma-dangle": ["warn", "always-multiline"],
         },
     },
     {

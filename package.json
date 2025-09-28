@@ -27,6 +27,7 @@
     ],
     "devDependencies": {
         "@eslint/js": "^9.36.0",
+        "@stylistic/eslint-plugin": "^5.4.0",
         "@types/jest": "^30.0.0",
         "@types/node": "^24.5.2",
         "@types/yargs": "^17.0.3",

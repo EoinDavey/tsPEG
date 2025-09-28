@@ -11,7 +11,7 @@ export interface Ruledef {
     pos?: PosInfo;
 }
 
-export type Block = Array<string | Block>
+export type Block = Array<string | Block>;
 
 export function indentBlock(blk: string[]): string[] {
     return blk.filter((x) => x).map((x) => "    " + x);
