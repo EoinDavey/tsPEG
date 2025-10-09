@@ -1,4 +1,4 @@
-import { ALT, ASTKinds, PosInfo } from "./meta";
+import { ALT, ASTKinds, PosInfo } from "./parser.gen";
 import { CheckError } from "./checks";
 
 export type Rule = ALT[];

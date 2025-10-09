@@ -1,5 +1,5 @@
 import { atomType, preType } from "./types";
-import { ASTKinds, ATOM, MATCH, PREOP, PosInfo } from "./meta";
+import { ASTKinds, ATOM, MATCH, PREOP, PosInfo } from "./parser.gen";
 import { Rule, Ruledef, assertValidRegex, escapeBackticks } from "./util";
 
 export function matchRule(expr: MATCH): string {

@@ -1,4 +1,4 @@
-import { ASTKinds, ATOM, MATCH, PREOP } from "./meta";
+import { ASTKinds, ATOM, MATCH, PREOP } from "./parser.gen";
 
 export function matchType(expr: MATCH): string {
     // Check if special rule

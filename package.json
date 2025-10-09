@@ -12,7 +12,7 @@
     "scripts": {
         "gen-tests": "./gen-tests.sh",
         "build": "tsc && npm run gen && tsc",
-        "gen": "cp src/meta.ts /tmp/meta.ts && node ./tsbuild/cli.js src/metagrammar.peg src/meta.ts",
+        "gen": "cp src/parser.gen.ts /tmp/parser.gen.ts && node ./tsbuild/cli.js src/metagrammar.peg src/parser.gen.ts",
         "test": "./gen-tests.sh && jest && npm run lint-all -- --max-warnings=0",
         "clean": "rm -rf tsbuild",
         "lint": "eslint",

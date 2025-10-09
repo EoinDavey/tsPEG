@@ -1,4 +1,4 @@
-import { MATCH, Parser, parse } from "../meta";
+import { MATCH, Parser, parse } from "../parser.gen";
 import { Generator } from "../gen";
 import { writeBlock } from "../util";
 import { extractRules, matchRule } from "../rules";

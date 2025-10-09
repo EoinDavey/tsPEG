@@ -1,4 +1,4 @@
-import { ASTKinds, PosInfo } from "./meta";
+import { ASTKinds, PosInfo } from "./parser.gen";
 import { Grammar, altNames } from "./util";
 
 // TODO Support returning multiple CheckErrors

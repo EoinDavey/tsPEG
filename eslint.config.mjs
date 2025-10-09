@@ -5,7 +5,7 @@ import stylistic from '@stylistic/eslint-plugin'
 
 export default defineConfig([
     {
-        ignores: ["**/node_modules", "**/tsbuild", "src/**/parser.ts", "src/meta.ts"],
+        ignores: ["**/node_modules", "**/tsbuild", "src/**/parser.ts", "src/parser.gen.ts"],
     },
     jslint.configs.recommended,
     tslint.configs.strict,

@@ -1,4 +1,4 @@
-import { parse } from "../meta";
+import { parse } from "../parser.gen";
 import { Generator } from "../gen";
 import { getRuleFromGram } from "../util";
 import { disjointCycleSets, getRulesToMarkForBoundedRecursion, leftRecCycles, leftRecRules, nullableAtomSet, ruleIsNullableInCtx } from "../leftrec";

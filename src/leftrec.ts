@@ -1,5 +1,5 @@
 import { Grammar, Rule, assertValidRegex, getRuleFromGram } from "./util";
-import { ASTKinds, ATOM, MATCH } from "./meta";
+import { ASTKinds, ATOM, MATCH } from "./parser.gen";
 import { CheckError } from "./checks";
 
 
