@@ -1,132 +1,155 @@
-import { Grammar, Rule, assertValidRegex, getRuleFromGram } from "./util";
-import { ASTKinds, ATOM, MATCH } from "./parser.gen";
 import { CheckError } from "./checks";
+import { Grammar, MatchDisjunction, MatchExpression, MatchExpressionKind, MatchSequence, PostfixOpKind, RegexLiteral, Rule, SubExpression } from './model';
 
 
 /*
  * As there are cyclic dependencies between rules we use the concept of a context
- * to compute which ATOM's are nullable, a context is a set of ATOM's we currently consider
+ * to compute which rules are nullable, a context is a set of items we currently consider
  * nullable, we then incrementally update this context until we reach a fixed point
  */
 
-// ruleIsNullableInCtx returns if a given rule is nullable within the given context
-export function ruleIsNullableInCtx(r: Rule, nullableAtoms: Set<ATOM>): boolean {
-    for(const alt of r) {
-        let allNullable = true;
-        for(const matchspec of alt.matches)
-            if(!matchIsNullableInCtx(matchspec.rule, nullableAtoms))
-                allNullable = false;
-        if(allNullable)
-            return true;
-    }
-    return false;
-}
+// The context for nullability analysis is a set containing either:
+// - The name of a nullable rule (string)
+// - The object instance of a nullable SubExpression
+// - The object instance of a nullable RegexLiteral
+type NullableCache = Set<string | SubExpression | RegexLiteral>;
 
-// matchIsNullableInCtx returns if a given `MATCH` is nullable within the given context
-function matchIsNullableInCtx(match: MATCH, nullableAtoms: Set<ATOM>): boolean {
-    if(match.kind === ASTKinds.SPECIAL)
-        return true;
-    // match is a POSTOP
+export function getNullableCache(grammar: Grammar): NullableCache {
+    const nullable: NullableCache = new Set();
+    let changed = true;
 
-    // match is nullable if these are the postops
-    if(match.op?.kind === ASTKinds.POSTOP_$0_1 &&  (match.op.op === "?" || match.op.op === "*"))
-        return true;
-    const preop = match.pre;
-    // Negations of nullables are invalid grammar expressions
-    if(preop.op === "!" && nullableAtoms.has(preop.at))
-        throw new CheckError("Cannot negate a nullable expression", preop.start);
-    // Always nullable, doesn't match anything
-    if(preop.op !== null)
-        return true;
-    if(nullableAtoms.has(preop.at))
-        return true;
-    return false;
-}
-
-// This function updates our nullableAtoms context to the next step of the iterative process
-function updateNullableAtomsInRule(rule: Rule, gram: Grammar, nullableAtoms: Set<ATOM>) {
-    for(const alt of rule) {
-        for(const matchspec of alt.matches) {
-            const match = matchspec.rule;
-            if(match.kind === ASTKinds.SPECIAL)
-                continue;
-            const at = match.pre.at;
-            // Already in set, ignore
-            if(nullableAtoms.has(at))
-                continue;
-            if(at.kind === ASTKinds.ATOM_1) {
-                // Rule reference, get rule and add to set if rule is nullable
-                const namedRule = getRuleFromGram(gram, at.name);
-                if(namedRule === null)
-                    continue;
-                if(ruleIsNullableInCtx(namedRule.rule, nullableAtoms))
-                    nullableAtoms.add(at);
-            }
-            if(at.kind === ASTKinds.ATOM_2) {
-                // Regex literal, we just test if "" matches to test if nullable
-                assertValidRegex(at.match.val, at.match.start);
-                const reg = new RegExp(at.match.val);
-                if(reg.test("")) // Is nullable
-                    nullableAtoms.add(at);
-            }
-            if(at.kind === ASTKinds.ATOM_3 && ruleIsNullableInCtx(at.sub.list, nullableAtoms))
-                // Subrule, recurse
-                nullableAtoms.add(at);
-        }
-    }
-}
-
-// Compute all nullable atoms, start with empty context and then iteratively expand
-// the set until a fixed point is reached.
-export function nullableAtomSet(gram: Grammar): Set<ATOM> {
-    // Inefficient approach but it doesn't matter
-    const nullable: Set<ATOM> = new Set();
-    for(;;) {
+    while (changed) {
         const oldSize = nullable.size;
-        for(const ruledef of gram)
-            updateNullableAtomsInRule(ruledef.rule, gram, nullable);
-        const newSize = nullable.size;
-        if(newSize === oldSize)
-            break;
+        for (const rule of grammar.rules) {
+            if (nullable.has(rule.name)) {
+                continue;
+            }
+            if (isDisjunctionNullable(rule.definition, nullable)) {
+                nullable.add(rule.name);
+            }
+        }
+        changed = nullable.size !== oldSize;
     }
     return nullable;
 }
 
+function isDisjunctionNullable(disjunction: MatchDisjunction, context: NullableCache): boolean {
+    return disjunction.alternatives.some(alt => isSequenceNullable(alt, context));
+}
+
+function isSequenceNullable(sequence: MatchSequence, context: NullableCache): boolean {
+    return sequence.matches.every(spec => isExpressionNullable(spec.expression, context));
+}
+
+function isExpressionNullable(expr: MatchExpression, context: NullableCache): boolean {
+    // Check the cache first for object-based keys
+    if (expr.kind === MatchExpressionKind.SubExpression || expr.kind === MatchExpressionKind.RegexLiteral) {
+        if (context.has(expr)) {
+            return true;
+        }
+    }
+
+    switch (expr.kind) {
+        case MatchExpressionKind.RuleReference:
+            return context.has(expr.name);
+
+        case MatchExpressionKind.RegexLiteral:
+            // Not in cache, so we need to evaluate it.
+            try {
+                if (new RegExp(expr.value).test('')) {
+                    context.add(expr); // Add to cache if nullable
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                throw new CheckError(`Couldn't compile regex '${expr.value}': ${e}`, expr.pos);
+            }
+
+        case MatchExpressionKind.SubExpression:
+            // Not in cache, so we need to evaluate it.
+            if (isDisjunctionNullable(expr.disjunction, context)) {
+                context.add(expr); // Add to cache if nullable
+                return true;
+            }
+            return false;
+
+        case MatchExpressionKind.PostfixExpression:
+            if (expr.op.kind === PostfixOpKind.Optional || expr.op.kind === PostfixOpKind.Star) {
+                return true;
+            }
+            if (expr.op.kind === PostfixOpKind.Range && expr.op.min === 0) {
+                return true;
+            }
+            return isExpressionNullable(expr.expression, context);
+
+        case MatchExpressionKind.PrefixExpression:
+            if (expr.operator === '!') {
+                if (isExpressionNullable(expr.expression, context)) {
+                    throw new CheckError("Cannot negate a nullable expression", expr.pos);
+                }
+            }
+            return true;
+
+        case MatchExpressionKind.SpecialMatch:
+        case MatchExpressionKind.EOFMatch:
+            return false;
+    }
+}
+
 // leftRecEdges returns a set of Rule names that a given Rule calls "on the left"
 // (with a given nullable atoms context).
-function leftRecEdges(r: Rule, nullableAtoms: Set<ATOM>): Set<string> {
-    const out: Set<string> = new Set();
-    for(const alt of r) {
-        // Loop as long as matches are nullable
-        for(const matchspec of alt.matches) {
-            const mtch = matchspec.rule;
-            // Pos matches don't need searching
-            if(mtch.kind === ASTKinds.SPECIAL)
-                continue;
-            const at = mtch.pre.at;
-            if(at.kind === ASTKinds.ATOM_1)
-                out.add(at.name);
-            if(at.kind === ASTKinds.ATOM_3)
-                for(const edge of leftRecEdges(at.sub.list, nullableAtoms))
-                    out.add(edge);
-            // Break if no longer nullable
-            if(!matchIsNullableInCtx(mtch, nullableAtoms))
+function leftRecEdges(rule: Rule, nullableCache: NullableCache): Set<string> {
+    const edges = new Set<string>();
+
+    function findEdgesInDisjunction(disjunction: MatchDisjunction) {
+        for (const alt of disjunction.alternatives) {
+            findEdgesInSequence(alt);
+        }
+    }
+
+    function findEdgesInSequence(sequence: MatchSequence) {
+        for (const match of sequence.matches) {
+            findEdgesInExpr(match.expression);
+            if (!isExpressionNullable(match.expression, nullableCache)) {
+                break; // Stop after the first non-nullable expression
+            }
+        }
+    }
+
+    function findEdgesInExpr(expression: MatchExpression) {
+        switch (expression.kind) {
+            case MatchExpressionKind.RuleReference:
+                edges.add(expression.name);
+                break;
+            case MatchExpressionKind.SubExpression:
+                findEdgesInDisjunction(expression.disjunction);
+                break;
+            case MatchExpressionKind.PostfixExpression:
+                findEdgesInExpr(expression.expression);
+                break;
+            // Prefix, literals, and other terminal-like matches don't contribute to left-recursion edges.
+            case MatchExpressionKind.PrefixExpression:
+            case MatchExpressionKind.RegexLiteral:
+            case MatchExpressionKind.SpecialMatch:
+            case MatchExpressionKind.EOFMatch:
                 break;
         }
     }
-    return out;
+
+    findEdgesInDisjunction(rule.definition);
+    return edges;
 }
 
 // leftRecGraph returns a graph object containing all direct left recursion edges.
 // (with a given nullable atoms context).
-function leftRecGraph(gram: Grammar, nullableAtoms: Set<ATOM>): Map<string, Set<string>> {
-    return new Map(gram.map(r => [r.name, leftRecEdges(r.rule, nullableAtoms)]));
+function leftRecGraph(grammar: Grammar, nullableCache: NullableCache): Map<string, Set<string>> {
+    return new Map(grammar.rules.map(r => [r.name, leftRecEdges(r, nullableCache)]));
 }
 
 // leftRecClosure uses the left recursion graph to extend direct rule references to a graph
 // with all indirect references.
-function leftRecClosure(gram: Grammar, nullableAtoms: Set<ATOM>): Map<string, Set<string>> {
-    const grph = leftRecGraph(gram, nullableAtoms);
+function leftRecClosure(gram: Grammar, nullableCache: NullableCache): Map<string, Set<string>> {
+    const grph = leftRecGraph(gram, nullableCache);
     return transitiveClosure(grph);
 }
 
@@ -143,8 +166,8 @@ function transitiveClosure<A>(grph: Map<A, Set<A>>): Map<A, Set<A>> {
 // leftRecRules returns all left recursive rules within a grammar.
 export function leftRecRules(g: Grammar): Set<string> {
     const s: Set<string> = new Set();
-    const nullAtoms = nullableAtomSet(g);
-    const cls = leftRecClosure(g, nullAtoms);
+    const nullableCache = getNullableCache(g);
+    const cls = leftRecClosure(g, nullableCache);
     for(const [k, v] of cls.entries())
         if(v.has(k))
             s.add(k);
@@ -175,9 +198,9 @@ function addCycle(cycles: string[][], cyc: string[]) {
 
 // leftRecCycles returns all left recursion cycles in a given grammar
 // (within a given nullable atom context).
-export function leftRecCycles(gram: Grammar, nullableAtoms: Set<ATOM>): string[][] {
+export function leftRecCycles(gram: Grammar, nullableCache: NullableCache): string[][] {
     const cycles: string[][] = [];
-    const grph = leftRecGraph(gram, nullableAtoms);
+    const grph = leftRecGraph(gram, nullableCache);
 
     const vis: Set<string> = new Set();
     const seq: string[] = [];
@@ -199,7 +222,7 @@ export function leftRecCycles(gram: Grammar, nullableAtoms: Set<ATOM>): string[]
         seq.pop();
     };
 
-    for(const g of gram) {
+    for(const g of gram.rules) {
         vis.clear();
         cycleRec(g.name, g.name);
     }
@@ -252,11 +275,11 @@ export function disjointCycleSets(cycles: string[][]): string[][][] {
 // only works if exactly one rule in each left recursion cycle implements it.
 // This function brute forces the assignment of marked rules to find a suitable
 // assignment.
-export function getRulesToMarkForBoundedRecursion(g: Grammar): Set<string> {
+export function getRulesToMarkForBoundedRecursion(grammar: Grammar): Set<string> {
     const marked: Set<string> = new Set();
 
-    const nullAtoms = nullableAtomSet(g);
-    const cycles = leftRecCycles(g, nullAtoms);
+    const nullableCache = getNullableCache(grammar);
+    const cycles = leftRecCycles(grammar, nullableCache);
     const sets = disjointCycleSets(cycles);
 
     // Loop over all subproblems (disjoint sets of cycles)

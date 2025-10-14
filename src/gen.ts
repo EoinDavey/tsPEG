@@ -5,6 +5,7 @@ import { BannedNamesChecker, Checker, NoKeywords, NoRuleNameCollisionChecker, Ru
 import { matchType } from "./types";
 import { extractRules, matchRule } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
+import { ModelBuilder } from './builder';
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -109,7 +110,9 @@ export class Generator {
             };
         });
         this.header = res.ast.header?.content ?? null;
-        this.boundedRecRules = getRulesToMarkForBoundedRecursion(this.unexpandedGram);
+        const modelBuilder = new ModelBuilder(this.input);
+        const model = modelBuilder.build(res.ast);
+        this.boundedRecRules = getRulesToMarkForBoundedRecursion(model);
         this.astKindsByName = buildAstKindsByName(this.expandedGram, this.numEnums);
     }
 

@@ -83,7 +83,6 @@ export class RegexLiteral {
 // e.g., @
 export class SpecialMatch {
     readonly kind = MatchExpressionKind.SpecialMatch;
-    constructor() {}
 }
 
 export enum PostfixOpKind {
@@ -130,5 +129,4 @@ export class SubExpression {
 // e.g., $
 export class EOFMatch {
     readonly kind = MatchExpressionKind.EOFMatch;
-    constructor() {}
 }

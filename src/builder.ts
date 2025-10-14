@@ -74,7 +74,7 @@ export class ModelBuilder {
             op = {
                 kind: model.PostfixOpKind.Range,
                 min: postop.op.lb,
-                max: postop.op.ub === -1 ? undefined : postop.op.ub
+                max: postop.op.ub === -1 ? undefined : postop.op.ub,
             };
         }
 
@@ -97,9 +97,10 @@ export class ModelBuilder {
                 return new model.RuleReference(atom.name, atom.start);
             case ast.ASTKinds.ATOM_2: // RegexLiteral
                 return new model.RegexLiteral(atom.match.val, atom.match.mods, atom.match.start);
-            case ast.ASTKinds.ATOM_3: // SubExpression
+            case ast.ASTKinds.ATOM_3: {
                 const disjunction = this.buildMatchDisjunction(atom.sub);
                 return new model.SubExpression(disjunction);
+            }
             case ast.ASTKinds.EOF: // EOF
                 return new model.EOFMatch();
         }
