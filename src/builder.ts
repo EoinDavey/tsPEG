@@ -3,6 +3,7 @@ import * as model from './model';
 
 export class ModelBuilder {
     private input: string;
+    private subExprCounter: number = 0;
 
     constructor(input: string) {
         this.input = input;
@@ -15,19 +16,27 @@ export class ModelBuilder {
     }
 
     private buildRule(ruleDef: ast.RULEDEF): model.Rule {
-        const definition = this.buildMatchDisjunction(ruleDef.rule);
+        this.subExprCounter = 0; // Reset for each top-level rule
+        const definition = this.buildMatchDisjunction(ruleDef.rule, ruleDef.name, ruleDef.name);
         return new model.Rule(ruleDef.name, definition, ruleDef.namestart);
     }
 
-    private buildMatchDisjunction(rule: ast.RULE): model.MatchDisjunction {
-        const alternatives = rule.list.map(alt => this.buildMatchSequence(alt));
+    private buildMatchDisjunction(rule: ast.RULE, parentName: string, topLevelRuleName: string): model.MatchDisjunction {
+        if (rule.list.length === 1) {
+            const alternatives = [this.buildMatchSequence(rule.list[0], parentName, topLevelRuleName)];
+            return new model.MatchDisjunction(alternatives);
+        }
+        const alternatives = rule.list.map((alt, i) => {
+            const altName = `${parentName}_${i + 1}`;
+            return this.buildMatchSequence(alt, altName, topLevelRuleName);
+        });
         return new model.MatchDisjunction(alternatives);
     }
 
-    private buildMatchSequence(alt: ast.ALT): model.MatchSequence {
-        const matches = alt.matches.map(matchSpec => this.buildMatchSpec(matchSpec));
+    private buildMatchSequence(alt: ast.ALT, name: string, topLevelRuleName: string): model.MatchSequence {
+        const matches = alt.matches.map(matchSpec => this.buildMatchSpec(matchSpec, topLevelRuleName));
         const attributes = alt.attrs.map(attr => this.buildComputedAttribute(attr));
-        return new model.MatchSequence(matches, attributes);
+        return new model.MatchSequence(name, matches, attributes);
     }
 
     private buildComputedAttribute(attr: ast.ATTR): model.ComputedAttribute {
@@ -36,19 +45,19 @@ export class ModelBuilder {
         return new model.ComputedAttribute(attr.name, type, code, attr.type.start);
     }
 
-    private buildMatchSpec(matchSpec: ast.MATCHSPEC): model.MatchSpec {
+    private buildMatchSpec(matchSpec: ast.MATCHSPEC, topLevelRuleName: string): model.MatchSpec {
         const name = matchSpec.named ? matchSpec.named.name : null;
-        const expression = this.buildMatchExpression(matchSpec.rule);
+        const expression = this.buildMatchExpression(matchSpec.rule, topLevelRuleName);
         return new model.MatchSpec(name, expression);
     }
 
-    private buildMatchExpression(match: ast.MATCH): model.MatchExpression {
+    private buildMatchExpression(match: ast.MATCH, topLevelRuleName: string): model.MatchExpression {
         if (match.kind === ast.ASTKinds.SPECIAL) {
             return new model.SpecialMatch();
         }
 
         const postop = match;
-        const preExpression = this.buildPrefixExpression(postop.pre);
+        const preExpression = this.buildPrefixExpression(postop.pre, topLevelRuleName);
 
         if (!postop.op) {
             return preExpression;
@@ -81,8 +90,8 @@ export class ModelBuilder {
         return new model.PostfixExpression(preExpression, op, postop.pre.start);
     }
 
-    private buildPrefixExpression(preop: ast.PREOP): model.MatchExpression {
-        const atomExpression = this.buildAtom(preop.at);
+    private buildPrefixExpression(preop: ast.PREOP, topLevelRuleName: string): model.MatchExpression {
+        const atomExpression = this.buildAtom(preop.at, topLevelRuleName);
 
         if (!preop.op) {
             return atomExpression;
@@ -91,15 +100,16 @@ export class ModelBuilder {
         return new model.PrefixExpression(atomExpression, preop.op as model.PrefixOperator, preop.start);
     }
 
-    private buildAtom(atom: ast.ATOM): model.MatchExpression {
+    private buildAtom(atom: ast.ATOM, topLevelRuleName: string): model.MatchExpression {
         switch (atom.kind) {
             case ast.ASTKinds.ATOM_1: // RuleReference
                 return new model.RuleReference(atom.name, atom.start);
             case ast.ASTKinds.ATOM_2: // RegexLiteral
                 return new model.RegexLiteral(atom.match.val, atom.match.mods, atom.match.start);
             case ast.ASTKinds.ATOM_3: {
-                const disjunction = this.buildMatchDisjunction(atom.sub);
-                return new model.SubExpression(disjunction);
+                const subExprName = `${topLevelRuleName}_$${this.subExprCounter++}`;
+                const disjunction = this.buildMatchDisjunction(atom.sub, subExprName, topLevelRuleName);
+                return new model.SubExpression(subExprName, disjunction);
             }
             case ast.ASTKinds.EOF: // EOF
                 return new model.EOFMatch();

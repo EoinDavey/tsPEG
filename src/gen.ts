@@ -6,6 +6,8 @@ import { matchType } from "./types";
 import { extractRules, matchRule } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 import { ModelBuilder } from './builder';
+import * as model from "./model";
+import { ExpandedItem, ExpansionVisitor } from "./expansion";
 
 function hasAttrs(alt: ALT): boolean {
     return alt.attrs.length > 0;
@@ -74,6 +76,7 @@ export class Generator {
     public expandedGram: Grammar;
     // unexpandedGram is the grammar with no subrules expanded.
     public unexpandedGram: Grammar;
+    private readonly model: model.Grammar;
     // Whether to use strings or numbers for AST kinds
     private numEnums: boolean;
     // Whether to use an enum or a union of string/number constants for AST kinds
@@ -111,8 +114,8 @@ export class Generator {
         });
         this.header = res.ast.header?.content ?? null;
         const modelBuilder = new ModelBuilder(this.input);
-        const model = modelBuilder.build(res.ast);
-        this.boundedRecRules = getRulesToMarkForBoundedRecursion(model);
+        this.model = modelBuilder.build(res.ast);
+        this.boundedRecRules = getRulesToMarkForBoundedRecursion(this.model);
         this.astKindsByName = buildAstKindsByName(this.expandedGram, this.numEnums);
     }
 
@@ -126,9 +129,15 @@ export class Generator {
         return this;
     }
 
+    private getExpandedItems(): ExpandedItem[] {
+        const visitor = new ExpansionVisitor();
+        this.model.accept(visitor);
+        return visitor.items;
+    }
+
     public writeKinds(): Block {
-        const astKinds = ([] as string[]).concat(...this.expandedGram.map(altNames));
-        if(usesEOF(this.expandedGram))
+        const astKinds = this.getExpandedItems().map(item => item.name);
+        if(usesEOF(this.expandedGram)) // Left unchanged as requested
             astKinds.push("$EOF");
         if (this.erasableSyntax) {
             return [
