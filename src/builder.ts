@@ -108,7 +108,7 @@ export class ModelBuilder {
                 // For the recursion, the new naming parent is the name we just generated.
                 // This will create a new counter scope.
                 const disjunction = this.buildMatchDisjunction(atom.sub, subExprName, subExprName);
-                return new model.SubExpression(subExprName, disjunction);
+                return new model.SubExpression(subExprName, disjunction, atom.start);
             }
             case ast.ASTKinds.EOF: // EOF
                 return new model.EOFMatch();

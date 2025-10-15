@@ -17,7 +17,7 @@
 * // to denote end of rule definition
 * ATOM      := start=@ name=NAME !'\s*:='
 *            | match=STRLIT
-*            | '{' _ sub=RULE _ '}'
+*            | start=@ '{' _ sub=RULE _ '}'
 *               .name = string | null { return null; }
 *            | EOF
 * EOF       := symb='\$'
@@ -117,9 +117,9 @@ export enum ASTKinds {
     TS_PRIM_$0_3 = "TS_PRIM_$0_3",
     TS_PRIM_$0_4 = "TS_PRIM_$0_4",
     TS_PRIM_$0_5 = "TS_PRIM_$0_5",
+    TS_PRIM_$0_6 = "TS_PRIM_$0_6",
     TS_PRIM_$0_$0 = "TS_PRIM_$0_$0",
     TS_PRIM_$0_$0_$0 = "TS_PRIM_$0_$0_$0",
-    TS_PRIM_$0_6 = "TS_PRIM_$0_6",
     TS_PRIM_$0_$1 = "TS_PRIM_$0_$1",
     TS_PRIM_$0_$1_$0 = "TS_PRIM_$0_$1_$0",
     TS_TYPE_REF = "TS_TYPE_REF",
@@ -138,11 +138,11 @@ export enum ASTKinds {
     TS_GENERIC_ARGS_$0 = "TS_GENERIC_ARGS_$0",
     TS_GENERIC_ARGS_$0_$0 = "TS_GENERIC_ARGS_$0_$0",
     TS_PARAM_LIST_1 = "TS_PARAM_LIST_1",
+    TS_PARAM_LIST_2 = "TS_PARAM_LIST_2",
+    TS_PARAM_LIST_3 = "TS_PARAM_LIST_3",
     TS_PARAM_LIST_$0 = "TS_PARAM_LIST_$0",
     TS_PARAM_LIST_$1 = "TS_PARAM_LIST_$1",
-    TS_PARAM_LIST_2 = "TS_PARAM_LIST_2",
     TS_PARAM_LIST_$2 = "TS_PARAM_LIST_$2",
-    TS_PARAM_LIST_3 = "TS_PARAM_LIST_3",
     TS_REQUIRED_PARAMS = "TS_REQUIRED_PARAMS",
     TS_REQUIRED_PARAMS_$0 = "TS_REQUIRED_PARAMS_$0",
     TS_REQUIRED_PARAM = "TS_REQUIRED_PARAM",
@@ -261,9 +261,11 @@ export interface ATOM_2 {
 }
 export class ATOM_3 {
     public kind: ASTKinds.ATOM_3 = ASTKinds.ATOM_3;
+    public start: PosInfo;
     public sub: RULE;
     public name: string | null;
-    constructor(sub: RULE){
+    constructor(start: PosInfo, sub: RULE){
+        this.start = start;
         this.sub = sub;
         this.name = ((): string | null => {
         return null;
@@ -763,16 +765,18 @@ export class Parser {
     public matchATOM_3($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_3> {
         return this.run<ATOM_3>($$dpth,
             () => {
+                let $scope$start: Nullable<PosInfo>;
                 let $scope$sub: Nullable<RULE>;
                 let $$res: Nullable<ATOM_3> = null;
                 if (true
+                    && ($scope$start = this.mark()) !== null
                     && this.regexAccept(String.raw`(?:{)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$sub = this.matchRULE($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, "", $$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = new ATOM_3($scope$sub);
+                    $$res = new ATOM_3($scope$start, $scope$sub);
                 }
                 return $$res;
             });

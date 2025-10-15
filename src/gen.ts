@@ -2,16 +2,12 @@ import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo, SyntaxErr }  from "./parse
 import { expandTemplate } from "./template";
 import { Block, Grammar, Ruledef, altNames, flattenBlock, usesEOF, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoKeywords, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
-import { matchType } from "./types";
+import { matchType, matchTypeFromModel } from "./types";
 import { extractRules, matchRule } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 import { ModelBuilder } from './builder';
 import * as model from "./model";
-import { ExpandedItem, ExpansionVisitor } from "./expansion";
-
-function hasAttrs(alt: ALT): boolean {
-    return alt.attrs.length > 0;
-}
+import { ExpansionVisitor } from "./expansion";
 
 // addScope adds a prefix that uses illegal characters to
 // ensure namespace separation wrt generated vs user supplied IDs
@@ -21,6 +17,10 @@ function addScope(id: string): string {
 
 function memoName(id: string): string {
     return addScope(id + "$memo");
+}
+
+function hasAttrs(alt: ALT): boolean {
+    return alt.attrs.length > 0;
 }
 
 function getNamedTypes(alt: ALT): [string, string][] {
@@ -34,6 +34,30 @@ function getNamedTypes(alt: ALT): [string, string][] {
     return types;
 }
 
+// Rules with no named matches, no attrs and only one match are rule aliases
+function isAlias(alt: ALT): boolean {
+    return getNamedTypes(alt).length === 0 && alt.matches.length === 1 && !hasAttrs(alt);
+}
+
+
+/**
+ * Extracts the name and TypeScript type of all named matches in a MatchSequence.
+ * This is the model-aware equivalent of the old `getNamedTypes` function.
+ * @param sequence The MatchSequence from the semantic model.
+ * @returns An array of tuples, where each tuple is [matchName, typeAsString].
+ */
+function getNamedTypesFromModel(sequence: model.MatchSequence): [string, string][] {
+    const types: [string, string][] = [];
+    for (const match of sequence.matches) {
+        if (match.name === null) {
+            continue;
+        }
+        const type = matchTypeFromModel(match.expression);
+        types.push([match.name, type]);
+    }
+    return types;
+}
+
 function buildAstKindsByName(expandedGram: Grammar, numEnums: boolean): ReadonlyMap<string, string> {
     const astKinds = ([] as string[]).concat(...expandedGram.map(altNames));
     const astKindsByName = new Map<string, string>();
@@ -41,11 +65,6 @@ function buildAstKindsByName(expandedGram: Grammar, numEnums: boolean): Readonly
         astKindsByName.set(kind, numEnums ? String(index) : `"${kind}"`);
     });
     return astKindsByName;
-}
-
-// Rules with no named matches, no attrs and only one match are rule aliases
-function isAlias(alt: ALT): boolean {
-    return getNamedTypes(alt).length === 0 && alt.matches.length === 1 && !hasAttrs(alt);
 }
 
 function memoedBody(memo: string, body: Block): Block {
@@ -129,14 +148,15 @@ export class Generator {
         return this;
     }
 
-    private getExpandedItems(): ExpandedItem[] {
+    private getExpandedRules(): model.Rule[] {
         const visitor = new ExpansionVisitor();
         this.model.accept(visitor);
-        return visitor.items;
+        return visitor.rules;
     }
 
     public writeKinds(): Block {
-        const astKinds = this.getExpandedItems().map(item => item.name);
+        const expandedRules = this.getExpandedRules();
+        const astKinds = expandedRules.flatMap(rule => rule.definition.alternatives.map(alt => alt.name));
         if(usesEOF(this.expandedGram)) // Left unchanged as requested
             astKinds.push("$EOF");
         if (this.erasableSyntax) {
@@ -183,30 +203,35 @@ export class Generator {
         ];
     }
 
-    public writeChoice(name: string, alt: ALT): Block {
-        const namedTypes = getNamedTypes(alt);
-        if (isAlias(alt)) {
-            const at = alt.matches[0].rule;
-            return [`export type ${name} = ${matchType(at)};`];
+    public writeChoice(name: string, sequence: model.MatchSequence): Block {
+        const type = sequence.getType();
+
+        if (type === 'alias') {
+            const expressionType = matchTypeFromModel(sequence.matches[0].expression);
+            return [`export type ${name} = ${expressionType};`];
         }
-        // If we have computed properties, then we need a class, not an interface.
-        if (hasAttrs(alt)) {
+
+        const namedTypes = getNamedTypesFromModel(sequence);
+
+        if (type === 'class') {
             return [
                 `export class ${name} {`,
                 [
                     `public kind: ${this.astKindsType(name)} = ASTKinds.${name};`,
                     ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
-                    ...alt.attrs.map((x) => `public ${x.name}: ${getMatchedSubstr(x.type, this.input)};`),
+                    ...sequence.attributes.map((attr) => `public ${attr.name}: ${attr.type};`),
                     `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
                     namedTypes.map((x) => `this.${x[0]} = ${x[0]};`),
-                    ...alt.attrs.map(x => [`this.${x.name} = ((): ${getMatchedSubstr(x.type, this.input)} => {`,
-                        getMatchedSubstr(x.code, this.input).trim(),
+                    ...sequence.attributes.map(attr => [`this.${attr.name} = ((): ${attr.type} => {`,
+                        attr.code.trim(),
                         "})();"]),
                     "}",
                 ],
                 "}",
             ];
         }
+
+        // The remaining case is 'interface'
         return [
             `export interface ${name} {`,
             [
@@ -217,25 +242,25 @@ export class Generator {
         ];
     }
 
-    public writeRuleClass(ruledef: Ruledef): Block {
-        const nm = ruledef.name;
-        const union = altNames(ruledef);
-        const choices: Block = [];
-        altNames(ruledef).forEach((name, i) => {
-            choices.push(...this.writeChoice(name, ruledef.rule[i]));
-        });
-        const typedef = ruledef.rule.length > 1 ? [`export type ${nm} = ${union.join(" | ")};`] : [];
-        return [...typedef, ...choices];
-    }
+    public writeRuleClasses(): Block {
+        const expandedRules = this.getExpandedRules();
+        const allBlocks: Block = [];
 
-    public writeRuleClasses(gram: Grammar): Block {
-        const types: string[] = [];
-        const rules: Block = [];
-        for (const ruledef of gram) {
-            types.push(ruledef.name);
-            rules.push(...this.writeRuleClass(ruledef));
+        for (const rule of expandedRules) {
+            const alternatives = rule.definition.alternatives;
+
+            // Generate union type if needed
+            if (alternatives.length > 1) {
+                const unionNames = alternatives.map(alt => alt.name);
+                allBlocks.push(`export type ${rule.name} = ${unionNames.join(" | ")};`);
+            }
+
+            // Generate the interface/class/alias for each alternative
+            for (const alternative of alternatives) {
+                allBlocks.push(...this.writeChoice(alternative.name, alternative));
+            }
         }
-        return rules;
+        return allBlocks;
     }
 
     public writeParseIfStmt(alt: ALT): Block {
@@ -465,7 +490,7 @@ export class Generator {
             memoClearFn: this.writeMemoClearFn(),
             kinds: this.writeKinds(),
             regexFlags: this.regexFlags,
-            ruleClasses: this.writeRuleClasses(this.expandedGram),
+            ruleClasses: this.writeRuleClasses(),
             ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
             parseResult: this.writeParseResultClass(this.expandedGram),
             usesEOF: usesEOF(this.expandedGram),

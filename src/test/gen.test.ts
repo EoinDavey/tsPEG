@@ -474,8 +474,7 @@ describe("writeRuleClasses Test", () => {
             expect(res.errs).toEqual([]);
             expect(res.ast).not.toBeNull();
             const g = new Generator(tc.inp);
-            const gram = g.expandedGram;
-            const got = writeBlock(g.writeRuleClasses(gram)).join("\n");
+            const got = writeBlock(g.writeRuleClasses()).join("\n");
             expect(got).toEqual(tc.ruleClasses);
         });
     }

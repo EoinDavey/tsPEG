@@ -59,6 +59,20 @@ export class MatchSequence {
     accept<T>(visitor: Visitor<T>): T {
         return visitor.visitMatchSequence(this);
     }
+
+    public getType(): 'alias' | 'class' | 'interface' {
+        if (this.attributes.length > 0) {
+            return 'class';
+        }
+
+        const hasNamedMatch = this.matches.some(m => m.name !== null);
+
+        if (!hasNamedMatch && this.matches.length === 1) {
+            return 'alias';
+        }
+
+        return 'interface';
+    }
 }
 
 // ComputedAttribute := '.' name '=' type code
@@ -175,7 +189,7 @@ export class PrefixExpression {
 // e.g., { ... }
 export class SubExpression {
     readonly kind = MatchExpressionKind.SubExpression;
-    constructor(public name: string, public disjunction: MatchDisjunction) {}
+    constructor(public name: string, public disjunction: MatchDisjunction, public pos: PosInfo) {}
     accept<T>(visitor: Visitor<T>): T {
         return visitor.visitSubExpression(this);
     }

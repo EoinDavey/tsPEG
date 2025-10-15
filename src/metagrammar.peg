@@ -16,7 +16,7 @@ PREOP     := start=@ op='\&|!'? at=ATOM
 // to denote end of rule definition
 ATOM      := start=@ name=NAME !'\s*:='
            | match=STRLIT
-           | '{' _ sub=RULE _ '}'
+           | start=@ '{' _ sub=RULE _ '}'
               .name = string | null { return null; }
            | EOF
 EOF       := symb='\$'
