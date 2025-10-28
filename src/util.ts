@@ -5,6 +5,7 @@ export type Rule = ALT[];
 export type Grammar = Ruledef[];
 export interface Ruledef {
     name: string;
+    subNames: (string|undefined)[];
     rule: Rule;
     // pos is possibly undefined as subrules don't have
     // a well defined definition location
@@ -20,7 +21,7 @@ export function indentBlock(blk: string[]): string[] {
 export function altNames(rd: Ruledef): string[] {
     if(rd.rule.length === 1)
         return [rd.name];
-    return rd.rule.map((_, i) => `${rd.name}_${i + 1}`);
+    return rd.rule.map((_, i) => `${rd.name}_${rd.subNames[i] ?? (i + 1)}`);
 }
 
 export function writeBlock(blk: Block): string[] {

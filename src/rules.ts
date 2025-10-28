@@ -49,7 +49,8 @@ export function atomRule(at: ATOM): string {
 // structure of the grammar.
 export function extractRules(rule: Rule, name: string, pos?: PosInfo): Ruledef[] {
     let cnt = 0;
-    const rules: Ruledef[] = [{name, rule, pos}];
+    const subNames = rule.map(alt => alt.rulename?.name);
+    const rules: Ruledef[] = [{name, rule, pos, subNames}];
     for (const alt of rule) {
         for (const match of alt.matches) {
             // Check if special rule
@@ -60,7 +61,7 @@ export function extractRules(rule: Rule, name: string, pos?: PosInfo): Ruledef[]
             if (at === null || at.kind !== ASTKinds.ATOM_3)
                 continue;
             const subrule = at.sub;
-            const nm = `${name}_$${cnt}`;
+            const nm = `${name}_$${alt.rulename?.name ?? cnt}`;
             at.name = nm;
             const rdfs = extractRules(subrule.list, nm);
             rules.push(...rdfs);
