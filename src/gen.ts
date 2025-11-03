@@ -8,6 +8,7 @@ import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 import { ModelBuilder } from './builder';
 import * as model from "./model";
 import { ExpansionVisitor } from "./expansion";
+import { SimpleVisitor } from "./simplevisitor";
 
 // addScope adds a prefix that uses illegal characters to
 // ensure namespace separation wrt generated vs user supplied IDs
@@ -148,6 +149,17 @@ export class Generator {
         return this;
     }
 
+    private usesEOFInModel(): boolean {
+        const visitor = new class extends SimpleVisitor {
+            public foundEOF = false;
+            visitEOFMatch(_expr: model.EOFMatch){
+                this.foundEOF = true;
+            }
+        };
+        this.model.accept(visitor);
+        return visitor.foundEOF;
+    }
+
     private getExpandedRules(): model.Rule[] {
         const visitor = new ExpansionVisitor();
         this.model.accept(visitor);
@@ -155,9 +167,8 @@ export class Generator {
     }
 
     public writeKinds(): Block {
-        const expandedRules = this.getExpandedRules();
-        const astKinds = expandedRules.flatMap(rule => rule.definition.alternatives.map(alt => alt.name));
-        if(usesEOF(this.expandedGram)) // Left unchanged as requested
+        const astKinds = this.getExpandedRules().flatMap(rule => rule.definition.alternatives.map(alt => alt.name));
+        if(this.usesEOFInModel())
             astKinds.push("$EOF");
         if (this.erasableSyntax) {
             return [
