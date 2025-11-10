@@ -31,8 +31,7 @@ function getNamedTypes(alt: ALT): [string, string][] {
     return types;
 }
 
-function buildAstKindsByName(expandedGram: Grammar, numEnums: boolean): ReadonlyMap<string, string> {
-    const astKinds = ([] as string[]).concat(...expandedGram.map(altNames));
+function buildAstKindsByName(astKinds: string[], numEnums: boolean): ReadonlyMap<string, string> {
     const astKindsByName = new Map<string, string>();
     astKinds.forEach((kind, index) => {
         astKindsByName.set(kind, numEnums ? String(index) : `"${kind}"`);
@@ -85,6 +84,7 @@ export class Generator {
     private checkers: Checker[] = [];
     private header: string | null;
     private boundedRecRules: Set<string>;
+    private readonly astKinds: string[];
     private readonly astKindsByName: ReadonlyMap<string, string>;
 
     public constructor(input: string, numEnums = false, enableMemos = false, regexFlags = "", includeGrammar = true, erasableSyntax = false) {
@@ -109,8 +109,13 @@ export class Generator {
             };
         });
         this.header = res.ast.header?.content ?? null;
+
+        this.astKinds = ([] as string[]).concat(...this.expandedGram.map(altNames));
+        if(usesEOF(this.expandedGram))
+            this.astKinds.push("$EOF");
+
         this.boundedRecRules = getRulesToMarkForBoundedRecursion(this.unexpandedGram);
-        this.astKindsByName = buildAstKindsByName(this.expandedGram, this.numEnums);
+        this.astKindsByName = buildAstKindsByName(this.astKinds, this.numEnums);
     }
 
     private astToExpandedGram(g: GRAM): Grammar {
@@ -124,28 +129,25 @@ export class Generator {
     }
 
     public writeKinds(): Block {
-        const astKinds = ([] as string[]).concat(...this.expandedGram.map(altNames));
-        if(usesEOF(this.expandedGram))
-            astKinds.push("$EOF");
         if (this.erasableSyntax) {
             return [
                 "export const ASTKinds = {",
                 this.numEnums
-                    ? astKinds.map((x, i) => `${x}: ${i},`)
-                    : astKinds.map(x => `${x}: "${x}",`),
+                    ? this.astKinds.map((x, i) => `${x}: ${i},`)
+                    : this.astKinds.map(x => `${x}: "${x}",`),
                 "} as const",
                 "export type ASTKinds = ",
                 this.numEnums
-                    ? astKinds.map((x, i) => `| ${i}`)
-                    : astKinds.map(x => `| "${x}"`),
+                    ? this.astKinds.map((x, i) => `| ${i}`)
+                    : this.astKinds.map(x => `| "${x}"`),
                 ";",
             ];
         }
         return [
             "export enum ASTKinds {",
             this.numEnums
-                ? astKinds.map(x => `${x},`)
-                : astKinds.map(x => `${x} = "${x}",`),
+                ? this.astKinds.map(x => `${x},`)
+                : this.astKinds.map(x => `${x} = "${x}",`),
             "}",
         ];
     }
