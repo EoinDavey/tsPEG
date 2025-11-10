@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.4 - 2025/11/10
+
+### Fixed
+
+- Erasable Syntax leads to compile error in parser on EOF (#59).
+
 ## 3.3.3 - 2025/09/27
 
 ### Added
