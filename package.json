@@ -1,6 +1,6 @@
 {
     "name": "tspeg",
-    "version": "3.3.3",
+    "version": "3.3.4",
     "homepage": "https://github.com/EoinDavey/tsPEG",
     "description": "TypeScript parser generator",
     "author": "Eoin Davey <eoind@vey.ie>",
