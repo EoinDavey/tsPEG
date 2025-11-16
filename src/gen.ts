@@ -1,9 +1,9 @@
-import { ALT, ASTKinds, GRAM, MATCH, Parser, PosInfo, SyntaxErr }  from "./parser.gen";
+import { GRAM, Parser, PosInfo, SyntaxErr }  from "./parser.gen";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Ruledef, altNames, flattenBlock, usesEOF, writeBlock } from "./util";
+import { Block, Grammar, Ruledef, flattenBlock, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoKeywords, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
-import { matchType, matchTypeFromModel } from "./types";
-import { extractRules, matchRule } from "./rules";
+import { matchTypeFromModel } from "./types";
+import { extractRules, matchRuleFromModel } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 import { ModelBuilder } from './builder';
 import * as model from "./model";
@@ -18,26 +18,6 @@ function addScope(id: string): string {
 
 function memoName(id: string): string {
     return addScope(id + "$memo");
-}
-
-function hasAttrs(alt: ALT): boolean {
-    return alt.attrs.length > 0;
-}
-
-function getNamedTypes(alt: ALT): [string, string][] {
-    const types: [string, string][] = [];
-    for (const match of alt.matches) {
-        if (!match.named)
-            continue;
-        const rn = matchType(match.rule);
-        types.push([match.named.name, rn]);
-    }
-    return types;
-}
-
-// Rules with no named matches, no attrs and only one match are rule aliases
-function isAlias(alt: ALT): boolean {
-    return getNamedTypes(alt).length === 0 && alt.matches.length === 1 && !hasAttrs(alt);
 }
 
 
@@ -274,21 +254,24 @@ export class Generator {
         return allBlocks;
     }
 
-    public writeParseIfStmt(alt: ALT): Block {
+    public writeParseIfStmt(sequence: model.MatchSequence): Block {
         const checks: string[] = [];
-        for (const match of alt.matches) {
-            const expr = match.rule;
-            const rn = matchRule(expr);
-            if (match.named) {
+        for (const match of sequence.matches) {
+            const expr = match.expression;
+            const rn = matchRuleFromModel(expr);
+            const isOptional = expr.kind === model.MatchExpressionKind.PostfixExpression &&
+                               (expr as model.PostfixExpression).op.kind === model.PostfixOpKind.Optional;
+
+            if (match.name) {
                 // Optional match
-                if (expr.kind !== ASTKinds.SPECIAL && expr.optional) {
-                    checks.push(`&& ((${addScope(match.named.name)} = ${rn}) || true)`);
+                if (isOptional) {
+                    checks.push(`&& ((${addScope(match.name)} = ${rn}) || true)`);
                 } else {
-                    checks.push(`&& (${addScope(match.named.name)} = ${rn}) !== null`);
+                    checks.push(`&& (${addScope(match.name)} = ${rn}) !== null`);
                 }
             } else {
                 // Optional match
-                if (expr.kind !== ASTKinds.SPECIAL && expr.optional) {
+                if (isOptional) {
                     checks.push(`&& ((${rn}) || true)`);
                 } else {
                     checks.push(`&& ${rn} !== null`);
@@ -298,36 +281,29 @@ export class Generator {
         return checks;
     }
 
-    public writeRuleAliasFnBody(expr: MATCH): Block {
+    public writeRuleAliasFnBody(expr: model.MatchExpression): Block {
         return [
-            `return ${matchRule(expr)};`,
+            `return ${matchRuleFromModel(expr)};`,
         ];
     }
 
-    public writeChoiceParseFn(name: string, alt: ALT, memo = false): Block {
+    public writeChoiceParseFn(name: string, sequence: model.MatchSequence, memo = false): Block {
         return [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
             memo
-                ? memoedBody(name, this.writeChoiceParseFnBody(name, alt))
-                : this.writeChoiceParseFnBody(name, alt),
+                ? memoedBody(name, this.writeChoiceParseFnBody(name, sequence))
+                : this.writeChoiceParseFnBody(name, sequence),
             "}",
         ];
     }
 
-    public getUnnamedTypes(alt: ALT): string[] {
-        const types: string[] = [];
-        for (const match of alt.matches) {
-            if (match.named)
-                continue;
-            const rn = matchType(match.rule);
-            types.push(rn);
-        }
-        return types;
-    }
+    public writeChoiceParseFnBody(name: string, sequence: model.MatchSequence): Block {
+        const namedTypes = getNamedTypesFromModel(sequence);
+        const type = sequence.getType();
 
-    public writeChoiceParseFnBody(name: string, alt: ALT): Block {
-        const namedTypes = getNamedTypes(alt);
-        if(isAlias(alt))
-            return this.writeRuleAliasFnBody(alt.matches[0].rule);
+        if (type === 'alias') {
+            return this.writeRuleAliasFnBody(sequence.matches[0].expression);
+        }
+
         return [
             `return this.run<${name}>($$dpth,`,
             [
@@ -336,10 +312,10 @@ export class Generator {
                     ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
                     `let $$res: Nullable<${name}> = null;`,
                     "if (true",
-                    this.writeParseIfStmt(alt),
+                    this.writeParseIfStmt(sequence),
                     ") {",
                     [
-                        hasAttrs(alt)
+                        type === 'class'
                             ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
                             : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
                     ],
@@ -393,14 +369,14 @@ export class Generator {
         return t;
     }
 
-    public writeRuleParseFns(ruledef: Ruledef): Block {
-        const nm = ruledef.name;
-        const nms: string[] = altNames(ruledef);
+    public writeRuleParseFns(rule: model.Rule): Block {
+        const nm = rule.name;
+        const nms = rule.definition.alternatives.map(alt => alt.name);
 
         if(this.boundedRecRules.has(nm)) {
             if(nms.length === 1) {
                 // Only 1, skip the union
-                const body = this.writeChoiceParseFnBody(nms[0], ruledef.rule[0]);
+                const body = this.writeChoiceParseFnBody(nms[0], rule.definition.alternatives[0]);
                 if(nm !== nms[0])
                     throw `${nm} != ${nms[0]}`;
                 const fn = this.writeLeftRecRuleParseFn(nm, body);
@@ -410,15 +386,15 @@ export class Generator {
             const body = this.writeUnionParseBody(nm, nms);
             const fn = this.writeLeftRecRuleParseFn(nm, body);
             const choiceFns = flattenBlock(nms.map((name, i) =>
-                this.writeChoiceParseFn(name, ruledef.rule[i])));
+                this.writeChoiceParseFn(name, rule.definition.alternatives[i])));
 
             return [...fn, ...choiceFns];
         }
-        if(ruledef.rule.length <= 1)
-            return this.writeChoiceParseFn(nm, ruledef.rule[0], this.enableMemos);
+        if(rule.definition.alternatives.length <= 1)
+            return this.writeChoiceParseFn(nm, rule.definition.alternatives[0], this.enableMemos);
         const union = this.writeUnionParseFn(nm, nms, this.enableMemos);
         const choiceFns = flattenBlock(
-            nms.map((name, i) => this.writeChoiceParseFn(name, ruledef.rule[i])));
+            nms.map((name, i) => this.writeChoiceParseFn(name, rule.definition.alternatives[i])));
         return [...union, ...choiceFns];
     }
 
@@ -440,11 +416,12 @@ export class Generator {
         ];
     }
 
-    public writeAllRuleParseFns(gram: Grammar): Block {
+    public writeAllRuleParseFns(): Block {
+        const rules = this.getExpandedRules();
         const fns: Block = [];
-        for (const ruledef of gram)
-            fns.push(...this.writeRuleParseFns(ruledef));
-        const S: string = gram[0].name;
+        for (const rule of rules)
+            fns.push(...this.writeRuleParseFns(rule));
+        const S: string = rules[0].name;
         return [...fns,
             "public test(): boolean {",
             [
@@ -474,9 +451,8 @@ export class Generator {
         ];
     }
 
-    public writeParseResultClass(gram: Grammar): Block {
-        const head = gram[0];
-        const startname = head.name;
+    public writeParseResultClass(): Block {
+        const startname = this.model.rules[0].name;
         return ["export interface ParseResult {",
             [
                 `ast: Nullable<${startname}>;`,
@@ -502,9 +478,9 @@ export class Generator {
             kinds: this.writeKinds(),
             regexFlags: this.regexFlags,
             ruleClasses: this.writeRuleClasses(),
-            ruleParseFns: this.writeAllRuleParseFns(this.expandedGram),
-            parseResult: this.writeParseResultClass(this.expandedGram),
-            usesEOF: usesEOF(this.expandedGram),
+            ruleParseFns: this.writeAllRuleParseFns(),
+            parseResult: this.writeParseResultClass(),
+            usesEOF: this.usesEOFInModel(),
             eofType: this.erasableSyntax ? this.astKindsType("$EOF") : `ASTKinds.$EOF`,
             includeGrammar: this.includeGrammar,
         });
