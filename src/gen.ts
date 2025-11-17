@@ -1,6 +1,6 @@
 import { GRAM, Parser, PosInfo, SyntaxErr }  from "./parser.gen";
 import { expandTemplate } from "./template";
-import { Block, Grammar, Ruledef, flattenBlock, writeBlock } from "./util";
+import { Block, Grammar, flattenBlock, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoKeywords, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchTypeFromModel } from "./types";
 import { extractRules, matchRuleFromModel } from "./rules";
@@ -173,10 +173,11 @@ export class Generator {
         ];
     }
 
-    private memoRules(): Ruledef[] {
+    private memoRules(): model.Rule[] {
+        const allRules = this.getExpandedRules();
         return this.enableMemos
-            ? this.expandedGram
-            : this.expandedGram
+            ? allRules
+            : allRules
                 .filter(rule => this.boundedRecRules.has(rule.name));
     }
 
@@ -465,7 +466,7 @@ export class Generator {
     public generate(): string {
         // TODO Support throwing more checks than one.
         for (const checker of this.checkers) {
-            const err = checker.Check(this.expandedGram, this.input);
+            const err = checker.Check(this.model, this.input);
             if (err)
                 throw err;
         }

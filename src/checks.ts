@@ -1,5 +1,6 @@
-import { ASTKinds, PosInfo } from "./parser.gen";
-import { Grammar, altNames } from "./util";
+import { PosInfo } from "./parser.gen";
+import * as model from './model';
+import { SimpleVisitor } from "./simplevisitor";
 
 // TODO Support returning multiple CheckErrors
 
@@ -14,47 +15,76 @@ export class CheckError extends Error {
 }
 
 export interface Checker {
-    Check(g: Grammar, input: string): CheckError | null;
+    Check(g: model.Grammar, input: string): CheckError | null;
 }
 
 const bannedNames: Set<string> = new Set(['kind']);
-export const BannedNamesChecker: Checker = {
-    Check: (g: Grammar): CheckError | null => {
-        for(const ruledef of g) {
-            for(const alt of ruledef.rule) {
-                for(const matchspec of alt.matches) {
-                    if(!matchspec.named)
-                        continue;
-                    if(bannedNames.has(matchspec.named.name))
-                        return new CheckError(`'${matchspec.named.name}' is not` +
-                            ' an allowed match name', matchspec.named.start);
-                }
-            }
+
+class BannedNamesVisitor extends SimpleVisitor {
+    private error: CheckError | null = null;
+
+    public getError(): CheckError | null {
+        return this.error;
+    }
+
+    visitMatchSpec(spec: model.MatchSpec): void {
+        if (spec.name && bannedNames.has(spec.name)) {
+            this.error = new CheckError(`'${spec.name}' is not an allowed match name`);
         }
-        return null;
+    }
+}
+
+export const BannedNamesChecker: Checker = {
+    Check: (g: model.Grammar): CheckError | null => {
+        const visitor = new BannedNamesVisitor();
+        g.accept(visitor);
+        return visitor.getError();
     },
 };
 
+class RuleNameCollectorVisitor extends SimpleVisitor {
+    public ruleNames: Set<string> = new Set();
+
+    visitRule(rule: model.Rule): void {
+        this.ruleNames.add(rule.name);
+        // Also visit sub-expressions which are effectively rules
+        super.visitRule(rule);
+    }
+
+    visitSubExpression(expr: model.SubExpression): void {
+        this.ruleNames.add(expr.name);
+        super.visitSubExpression(expr);
+    }
+}
+
+class RuleReferenceCheckerVisitor extends SimpleVisitor {
+    private error: CheckError | null = null;
+
+    constructor(private ruleNames: Set<string>) {
+        super();
+    }
+
+    public getError(): CheckError | null {
+        return this.error;
+    }
+
+    visitRuleReference(expr: model.RuleReference): void {
+        if (!this.ruleNames.has(expr.name)) {
+            this.error = new CheckError(`'Rule '${expr.name}' is not defined`, expr.pos);
+        }
+    }
+}
+
 // Check that all referenced rule name exist
 export const RulesExistChecker: Checker = {
-    Check: (g: Grammar): CheckError | null => {
-        const ruleNames: Set<string> = new Set();
-        for(const ruledef of g)
-            ruleNames.add(ruledef.name);
-        for(const ruledef of g) {
-            for(const alt of ruledef.rule) {
-                for(const match of alt.matches) {
-                    if(match.rule.kind === ASTKinds.SPECIAL)
-                        continue;
-                    const at = match.rule.pre.at;
-                    if(at.kind !== ASTKinds.ATOM_1)
-                        continue;
-                    if(!ruleNames.has(at.name))
-                        return new CheckError(`'Rule '${at.name}' is not defined`, at.start);
-                }
-            }
-        }
-        return null;
+    Check: (g: model.Grammar): CheckError | null => {
+        const nameCollector = new RuleNameCollectorVisitor();
+        g.accept(nameCollector);
+
+        const referenceChecker = new RuleReferenceCheckerVisitor(nameCollector.ruleNames);
+        g.accept(referenceChecker);
+
+        return referenceChecker.getError();
     },
 };
 
@@ -73,25 +103,60 @@ function ruleCollisionNameErr(ruleName: string) : CheckError {
     return new CheckError(`Rule "${baseRule}" declared with >= ${index} alternatives and rule "${ruleName}" should not both be declared`);
 }
 
-export const NoRuleNameCollisionChecker: Checker = {
-    Check: (g: Grammar): CheckError | null => {
-        const seen: Set<string> = new Set();
-        for(const ruledef of g) {
-            if(seen.has(ruledef.name))
-                return ruleCollisionNameErr(ruledef.name);
+class NameCollisionVisitor extends SimpleVisitor {
+    private seen = new Set<string>();
+    private error: CheckError | null = null;
 
-            // Stop after adding ruledef.name if === 1 alternative
-            // as altNames(ruledef) will only contain ruledef.name
-            seen.add(ruledef.name);
-            if(ruledef.rule.length === 1)
-                continue;
-            for(const name of altNames(ruledef)) {
-                if(seen.has(name))
-                    return ruleCollisionNameErr(ruledef.name);
-                seen.add(name);
+    public getError(): CheckError | null {
+        return this.error;
+    }
+
+    visitRule(rule: model.Rule): void {
+        if (this.error) return;
+
+        if (rule.definition.alternatives.length > 1) {
+            if (this.seen.has(rule.name)) {
+                this.error = ruleCollisionNameErr(rule.name);
+                return;
             }
+            this.seen.add(rule.name);
+            super.visitRule(rule);
+        } else {
+            rule.definition.accept(this);
         }
-        return null;
+    }
+
+    visitMatchSequence(sequence: model.MatchSequence): void {
+        if (this.error) return;
+        if (this.seen.has(sequence.name)) {
+            this.error = ruleCollisionNameErr(sequence.name);
+            return;
+        }
+        this.seen.add(sequence.name);
+        super.visitMatchSequence(sequence);
+    }
+    
+    visitSubExpression(expr: model.SubExpression): void {
+        if (this.error) return;
+
+        if (expr.disjunction.alternatives.length > 1) {
+            if (this.seen.has(expr.name)) {
+                this.error = ruleCollisionNameErr(expr.name);
+                return;
+            }
+            this.seen.add(expr.name);
+            super.visitSubExpression(expr);
+        } else {
+            expr.disjunction.accept(this);
+        }
+    }
+}
+
+export const NoRuleNameCollisionChecker: Checker = {
+    Check: (g: model.Grammar): CheckError | null => {
+        const visitor = new NameCollisionVisitor();
+        g.accept(visitor);
+        return visitor.getError();
     },
 };
 
@@ -107,13 +172,25 @@ const keywords: string[] = [
     "require", "number", "set", "string", "symbol", "type", "from", "of",
     "object",
 ];
-export const NoKeywords: Checker = {
-    Check: (g: Grammar): CheckError | null => {
-        for(const ruledef of g){
-            if(keywords.includes(ruledef.name)){
-                return new CheckError(`Rule name "${ruledef.name}" is a reserved Typescript keyword`, ruledef.pos);
-            }
+class NoKeywordsVisitor extends SimpleVisitor {
+    private error: CheckError | null = null;
+
+    public getError(): CheckError | null {
+        return this.error;
+    }
+
+    visitRule(rule: model.Rule): void {
+        if (keywords.includes(rule.name)) {
+            this.error = new CheckError(`Rule name "${rule.name}" is a reserved Typescript keyword`, rule.pos);
         }
-        return null;
+        // Don't descend, we only care about top-level rule names
+    }
+}
+
+export const NoKeywords: Checker = {
+    Check: (g: model.Grammar): CheckError | null => {
+        const visitor = new NoKeywordsVisitor();
+        g.accept(visitor);
+        return visitor.getError();
     },
 };
