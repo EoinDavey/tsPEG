@@ -1,9 +1,9 @@
-import { GRAM, Parser, PosInfo, SyntaxErr }  from "./parser.gen";
+import { Parser, PosInfo, SyntaxErr }  from "./parser.gen";
 import { expandTemplate } from "./template";
-import { Block, Grammar, flattenBlock, writeBlock } from "./util";
+import { Block, flattenBlock, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoKeywords, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchTypeFromModel } from "./types";
-import { extractRules, matchRuleFromModel } from "./rules";
+import { matchRuleFromModel } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 import { ModelBuilder } from './builder';
 import * as model from "./model";
@@ -19,7 +19,6 @@ function addScope(id: string): string {
 function memoName(id: string): string {
     return addScope(id + "$memo");
 }
-
 
 /**
  * Extracts the name and TypeScript type of all named matches in a MatchSequence.
@@ -71,11 +70,7 @@ export class SyntaxErrs {
 }
 
 export class Generator {
-    // expandedGram is the grammar with all subrules expanded into their own Ruledefs
-    public expandedGram: Grammar;
-    // unexpandedGram is the grammar with no subrules expanded.
-    public unexpandedGram: Grammar;
-    private readonly model: model.Grammar;
+    public readonly model: model.Grammar;
     // Whether to use strings or numbers for AST kinds
     private numEnums: boolean;
     // Whether to use an enum or a union of string/number constants for AST kinds
@@ -104,14 +99,6 @@ export class Generator {
             throw new SyntaxErrs(res.errs);
         if (!res.ast)
             throw new Error("No AST found");
-        this.expandedGram = this.astToExpandedGram(res.ast);
-        this.unexpandedGram = res.ast.rules.map(def => {
-            return {
-                name: def.name,
-                rule: def.rule.list,
-                pos: def.namestart,
-            };
-        });
         this.header = res.ast.header?.content ?? null;
         const modelBuilder = new ModelBuilder(this.input);
         this.model = modelBuilder.build(res.ast);
@@ -120,11 +107,6 @@ export class Generator {
             this.astKinds.push("$EOF");
         this.boundedRecRules = getRulesToMarkForBoundedRecursion(this.model);
         this.astKindsByName = buildAstKindsByName(this.astKinds, this.numEnums);
-    }
-
-    private astToExpandedGram(g: GRAM): Grammar {
-        const gram = g.rules.map(def => extractRules(def.rule.list, def.name, def.namestart));
-        return gram.reduce((x, y) => x.concat(y));
     }
 
     public addChecker(c: Checker): this {
