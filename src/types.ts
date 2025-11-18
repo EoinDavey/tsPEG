@@ -1,12 +1,12 @@
 import * as model from "./model";
 
-export function matchTypeFromModel(m: model.MatchExpression): string {
+export function matchType(m: model.MatchExpression): string {
     switch (m.kind) {
         case model.MatchExpressionKind.PrefixExpression:
-            return preTypeFromModel(m);
+            return preType(m);
         case model.MatchExpressionKind.PostfixExpression:
         {
-            const innerType = matchTypeFromModel(m.expression);
+            const innerType = matchType(m.expression);
             if (m.op.kind === model.PostfixOpKind.Range) {
                 return `${innerType}[]`;
             }
@@ -19,18 +19,18 @@ export function matchTypeFromModel(m: model.MatchExpression): string {
             return `${innerType}[]`; // Star
         }
         default:
-            return atomTypeFromModel(m);
+            return atomType(m);
     }
 }
 
-export function preTypeFromModel(m: model.PrefixExpression): string {
+export function preType(m: model.PrefixExpression): string {
     if (m.operator === '!') {
         return "boolean";
     }
-    return matchTypeFromModel(m.expression);
+    return matchType(m.expression);
 }
 
-export function atomTypeFromModel(m: model.MatchExpression): string {
+export function atomType(m: model.MatchExpression): string {
     switch (m.kind) {
         case model.MatchExpressionKind.RuleReference:
             return m.name;

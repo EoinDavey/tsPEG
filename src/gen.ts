@@ -2,8 +2,8 @@ import { Parser, PosInfo, SyntaxErr }  from "./parser.gen";
 import { expandTemplate } from "./template";
 import { Block, flattenBlock, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoKeywords, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
-import { matchTypeFromModel } from "./types";
-import { matchRuleFromModel } from "./rules";
+import { matchType } from "./types";
+import { matchRule } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 import { ModelBuilder } from './builder';
 import * as model from "./model";
@@ -32,7 +32,7 @@ function getNamedTypesFromModel(sequence: model.MatchSequence): [string, string]
         if (match.name === null) {
             continue;
         }
-        const type = matchTypeFromModel(match.expression);
+        const type = matchType(match.expression);
         types.push([match.name, type]);
     }
     return types;
@@ -181,7 +181,7 @@ export class Generator {
         const type = sequence.getType();
 
         if (type === 'alias') {
-            const expressionType = matchTypeFromModel(sequence.matches[0].expression);
+            const expressionType = matchType(sequence.matches[0].expression);
             return [`export type ${name} = ${expressionType};`];
         }
 
@@ -241,7 +241,7 @@ export class Generator {
         const checks: string[] = [];
         for (const match of sequence.matches) {
             const expr = match.expression;
-            const rn = matchRuleFromModel(expr);
+            const rn = matchRule(expr);
             const isOptional = expr.kind === model.MatchExpressionKind.PostfixExpression &&
                                (expr as model.PostfixExpression).op.kind === model.PostfixOpKind.Optional;
 
@@ -266,7 +266,7 @@ export class Generator {
 
     public writeRuleAliasFnBody(expr: model.MatchExpression): Block {
         return [
-            `return ${matchRuleFromModel(expr)};`,
+            `return ${matchRule(expr)};`,
         ];
     }
 

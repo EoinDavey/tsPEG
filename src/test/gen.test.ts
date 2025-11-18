@@ -1,8 +1,8 @@
 import { parse } from "../parser.gen";
 import { Generator } from "../gen";
 import { writeBlock } from "../util";
-import { matchTypeFromModel } from "../types";
-import { matchRuleFromModel } from "../rules";
+import { matchType } from "../types";
+import { matchRule } from "../rules";
 
 describe("Parser Test", () => {
     interface TestCase { inp: string, expmatches?: string[];  }
@@ -180,10 +180,10 @@ describe("match type/rule test", () => {
             const gen = new Generator(inp);
             const expression = gen.model.rules[0].definition.alternatives[0].matches[0].expression;
 
-            const gotType = matchTypeFromModel(expression);
+            const gotType = matchType(expression);
             expect(gotType).toEqual(tc.expType);
             if(tc.expRule) {
-                const gotRule = matchRuleFromModel(expression);
+                const gotRule = matchRule(expression);
                 expect(gotRule).toEqual(tc.expRule);
             }
         });
@@ -198,8 +198,8 @@ describe("subrule type/rule test", () => {
     const gen = new Generator(inp);
     const subExpr = gen.model.rules[0].definition.alternatives[0].matches[1].expression;
 
-    expect(matchTypeFromModel(subExpr)).toEqual(expectedType);
-    expect(matchRuleFromModel(subExpr)).toEqual(expectedRule);
+    expect(matchType(subExpr)).toEqual(expectedType);
+    expect(matchRule(subExpr)).toEqual(expectedRule);
 });
 
 describe("writeKinds test", () => {
