@@ -1,8 +1,8 @@
-import { MATCH, Parser, parse } from "../parser.gen";
+import { parse } from "../parser.gen";
 import { Generator } from "../gen";
 import { writeBlock } from "../util";
-import { matchType, matchTypeFromModel } from "../types";
-import { extractRules, matchRule, matchRuleFromModel } from "../rules";
+import { matchTypeFromModel } from "../types";
+import { matchRuleFromModel } from "../rules";
 
 describe("Parser Test", () => {
     interface TestCase { inp: string, expmatches?: string[];  }
@@ -108,42 +108,7 @@ describe("Parser Test", () => {
     }
 });
 
-describe("extractRule test", () => {
-    interface TestCase { inp: string, rulenames: string[];  }
-    const tcs : TestCase[] = [
-        {
-            inp: "rule := 'a'",
-            rulenames: ["rule"],
-        },
-        {
-            inp: "rule_one := 'a' ruletwo := 'b' rule_____three := 'c'",
-            rulenames: ["rule_one", "ruletwo", "rule_____three"],
-        },
-        {
-            inp: "rule := { 'subrule' }?",
-            rulenames: ["rule", "rule_$0"],
-        },
-        {
-            inp: "rule := { 'subrule1' }? { 'subrule' | 'two' }+",
-            rulenames: ["rule", "rule_$0", "rule_$1"],
-        },
-        {
-            inp: "rule := { sub rule { subsub rule 'zero' } { subsubrule_one }? } { sub rule 'two' @ { sub sub rule } }",
-            rulenames: ["rule", "rule_$0", "rule_$0_$0", "rule_$0_$1", "rule_$1", "rule_$1_$0"],
-        },
-    ];
-    for(const tc of tcs) {
-        test(`inp: ${tc.inp}`, () => {
-            const res = parse(tc.inp);
-            expect(res.errs).toEqual([]);
-            expect(res.ast).not.toBeNull();
-            const names : string[] = res.ast!.rules.map(x => extractRules(x.rule.list, x.name))
-                .reduce((x, y) => x.concat(y))
-                .map(x => x.name);
-            expect(names.sort()).toEqual(tc.rulenames.sort());
-        });
-    }
-});
+
 
 describe("match type/rule test", () => {
     interface TestCase { match: string, expType: string, expRule?: string }
@@ -211,14 +176,14 @@ describe("match type/rule test", () => {
     ];
     for(const tc of tcs) {
         test(`match: ${tc.match}`, () => {
-            const p = new Parser(tc.match);
-            const res = p.matchMATCH(0);
-            expect(res).not.toBeNull();
-            const m : MATCH = res!;
-            const gotType = matchType(m);
+            const inp = `rule := ${tc.match}`;
+            const gen = new Generator(inp);
+            const expression = gen.model.rules[0].definition.alternatives[0].matches[0].expression;
+
+            const gotType = matchTypeFromModel(expression);
             expect(gotType).toEqual(tc.expType);
             if(tc.expRule) {
-                const gotRule = matchRule(m);
+                const gotRule = matchRuleFromModel(expression);
                 expect(gotRule).toEqual(tc.expRule);
             }
         });
