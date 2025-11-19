@@ -7,7 +7,7 @@ import { matchRule } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 import { ModelBuilder } from './builder';
 import * as model from "./model";
-import { ExpansionVisitor } from "./expansion";
+import { ExpansionVisitor } from "./expansionvisitor";
 import { SimpleVisitor } from "./simplevisitor";
 
 // addScope adds a prefix that uses illegal characters to
