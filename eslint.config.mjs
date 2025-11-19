@@ -27,7 +27,12 @@ export default defineConfig([
             "no-loop-func": "error",
             "no-useless-concat": "error",
             "no-shadow": "error",
-
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {
+                    "argsIgnorePattern": "^_",
+                }
+            ],
             "space-infix-ops": "warn",
 
             "sort-imports": ["warn", {

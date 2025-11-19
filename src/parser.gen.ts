@@ -11,14 +11,12 @@
 * MATCH     := SPECIAL | POSTOP
 * SPECIAL   := op='@'
 * POSTOP    := pre=PREOP op={ op='\+|\*|\?' | RANGESPEC }?
-*             .optional = boolean { return this.op?.kind === ASTKinds.POSTOP_$0_1 && this.op.op === '?';}
 * PREOP     := start=@ op='\&|!'? at=ATOM
 * // Negative lookahead is used here to allow no requirement for semicolons
 * // to denote end of rule definition
 * ATOM      := start=@ name=NAME !'\s*:='
 *            | match=STRLIT
-*            | '{' _ sub=RULE _ '}'
-*               .name = string | null { return null; }
+*            | start=@ '{' _ sub=RULE _ '}'
 *            | EOF
 * EOF       := symb='\$'
 * ATTR      := _ '\.' name=NAME _ '=' _ type=TS_TYPE _ code=CODE_SECTION
@@ -224,18 +222,10 @@ export interface SPECIAL {
     kind: ASTKinds.SPECIAL;
     op: string;
 }
-export class POSTOP {
-    public kind: ASTKinds.POSTOP = ASTKinds.POSTOP;
-    public pre: PREOP;
-    public op: Nullable<POSTOP_$0>;
-    public optional: boolean;
-    constructor(pre: PREOP, op: Nullable<POSTOP_$0>){
-        this.pre = pre;
-        this.op = op;
-        this.optional = ((): boolean => {
-        return this.op?.kind === ASTKinds.POSTOP_$0_1 && this.op.op === '?';
-        })();
-    }
+export interface POSTOP {
+    kind: ASTKinds.POSTOP;
+    pre: PREOP;
+    op: Nullable<POSTOP_$0>;
 }
 export type POSTOP_$0 = POSTOP_$0_1 | POSTOP_$0_2;
 export interface POSTOP_$0_1 {
@@ -259,16 +249,10 @@ export interface ATOM_2 {
     kind: ASTKinds.ATOM_2;
     match: STRLIT;
 }
-export class ATOM_3 {
-    public kind: ASTKinds.ATOM_3 = ASTKinds.ATOM_3;
-    public sub: RULE;
-    public name: string | null;
-    constructor(sub: RULE){
-        this.sub = sub;
-        this.name = ((): string | null => {
-        return null;
-        })();
-    }
+export interface ATOM_3 {
+    kind: ASTKinds.ATOM_3;
+    start: PosInfo;
+    sub: RULE;
 }
 export type ATOM_4 = EOF;
 export interface EOF {
@@ -679,7 +663,7 @@ export class Parser {
                     && ($scope$pre = this.matchPREOP($$dpth + 1, $$cr)) !== null
                     && (($scope$op = this.matchPOSTOP_$0($$dpth + 1, $$cr)) || true)
                 ) {
-                    $$res = new POSTOP($scope$pre, $scope$op);
+                    $$res = {kind: ASTKinds.POSTOP, pre: $scope$pre, op: $scope$op};
                 }
                 return $$res;
             });
@@ -763,16 +747,18 @@ export class Parser {
     public matchATOM_3($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_3> {
         return this.run<ATOM_3>($$dpth,
             () => {
+                let $scope$start: Nullable<PosInfo>;
                 let $scope$sub: Nullable<RULE>;
                 let $$res: Nullable<ATOM_3> = null;
                 if (true
+                    && ($scope$start = this.mark()) !== null
                     && this.regexAccept(String.raw`(?:{)`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && ($scope$sub = this.matchRULE($$dpth + 1, $$cr)) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                     && this.regexAccept(String.raw`(?:})`, "", $$dpth + 1, $$cr) !== null
                 ) {
-                    $$res = new ATOM_3($scope$sub);
+                    $$res = {kind: ASTKinds.ATOM_3, start: $scope$start, sub: $scope$sub};
                 }
                 return $$res;
             });

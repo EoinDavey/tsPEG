@@ -1,37 +1,48 @@
-import { ASTKinds, ATOM, MATCH, PREOP } from "./parser.gen";
+import { MatchExpression, MatchExpressionKind, PostfixOpKind, PrefixExpression } from "./model";
 
-export function matchType(expr: MATCH): string {
-    // Check if special rule
-    if (expr.kind === ASTKinds.SPECIAL)
-        return "PosInfo";
-    if (expr.op === null)
-        return preType(expr.pre);
-    if (expr.op.kind === ASTKinds.RANGESPEC){
-        return `${preType(expr.pre)}[]`;
+export function matchType(m: MatchExpression): string {
+    switch (m.kind) {
+        case MatchExpressionKind.PrefixExpression:
+            return preType(m);
+        case MatchExpressionKind.PostfixExpression:
+        {
+            const innerType = matchType(m.expression);
+            if (m.op.kind === PostfixOpKind.Range) {
+                return `${innerType}[]`;
+            }
+            if (m.op.kind === PostfixOpKind.Optional) {
+                return `Nullable<${innerType}>`;
+            }
+            if (m.op.kind === PostfixOpKind.Plus) {
+                return `[${innerType}, ...${innerType}[]]`;
+            }
+            return `${innerType}[]`; // Star
+        }
+        default:
+            return atomType(m);
     }
-    if (expr.op.op === "?")
-        return `Nullable<${preType(expr.pre)}>`;
-    if (expr.op.op === '+')
-        return `[${preType(expr.pre)}, ...${preType(expr.pre)}[]]`;
-    return `${preType(expr.pre)}[]`;
 }
 
-export function preType(expr: PREOP): string {
-    if (expr.op && expr.op === "!") { // Negation types return null if matched, true otherwise
+export function preType(m: PrefixExpression): string {
+    if (m.operator === '!') {
         return "boolean";
     }
-    return atomType(expr.at);
+    return matchType(m.expression);
 }
 
-export function atomType(at: ATOM): string {
-    if (at.kind === ASTKinds.ATOM_1)
-        return at.name;
-    if (at.kind === ASTKinds.ATOM_2)
-        return "string";
-    if(at.kind === ASTKinds.EOF)
-        return '{kind: ASTKinds.$EOF}';
-    const subname = at.name;
-    if (subname)
-        return subname;
-    throw new Error("Unknown subrule");
+export function atomType(m: MatchExpression): string {
+    switch (m.kind) {
+        case MatchExpressionKind.RuleReference:
+            return m.name;
+        case MatchExpressionKind.RegexLiteral:
+            return "string";
+        case MatchExpressionKind.SubExpression:
+            return m.name;
+        case MatchExpressionKind.SpecialMatch:
+            return "PosInfo";
+        case MatchExpressionKind.EOFMatch:
+            return '{kind: ASTKinds.$EOF}';
+        default:
+            throw new Error(`Unknown atom type: ${m.kind}`);
+    }
 }

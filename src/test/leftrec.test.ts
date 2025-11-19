@@ -1,7 +1,16 @@
 import { parse } from "../parser.gen";
-import { Generator } from "../gen";
-import { getRuleFromGram } from "../util";
-import { disjointCycleSets, getRulesToMarkForBoundedRecursion, leftRecCycles, leftRecRules, nullableAtomSet, ruleIsNullableInCtx } from "../leftrec";
+import { ModelBuilder } from "../builder";
+import { disjointCycleSets, getNullableCache, getRulesToMarkForBoundedRecursion, leftRecCycles, leftRecRules } from "../leftrec";
+import { Grammar } from "../model";
+
+// Helper to build the model from a grammar string
+function buildModel(inp: string): Grammar {
+    const res = parse(inp);
+    expect(res.errs).toEqual([]);
+    expect(res.ast).not.toBeNull();
+    const builder = new ModelBuilder(inp);
+    return builder.build(res.ast!);
+}
 
 describe("test left recursion detection", () => {
     const tcs: {inp: string, hasLeftRec: boolean, cycles: string[][]}[] = [
@@ -79,21 +88,18 @@ describe("test left recursion detection", () => {
     ];
     for(const tc of tcs) {
         test(`inp: ${tc.inp}`, () => {
-            const res = parse(tc.inp);
-            expect(res.errs).toEqual([]);
-            expect(res.ast).not.toBeNull();
-            const g = new Generator(tc.inp);
-            const leftRecs = leftRecRules(g.unexpandedGram);
+            const model = buildModel(tc.inp);
+            const leftRecs = leftRecRules(model);
             expect(leftRecs.has("test")).toEqual(tc.hasLeftRec);
 
-            const atoms = nullableAtomSet(g.unexpandedGram);
-            const cycles = leftRecCycles(g.unexpandedGram, atoms);
+            const nullableCache = getNullableCache(model);
+            const cycles = leftRecCycles(model, nullableCache);
             expect(cycles.sort()).toEqual(tc.cycles.sort());
 
             // Ensure only one rule per cycle is marked
-            const marked = getRulesToMarkForBoundedRecursion(g.unexpandedGram);
+            const marked = getRulesToMarkForBoundedRecursion(model);
             for(const cyc of cycles) {
-                const cnt = cyc.filter(x => marked.has(x)).length;
+                const cnt = cyc.filter((x: string) => marked.has(x)).length;
                 expect(cnt).toEqual(1);
             }
         });
@@ -144,13 +150,10 @@ test("test nullable rule detection", () => {
         },
     ];
     for(const tc of tcs) {
-        const res = parse(tc.inp);
-        expect(res.errs).toEqual([]);
-        expect(res.ast).not.toBeNull();
-        const gram = new Generator(tc.inp).unexpandedGram;
-        const atoms = nullableAtomSet(gram);
-        for(const rule of tc.nullableRules)
-            expect(ruleIsNullableInCtx(getRuleFromGram(gram, rule)!.rule, atoms)).toEqual(true);
+        const model = buildModel(tc.inp);
+        const nullableCache = getNullableCache(model);
+        const nullableRuleNames = Array.from(nullableCache).filter((item): item is string => typeof item === 'string');
+        expect(nullableRuleNames.sort()).toEqual(tc.nullableRules.sort());
     }
 });
 
