@@ -1,19 +1,19 @@
-import * as model from "./model";
+import { MatchExpression, MatchExpressionKind, PostfixOpKind, PrefixExpression } from "./model";
 
-export function matchType(m: model.MatchExpression): string {
+export function matchType(m: MatchExpression): string {
     switch (m.kind) {
-        case model.MatchExpressionKind.PrefixExpression:
+        case MatchExpressionKind.PrefixExpression:
             return preType(m);
-        case model.MatchExpressionKind.PostfixExpression:
+        case MatchExpressionKind.PostfixExpression:
         {
             const innerType = matchType(m.expression);
-            if (m.op.kind === model.PostfixOpKind.Range) {
+            if (m.op.kind === PostfixOpKind.Range) {
                 return `${innerType}[]`;
             }
-            if (m.op.kind === model.PostfixOpKind.Optional) {
+            if (m.op.kind === PostfixOpKind.Optional) {
                 return `Nullable<${innerType}>`;
             }
-            if (m.op.kind === model.PostfixOpKind.Plus) {
+            if (m.op.kind === PostfixOpKind.Plus) {
                 return `[${innerType}, ...${innerType}[]]`;
             }
             return `${innerType}[]`; // Star
@@ -23,24 +23,24 @@ export function matchType(m: model.MatchExpression): string {
     }
 }
 
-export function preType(m: model.PrefixExpression): string {
+export function preType(m: PrefixExpression): string {
     if (m.operator === '!') {
         return "boolean";
     }
     return matchType(m.expression);
 }
 
-export function atomType(m: model.MatchExpression): string {
+export function atomType(m: MatchExpression): string {
     switch (m.kind) {
-        case model.MatchExpressionKind.RuleReference:
+        case MatchExpressionKind.RuleReference:
             return m.name;
-        case model.MatchExpressionKind.RegexLiteral:
+        case MatchExpressionKind.RegexLiteral:
             return "string";
-        case model.MatchExpressionKind.SubExpression:
+        case MatchExpressionKind.SubExpression:
             return m.name;
-        case model.MatchExpressionKind.SpecialMatch:
+        case MatchExpressionKind.SpecialMatch:
             return "PosInfo";
-        case model.MatchExpressionKind.EOFMatch:
+        case MatchExpressionKind.EOFMatch:
             return '{kind: ASTKinds.$EOF}';
         default:
             throw new Error(`Unknown atom type: ${m.kind}`);

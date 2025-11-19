@@ -6,7 +6,7 @@ import { matchType } from "./types";
 import { matchRule } from "./rules";
 import { getRulesToMarkForBoundedRecursion } from "./leftrec";
 import { ModelBuilder } from './builder';
-import * as model from "./model";
+import { EOFMatch, Grammar, MatchExpression, MatchExpressionKind, MatchSequence, PostfixExpression, PostfixOpKind, Rule } from "./model";
 import { ExpansionVisitor } from "./expansionvisitor";
 import { SimpleVisitor } from "./simplevisitor";
 
@@ -26,7 +26,7 @@ function memoName(id: string): string {
  * @param sequence The MatchSequence from the semantic model.
  * @returns An array of tuples, where each tuple is [matchName, typeAsString].
  */
-function getNamedTypesFromModel(sequence: model.MatchSequence): [string, string][] {
+function getNamedTypesFromModel(sequence: MatchSequence): [string, string][] {
     const types: [string, string][] = [];
     for (const match of sequence.matches) {
         if (match.name === null) {
@@ -70,7 +70,7 @@ export class SyntaxErrs {
 }
 
 export class Generator {
-    public readonly model: model.Grammar;
+    public readonly model: Grammar;
     // Whether to use strings or numbers for AST kinds
     private numEnums: boolean;
     // Whether to use an enum or a union of string/number constants for AST kinds
@@ -117,7 +117,7 @@ export class Generator {
     private usesEOFInModel(): boolean {
         const visitor = new class extends SimpleVisitor {
             public foundEOF = false;
-            visitEOFMatch(_expr: model.EOFMatch){
+            visitEOFMatch(_expr: EOFMatch){
                 this.foundEOF = true;
             }
         };
@@ -125,7 +125,7 @@ export class Generator {
         return visitor.foundEOF;
     }
 
-    private getExpandedRules(): model.Rule[] {
+    private getExpandedRules(): Rule[] {
         const visitor = new ExpansionVisitor();
         this.model.accept(visitor);
         return visitor.rules;
@@ -155,7 +155,7 @@ export class Generator {
         ];
     }
 
-    private memoRules(): model.Rule[] {
+    private memoRules(): Rule[] {
         const allRules = this.getExpandedRules();
         return this.enableMemos
             ? allRules
@@ -177,7 +177,7 @@ export class Generator {
         ];
     }
 
-    public writeChoice(name: string, sequence: model.MatchSequence): Block {
+    public writeChoice(name: string, sequence: MatchSequence): Block {
         const type = sequence.getType();
 
         if (type === 'alias') {
@@ -237,13 +237,13 @@ export class Generator {
         return allBlocks;
     }
 
-    public writeParseIfStmt(sequence: model.MatchSequence): Block {
+    public writeParseIfStmt(sequence: MatchSequence): Block {
         const checks: string[] = [];
         for (const match of sequence.matches) {
             const expr = match.expression;
             const rn = matchRule(expr);
-            const isOptional = expr.kind === model.MatchExpressionKind.PostfixExpression &&
-                               (expr as model.PostfixExpression).op.kind === model.PostfixOpKind.Optional;
+            const isOptional = expr.kind === MatchExpressionKind.PostfixExpression &&
+                               (expr as PostfixExpression).op.kind === PostfixOpKind.Optional;
 
             if (match.name) {
                 // Optional match
@@ -264,13 +264,13 @@ export class Generator {
         return checks;
     }
 
-    public writeRuleAliasFnBody(expr: model.MatchExpression): Block {
+    public writeRuleAliasFnBody(expr: MatchExpression): Block {
         return [
             `return ${matchRule(expr)};`,
         ];
     }
 
-    public writeChoiceParseFn(name: string, sequence: model.MatchSequence, memo = false): Block {
+    public writeChoiceParseFn(name: string, sequence: MatchSequence, memo = false): Block {
         return [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
             memo
                 ? memoedBody(name, this.writeChoiceParseFnBody(name, sequence))
@@ -279,7 +279,7 @@ export class Generator {
         ];
     }
 
-    public writeChoiceParseFnBody(name: string, sequence: model.MatchSequence): Block {
+    public writeChoiceParseFnBody(name: string, sequence: MatchSequence): Block {
         const namedTypes = getNamedTypesFromModel(sequence);
         const type = sequence.getType();
 
@@ -352,7 +352,7 @@ export class Generator {
         return t;
     }
 
-    public writeRuleParseFns(rule: model.Rule): Block {
+    public writeRuleParseFns(rule: Rule): Block {
         const nm = rule.name;
         const nms = rule.definition.alternatives.map(alt => alt.name);
 

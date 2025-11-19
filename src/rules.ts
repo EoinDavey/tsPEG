@@ -1,34 +1,34 @@
 import { matchType } from "./types";
 import { assertValidRegex, escapeBackticks } from "./util";
-import * as model from "./model";
+import { MatchExpression, MatchExpressionKind, PostfixOpKind } from "./model";
 
-export function matchRule(expr: model.MatchExpression): string {
+export function matchRule(expr: MatchExpression): string {
     switch (expr.kind) {
-        case model.MatchExpressionKind.SpecialMatch:
+        case MatchExpressionKind.SpecialMatch:
             return "this.mark()";
-        case model.MatchExpressionKind.PostfixExpression: {
+        case MatchExpressionKind.PostfixExpression: {
             const innerRule = preRule(expr.expression);
             switch (expr.op.kind) {
-                case model.PostfixOpKind.Range:
+                case PostfixOpKind.Range:
                     return `this.loop<${matchType(expr.expression)}>(() => ${innerRule}, ${expr.op.min}, ${expr.op.max ?? -1})`;
-                case model.PostfixOpKind.Star:
+                case PostfixOpKind.Star:
                     return `this.loop<${matchType(expr.expression)}>(() => ${innerRule}, 0, -1)`;
-                case model.PostfixOpKind.Plus:
+                case PostfixOpKind.Plus:
                     return `this.loopPlus<${matchType(expr.expression)}>(() => ${innerRule})`;
-                case model.PostfixOpKind.Optional:
+                case PostfixOpKind.Optional:
                     return innerRule; // Optionality handled by type system, no change in rule generation
             }
             break;
         }
-        case model.MatchExpressionKind.PrefixExpression:
+        case MatchExpressionKind.PrefixExpression:
             return preRule(expr);
         default:
             return atomRule(expr);
     }
 }
 
-export function preRule(expr: model.MatchExpression): string {
-    if (expr.kind === model.MatchExpressionKind.PrefixExpression) {
+export function preRule(expr: MatchExpression): string {
+    if (expr.kind === MatchExpressionKind.PrefixExpression) {
         if (expr.operator === "&")
             return `this.noConsume<${matchType(expr.expression)}>(() => ${atomRule(expr.expression)})`;
         if (expr.operator === "!")
@@ -37,20 +37,20 @@ export function preRule(expr: model.MatchExpression): string {
     return atomRule(expr);
 }
 
-export function atomRule(expr: model.MatchExpression): string {
+export function atomRule(expr: MatchExpression): string {
     switch (expr.kind) {
-        case model.MatchExpressionKind.RuleReference:
+        case MatchExpressionKind.RuleReference:
             return `this.match${expr.name}($$dpth + 1, $$cr)`;
-        case model.MatchExpressionKind.EOFMatch:
+        case MatchExpressionKind.EOFMatch:
             return 'this.match$EOF($$cr)';
-        case model.MatchExpressionKind.RegexLiteral: {
+        case MatchExpressionKind.RegexLiteral: {
             assertValidRegex(expr.value);
             const reg = "(?:" + expr.value + ")";
             return `this.regexAccept(String.raw\`${escapeBackticks(reg)}\`, "${expr.mods}", $$dpth + 1, $$cr)`;
         }
-        case model.MatchExpressionKind.SubExpression:
+        case MatchExpressionKind.SubExpression:
             return `this.match${expr.name}($$dpth + 1, $$cr)`;
-        case model.MatchExpressionKind.SpecialMatch:
+        case MatchExpressionKind.SpecialMatch:
             return `this.mark()`;
         default:
             throw new Error(`Unknown atom rule type: ${expr.kind}`);
