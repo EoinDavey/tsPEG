@@ -1,6 +1,9 @@
 import * as ast from './parser.gen';
 import * as model from './model';
 
+// Note: The naming algorithm here is obtuse, but it is like this for backwards
+// compatibility. If a decision is taken to create a new major version of
+// tsPEG, this should be cleaned up.
 export class ModelBuilder {
     private input: string;
 
