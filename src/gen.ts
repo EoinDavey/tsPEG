@@ -9,6 +9,19 @@ import { ModelBuilder } from './builder';
 import { EOFMatch, Grammar, MatchExpression, MatchExpressionKind, MatchSequence, PostfixExpression, PostfixOpKind, Rule } from "./model";
 import { ExpansionVisitor } from "./expansionvisitor";
 import { SimpleVisitor } from "./simplevisitor";
+import * as ts from 'typescript';
+import {
+    createEnumDeclaration,
+    createEnumMember,
+    createLiteralTypeNode,
+    createNumericLiteral,
+    createPropertyAssignment,
+    createStringLiteral,
+    createTypeAliasDeclaration,
+    createUnionTypeNode,
+    printNode,
+    printNodes,
+} from "./codegen";
 
 // addScope adds a prefix that uses illegal characters to
 // ensure namespace separation wrt generated vs user supplied IDs
@@ -131,28 +144,57 @@ export class Generator {
         return visitor.rules;
     }
 
-    public writeKinds(): Block {
+    public writeKinds(): ts.Statement[] {
+        const astKindsStatements: ts.Statement[] = [];
+        const kindMembers: ts.EnumMember[] = [];
+        const typeUnionMembers: ts.TypeNode[] = [];
+        const kindProperties: ts.PropertyAssignment[] = [];
+
+        this.astKinds.forEach((kind, index) => {
+            if (this.numEnums) {
+                kindMembers.push(createEnumMember(kind, createNumericLiteral(index)));
+                typeUnionMembers.push(createLiteralTypeNode(createNumericLiteral(index)));
+                kindProperties.push(createPropertyAssignment(kind, createNumericLiteral(index)));
+            } else {
+                kindMembers.push(createEnumMember(kind, createStringLiteral(kind)));
+                typeUnionMembers.push(createLiteralTypeNode(createStringLiteral(kind)));
+                kindProperties.push(createPropertyAssignment(kind, createStringLiteral(kind)));
+            }
+        });
+
         if (this.erasableSyntax) {
-            return [
-                "export const ASTKinds = {",
-                this.numEnums
-                    ? this.astKinds.map((x, i) => `${x}: ${i},`)
-                    : this.astKinds.map(x => `${x}: "${x}",`),
-                "} as const",
-                "export type ASTKinds = ",
-                this.numEnums
-                    ? this.astKinds.map((x, i) => `| ${i}`)
-                    : this.astKinds.map(x => `| "${x}"`),
-                ";",
-            ];
+            astKindsStatements.push(
+                ts.factory.createVariableStatement(
+                    [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+                    ts.factory.createVariableDeclarationList(
+                        [ts.factory.createVariableDeclaration(
+                            "ASTKinds",
+                            undefined,
+                            undefined,
+                            ts.factory.createAsExpression(
+                                ts.factory.createObjectLiteralExpression(kindProperties, true),
+                                ts.factory.createTypeReferenceNode("const"),
+                            ),
+                        )],
+                        ts.NodeFlags.Const,
+                    ),
+                ),
+                createTypeAliasDeclaration(
+                    "ASTKinds",
+                    createUnionTypeNode(typeUnionMembers),
+                    [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+                ),
+            );
+        } else {
+            astKindsStatements.push(
+                createEnumDeclaration(
+                    "ASTKinds",
+                    kindMembers,
+                    [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+                ),
+            );
         }
-        return [
-            "export enum ASTKinds {",
-            this.numEnums
-                ? this.astKinds.map(x => `${x},`)
-                : this.astKinds.map(x => `${x} = "${x}",`),
-            "}",
-        ];
+        return astKindsStatements;
     }
 
     private memoRules(): Rule[] {
@@ -248,16 +290,16 @@ export class Generator {
             if (match.name) {
                 // Optional match
                 if (isOptional) {
-                    checks.push(`&& ((${addScope(match.name)} = ${rn}) || true)`);
+                    checks.push(`&& ((${addScope(match.name)} = ${printNode(rn)}) || true)`);
                 } else {
-                    checks.push(`&& (${addScope(match.name)} = ${rn}) !== null`);
+                    checks.push(`&& (${addScope(match.name)} = ${printNode(rn)}) !== null`);
                 }
             } else {
                 // Optional match
                 if (isOptional) {
-                    checks.push(`&& ((${rn}) || true)`);
+                    checks.push(`&& ((${printNode(rn)}) || true)`);
                 } else {
-                    checks.push(`&& ${rn} !== null`);
+                    checks.push(`&& ${printNode(rn)} !== null`);
                 }
             }
         }
@@ -266,7 +308,7 @@ export class Generator {
 
     public writeRuleAliasFnBody(expr: MatchExpression): Block {
         return [
-            `return ${matchRule(expr)};`,
+            `return ${printNode(matchRule(expr))};`,
         ];
     }
 
@@ -458,7 +500,7 @@ export class Generator {
             header: hdr,
             memos: this.writeMemos(),
             memoClearFn: this.writeMemoClearFn(),
-            kinds: this.writeKinds(),
+            kinds: [printNodes(this.writeKinds())],
             regexFlags: this.regexFlags,
             ruleClasses: this.writeRuleClasses(),
             ruleParseFns: this.writeAllRuleParseFns(),

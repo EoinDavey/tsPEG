@@ -35,8 +35,9 @@ export enum ASTKinds {
     E4_2 = "E4_2",
     ATOM_1 = "ATOM_1",
     ATOM_2 = "ATOM_2",
-    INT = "INT",
+    INT = "INT"
 }
+
 export type E0 = E0_1 | E0_2;
 export class E0_1 {
     public kind: ASTKinds.E0_1 = ASTKinds.E0_1;
@@ -207,7 +208,7 @@ export class Parser {
                 let $$res: Nullable<E0_1> = null;
                 if (true
                     && ($scope$a = this.matchE1($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:a|b)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw `(?:a|b)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$b = this.matchE0($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new E0_1($scope$a, $scope$op, $scope$b);
@@ -238,7 +239,7 @@ export class Parser {
                 let $$res: Nullable<E1_1> = null;
                 if (true
                     && ($scope$a = this.matchE2($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:c|d)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw `(?:c|d)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$b = this.matchE1($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new E1_1($scope$a, $scope$op, $scope$b);
@@ -269,7 +270,7 @@ export class Parser {
                 let $$res: Nullable<E2_1> = null;
                 if (true
                     && ($scope$a = this.matchE3($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:e|f)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw `(?:e|f)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$b = this.matchE2($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new E2_1($scope$a, $scope$op, $scope$b);
@@ -300,7 +301,7 @@ export class Parser {
                 let $$res: Nullable<E3_1> = null;
                 if (true
                     && ($scope$a = this.matchE4($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:g|h)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw `(?:g|h)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$b = this.matchE3($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new E3_1($scope$a, $scope$op, $scope$b);
@@ -331,7 +332,7 @@ export class Parser {
                 let $$res: Nullable<E4_1> = null;
                 if (true
                     && ($scope$a = this.matchATOM($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:i|j)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw `(?:i|j)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$b = this.matchE4($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new E4_1($scope$a, $scope$op, $scope$b);
@@ -372,9 +373,9 @@ export class Parser {
                 let $scope$val: Nullable<E0>;
                 let $$res: Nullable<ATOM_2> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && ($scope$val = this.matchE0($$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = new ATOM_2($scope$val);
                 }
@@ -389,7 +390,7 @@ export class Parser {
                         let $scope$val: Nullable<string>;
                         let $$res: Nullable<INT> = null;
                         if (true
-                            && ($scope$val = this.regexAccept(String.raw`(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
+                            && ($scope$val = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
                         ) {
                             $$res = new INT($scope$val);
                         }

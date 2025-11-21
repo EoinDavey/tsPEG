@@ -12,8 +12,9 @@ export interface ASTNodeIntf {
 }
 export enum ASTKinds {
     A = "A",
-    B = "B",
+    B = "B"
 }
+
 export class A {
     public kind: ASTKinds.A = ASTKinds.A;
     public value: string;
@@ -54,7 +55,7 @@ export class Parser {
             () => {
                 let $$res: Nullable<A> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:match something)`, "", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:match something)`, "", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = new A();
                 }

@@ -10,8 +10,9 @@ export interface ASTNodeIntf {
 }
 export enum ASTKinds {
     RULE = "RULE",
-    $EOF = "$EOF",
+    $EOF = "$EOF"
 }
+
 export interface RULE {
     kind: ASTKinds.RULE;
 }
@@ -37,7 +38,7 @@ export class Parser {
             () => {
                 let $$res: Nullable<RULE> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:abcde)`, "", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:abcde)`, "", $$dpth + 1, $$cr) !== null
                     && this.match$EOF($$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.RULE, };

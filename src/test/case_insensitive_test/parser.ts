@@ -9,8 +9,9 @@ export interface ASTNodeIntf {
 }
 export enum ASTKinds {
     start = "start",
-    $EOF = "$EOF",
+    $EOF = "$EOF"
 }
+
 export interface start {
     kind: ASTKinds.start;
 }
@@ -36,9 +37,9 @@ export class Parser {
             () => {
                 let $$res: Nullable<start> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:SELECT)`, "i", $$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\s*)`, "", $$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:FROM)`, "i", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:SELECT)`, "i", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:FROM)`, "i", $$dpth + 1, $$cr) !== null
                     && this.match$EOF($$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.start, };

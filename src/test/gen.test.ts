@@ -3,6 +3,7 @@ import { Generator } from "../gen";
 import { writeBlock } from "../util";
 import { matchType } from "../types";
 import { matchRule } from "../rules";
+import { printNode, printNodes } from "../codegen";
 
 describe("Parser Test", () => {
     interface TestCase { inp: string, expmatches?: string[];  }
@@ -156,17 +157,17 @@ describe("match type/rule test", () => {
         {
             match: "'regex'",
             expType: "string",
-            expRule: "this.regexAccept(String.raw`(?:regex)`, \"\", $$dpth + 1, $$cr)",
+            expRule: "this.regexAccept(String.raw `(?:regex)`, \"\", $$dpth + 1, $$cr)",
         },
         {
             match: "'regex'+",
             expType: "[string, ...string[]]",
-            expRule: "this.loopPlus<string>(() => this.regexAccept(String.raw`(?:regex)`, \"\", $$dpth + 1, $$cr))",
+            expRule: "this.loopPlus<string>(() => this.regexAccept(String.raw `(?:regex)`, \"\", $$dpth + 1, $$cr))",
         },
         {
             match: "&'regex'",
             expType: "string",
-            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw`(?:regex)`, \"\", $$dpth + 1, $$cr))",
+            expRule: "this.noConsume<string>(() => this.regexAccept(String.raw `(?:regex)`, \"\", $$dpth + 1, $$cr))",
         },
         {
             match: "@",
@@ -183,7 +184,7 @@ describe("match type/rule test", () => {
             const gotType = matchType(expression);
             expect(gotType).toEqual(tc.expType);
             if(tc.expRule) {
-                const gotRule = matchRule(expression);
+                const gotRule = printNode(matchRule(expression));
                 expect(gotRule).toEqual(tc.expRule);
             }
         });
@@ -199,7 +200,7 @@ describe("subrule type/rule test", () => {
     const subExpr = gen.model.rules[0].definition.alternatives[0].matches[1].expression;
 
     expect(matchType(subExpr)).toEqual(expectedType);
-    expect(matchRule(subExpr)).toEqual(expectedRule);
+    expect(printNode(matchRule(subExpr))).toEqual(expectedRule);
 });
 
 describe("writeKinds test", () => {
@@ -208,28 +209,31 @@ describe("writeKinds test", () => {
         {
             inp: "rule := 'regex'",
             writeKinds: `export enum ASTKinds {
-    rule,
-}`,
+    rule = 0
+}
+`,
             numEnums: true,
         },
         {
             inp: `rule := 'regex' | rule reference
             rule_two := more | rule | { subrule }`,
             writeKinds: `export enum ASTKinds {
-    rule_1,
-    rule_2,
-    rule_two_1,
-    rule_two_2,
-    rule_two_3,
-    rule_two_$0,
-}`,
+    rule_1 = 0,
+    rule_2 = 1,
+    rule_two_1 = 2,
+    rule_two_2 = 3,
+    rule_two_3 = 4,
+    rule_two_$0 = 5
+}
+`,
             numEnums: true,
         },
         {
             inp: "rule := 'regex'",
             writeKinds: `export enum ASTKinds {
-    rule = "rule",
-}`,
+    rule = "rule"
+}
+`,
             numEnums: false,
         },
         {
@@ -241,15 +245,16 @@ describe("writeKinds test", () => {
     rule_two_1 = "rule_two_1",
     rule_two_2 = "rule_two_2",
     rule_two_3 = "rule_two_3",
-    rule_two_$0 = "rule_two_$0",
-}`,
+    rule_two_$0 = "rule_two_$0"
+}
+`,
             numEnums: false,
         },
     ];
     for(const tc of tcs) {
         test(`inp: ${tc.inp}`, () => {
             const g = new Generator(tc.inp, tc.numEnums);
-            const got = writeBlock(g.writeKinds()).join("\n");
+            const got = printNodes(g.writeKinds());
             expect(got).toEqual(tc.writeKinds);
         });
     }

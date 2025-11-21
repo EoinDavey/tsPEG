@@ -8,8 +8,9 @@ export interface ASTNodeIntf {
     kind: ASTKinds;
 }
 export enum ASTKinds {
-    test = "test",
+    test = "test"
 }
+
 export type test = string;
 export class Parser {
     private readonly input: string;
@@ -29,7 +30,7 @@ export class Parser {
     public clearMemos(): void {
     }
     public matchtest($$dpth: number, $$cr?: ErrorTracker): Nullable<test> {
-        return this.regexAccept(String.raw`(?:\p{Alpha}+)`, "", $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw `(?:\p{Alpha}+)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();

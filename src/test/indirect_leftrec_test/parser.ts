@@ -13,8 +13,9 @@ export enum ASTKinds {
     A_1 = "A_1",
     A_2 = "A_2",
     B_1 = "B_1",
-    B_2 = "B_2",
+    B_2 = "B_2"
 }
+
 export type A = A_1 | A_2;
 export interface A_1 {
     kind: ASTKinds.A_1;
@@ -88,7 +89,7 @@ export class Parser {
             });
     }
     public matchA_2($$dpth: number, $$cr?: ErrorTracker): Nullable<A_2> {
-        return this.regexAccept(String.raw`(?:a)`, "", $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr);
     }
     public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
         return this.choice<B>([
@@ -100,7 +101,7 @@ export class Parser {
         return this.matchA($$dpth + 1, $$cr);
     }
     public matchB_2($$dpth: number, $$cr?: ErrorTracker): Nullable<B_2> {
-        return this.regexAccept(String.raw`(?:b)`, "", $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw `(?:b)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();

@@ -8,8 +8,9 @@ export interface ASTNodeIntf {
     kind: ASTKinds;
 }
 export enum ASTKinds {
-    start = "start",
+    start = "start"
 }
+
 export interface start {
     kind: ASTKinds.start;
 }
@@ -35,9 +36,9 @@ export class Parser {
             () => {
                 let $$res: Nullable<start> = null;
                 if (true
-                    && this.regexAccept(String.raw`(?:^line 1$)`, "m", $$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:.)`, "s", $$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:^line 2$)`, "m", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:^line 1$)`, "m", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:.)`, "s", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:^line 2$)`, "m", $$dpth + 1, $$cr) !== null
                 ) {
                     $$res = {kind: ASTKinds.start, };
                 }

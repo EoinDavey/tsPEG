@@ -12,8 +12,9 @@ export enum ASTKinds {
     S_$0_1 = "S_$0_1",
     S_$0_2 = "S_$0_2",
     S_$0_3 = "S_$0_3",
-    $EOF = "$EOF",
+    $EOF = "$EOF"
 }
+
 export interface S {
     kind: ASTKinds.S;
 }
@@ -59,13 +60,13 @@ export class Parser {
         ]);
     }
     public matchS_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_1> {
-        return this.loop<string>(() => this.regexAccept(String.raw`(?:a)`, "", $$dpth + 1, $$cr), 2, 2);
+        return this.loop<string>(() => this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr), 2, 2);
     }
     public matchS_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_2> {
-        return this.loop<string>(() => this.regexAccept(String.raw`(?:b)`, "", $$dpth + 1, $$cr), 3, -1);
+        return this.loop<string>(() => this.regexAccept(String.raw `(?:b)`, "", $$dpth + 1, $$cr), 3, -1);
     }
     public matchS_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_3> {
-        return this.loop<string>(() => this.regexAccept(String.raw`(?:c)`, "", $$dpth + 1, $$cr), 3, 5);
+        return this.loop<string>(() => this.regexAccept(String.raw `(?:c)`, "", $$dpth + 1, $$cr), 3, 5);
     }
     public test(): boolean {
         const mrk = this.mark();

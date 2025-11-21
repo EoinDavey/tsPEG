@@ -32,8 +32,9 @@ export enum ASTKinds {
     ATOM_1 = "ATOM_1",
     ATOM_2 = "ATOM_2",
     INT = "INT",
-    _ = "_",
+    _ = "_"
 }
+
 export type SUM = SUM_1 | SUM_2;
 export class SUM_1 {
     public kind: ASTKinds.SUM_1 = ASTKinds.SUM_1;
@@ -165,7 +166,7 @@ export class Parser {
                 let $$res: Nullable<SUM_1> = null;
                 if (true
                     && ($scope$l = this.matchSUM($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:\+|-)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw `(?:\+|-)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$r = this.matchFAC($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new SUM_1($scope$l, $scope$op, $scope$r);
@@ -217,7 +218,7 @@ export class Parser {
                 let $$res: Nullable<FAC_1> = null;
                 if (true
                     && ($scope$l = this.matchFAC($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw`(?:\*|/)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$op = this.regexAccept(String.raw `(?:\*|/)`, "", $$dpth + 1, $$cr)) !== null
                     && ($scope$r = this.matchATOM($$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new FAC_1($scope$l, $scope$op, $scope$r);
@@ -256,9 +257,9 @@ export class Parser {
                 let $$res: Nullable<ATOM_2> = null;
                 if (true
                     && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw`(?:\()`, "", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
                     && ($scope$val = this.matchSUM($$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw`(?:\))`, "", $$dpth + 1, $$cr) !== null
+                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
                     && this.match_($$dpth + 1, $$cr) !== null
                 ) {
                     $$res = new ATOM_2($scope$val);
@@ -272,7 +273,7 @@ export class Parser {
                 let $scope$val: Nullable<string>;
                 let $$res: Nullable<INT> = null;
                 if (true
-                    && ($scope$val = this.regexAccept(String.raw`(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$val = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = new INT($scope$val);
                 }
@@ -280,7 +281,7 @@ export class Parser {
             });
     }
     public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.regexAccept(String.raw`(?:\s*)`, "", $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr);
     }
     public test(): boolean {
         const mrk = this.mark();

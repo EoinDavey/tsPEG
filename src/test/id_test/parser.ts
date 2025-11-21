@@ -22,8 +22,9 @@ export enum ASTKinds {
     numbers1ab234 = "numbers1ab234",
     rule = "rule",
     rule2 = "rule2",
-    rule3 = "rule3",
+    rule3 = "rule3"
 }
+
 export type lowercase = string;
 export type UPPERCASE = string;
 export type _start_hypen_ = string;
@@ -67,16 +68,16 @@ export class Parser {
     }
     protected $scope$rule$memo: Map<number, [Nullable<rule>, PosInfo]> = new Map();
     public matchlowercase($$dpth: number, $$cr?: ErrorTracker): Nullable<lowercase> {
-        return this.regexAccept(String.raw`(?:a)`, "", $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr);
     }
     public matchUPPERCASE($$dpth: number, $$cr?: ErrorTracker): Nullable<UPPERCASE> {
-        return this.regexAccept(String.raw`(?:b)`, "", $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw `(?:b)`, "", $$dpth + 1, $$cr);
     }
     public match_start_hypen_($$dpth: number, $$cr?: ErrorTracker): Nullable<_start_hypen_> {
-        return this.regexAccept(String.raw`(?:c)`, "", $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw `(?:c)`, "", $$dpth + 1, $$cr);
     }
     public matchnumbers1ab234($$dpth: number, $$cr?: ErrorTracker): Nullable<numbers1ab234> {
-        return this.regexAccept(String.raw`(?:d)`, "", $$dpth + 1, $$cr);
+        return this.regexAccept(String.raw `(?:d)`, "", $$dpth + 1, $$cr);
     }
     public matchrule($$dpth: number, $$cr?: ErrorTracker): Nullable<rule> {
         const fn = () => {
@@ -123,7 +124,7 @@ export class Parser {
                 let $scope$res: Nullable<string>;
                 let $$res: Nullable<rule2> = null;
                 if (true
-                    && ($scope$res = this.regexAccept(String.raw`(?:a)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$res = this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.rule2, res: $scope$res};
                 }
@@ -136,7 +137,7 @@ export class Parser {
                 let $scope$cr: Nullable<string>;
                 let $$res: Nullable<rule3> = null;
                 if (true
-                    && ($scope$cr = this.regexAccept(String.raw`(?:b)`, "", $$dpth + 1, $$cr)) !== null
+                    && ($scope$cr = this.regexAccept(String.raw `(?:b)`, "", $$dpth + 1, $$cr)) !== null
                 ) {
                     $$res = {kind: ASTKinds.rule3, cr: $scope$cr};
                 }
