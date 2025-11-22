@@ -16,6 +16,7 @@ export enum ASTKinds {
 export interface RULE {
     kind: ASTKinds.RULE;
 }
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

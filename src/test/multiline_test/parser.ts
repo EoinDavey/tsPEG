@@ -14,6 +14,7 @@ export enum ASTKinds {
 export interface start {
     kind: ASTKinds.start;
 }
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

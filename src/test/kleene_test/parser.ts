@@ -16,6 +16,7 @@ export type spec = spec_$0[];
 export interface spec_$0 {
     kind: ASTKinds.spec_$0;
 }
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

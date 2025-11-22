@@ -12,6 +12,7 @@ export enum ASTKinds {
 }
 
 export type test = string;
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

@@ -189,6 +189,7 @@ export interface KID {
 }
 export type ID = string;
 export type _ = string[];
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

@@ -115,3 +115,62 @@ export function createPropertyAssignment(name: string, initializer: ts.Expressio
     return ts.factory.createPropertyAssignment(name, initializer);
 }
 
+export function createInterfaceDeclaration(
+    name: string,
+    members: ts.TypeElement[],
+    modifiers?: ts.Modifier[],
+): ts.InterfaceDeclaration {
+    return ts.factory.createInterfaceDeclaration(modifiers, name, undefined, undefined, members);
+}
+
+export function createPropertySignature(
+    name: string,
+    type: ts.TypeNode,
+    modifiers?: ts.Modifier[],
+): ts.PropertySignature {
+    return ts.factory.createPropertySignature(modifiers, name, undefined, type);
+}
+
+export function createClassDeclaration(
+    name: string,
+    members: ts.ClassElement[],
+    modifiers?: ts.Modifier[],
+): ts.ClassDeclaration {
+    return ts.factory.createClassDeclaration(modifiers, name, undefined, undefined, members);
+}
+
+export function createPropertyDeclaration(
+    name: string,
+    type: ts.TypeNode,
+    initializer?: ts.Expression,
+    modifiers?: ts.Modifier[],
+): ts.PropertyDeclaration {
+    return ts.factory.createPropertyDeclaration(modifiers, name, undefined, type, initializer);
+}
+
+export function createConstructor(
+    parameters: ts.ParameterDeclaration[],
+    body?: ts.Block,
+): ts.ConstructorDeclaration {
+    return ts.factory.createConstructorDeclaration(undefined, parameters, body);
+}
+
+export function createParameter(
+    name: string,
+    type: ts.TypeNode,
+    modifiers?: ts.Modifier[],
+): ts.ParameterDeclaration {
+    return ts.factory.createParameterDeclaration(modifiers, undefined, name, undefined, type, undefined);
+}
+
+export function createBlock(
+    statements: ts.Statement[],
+    multiLine?: boolean,
+): ts.Block {
+    return ts.factory.createBlock(statements, multiLine);
+}
+
+export function createReturnStatement(expression?: ts.Expression): ts.ReturnStatement {
+    return ts.factory.createReturnStatement(expression);
+}
+

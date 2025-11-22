@@ -189,11 +189,11 @@ export class RULE {
     public head: ALT;
     public tail: RULE_$0[];
     public list: ALT[];
-    constructor(head: ALT, tail: RULE_$0[]){
+    constructor(head: ALT, tail: RULE_$0[]) {
         this.head = head;
         this.tail = tail;
         this.list = ((): ALT[] => {
-        return [this.head, ...this.tail.map((x) => x.alt)];
+            return [this.head, ...this.tail.map((x) => x.alt)];
         })();
     }
 }
@@ -281,20 +281,20 @@ export class RANGESPEC {
     public b_val: number | null;
     public lb: number;
     public ub: number;
-    constructor(a: string, u: Nullable<RANGESPEC_$0>){
+    constructor(a: string, u: Nullable<RANGESPEC_$0>) {
         this.a = a;
         this.u = u;
         this.a_val = ((): number => {
-        return parseInt(this.a);
+            return parseInt(this.a);
         })();
         this.b_val = ((): number | null => {
-        return this.u !== null && this.u.b !== null ? parseInt(this.u.b) : null;
+            return this.u !== null && this.u.b !== null ? parseInt(this.u.b) : null;
         })();
         this.lb = ((): number => {
-        return this.a_val;
+            return this.a_val;
         })();
         this.ub = ((): number => {
-        return this.b_val ?? (this.u !== null ? -1 : this.lb);
+            return this.b_val ?? (this.u !== null ? -1 : this.lb);
         })();
     }
 }
@@ -477,6 +477,7 @@ export type CODE_REC_$0_2 = TS_STRING;
 export interface CODE_REC_$0_3 {
     kind: ASTKinds.CODE_REC_$0_3;
 }
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

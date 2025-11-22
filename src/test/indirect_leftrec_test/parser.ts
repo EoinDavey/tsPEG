@@ -24,6 +24,7 @@ export type A_2 = string;
 export type B = B_1 | B_2;
 export type B_1 = A;
 export type B_2 = string;
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

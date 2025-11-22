@@ -46,10 +46,10 @@ export class S {
     public kind: ASTKinds.S = ASTKinds.S;
     public expr: E0;
     public value: number;
-    constructor(expr: E0){
+    constructor(expr: E0) {
         this.expr = expr;
         this.value = ((): number => {
-        return this.expr.value;
+            return this.expr.value;
         })();
     }
 }
@@ -60,14 +60,12 @@ export class E0_1 {
     public op: string;
     public b: E0;
     public value: number;
-    constructor(a: E1, op: string, b: E0){
+    constructor(a: E1, op: string, b: E0) {
         this.a = a;
         this.op = op;
         this.b = b;
         this.value = ((): number => {
-        return this.op === "+"
-              ?  this.a.value + this.b.value
-              :  this.a.value - this.b.value;
+            return this.op === "+" ? this.a.value + this.b.value : this.a.value - this.b.value;
         })();
     }
 }
@@ -79,14 +77,12 @@ export class E1_1 {
     public op: string;
     public b: E1;
     public value: number;
-    constructor(a: ATOM, op: string, b: E1){
+    constructor(a: ATOM, op: string, b: E1) {
         this.a = a;
         this.op = op;
         this.b = b;
         this.value = ((): number => {
-        return this.op === "*"
-              ?  this.a.value * this.b.value
-              :  this.a.value / this.b.value;
+            return this.op === "*" ? this.a.value * this.b.value : this.a.value / this.b.value;
         })();
     }
 }
@@ -96,10 +92,10 @@ export class ATOM_1 {
     public kind: ASTKinds.ATOM_1 = ASTKinds.ATOM_1;
     public val: INT;
     public value: number;
-    constructor(val: INT){
+    constructor(val: INT) {
         this.val = val;
         this.value = ((): number => {
-        return this.val.value;
+            return this.val.value;
         })();
     }
 }
@@ -107,10 +103,10 @@ export class ATOM_2 {
     public kind: ASTKinds.ATOM_2 = ASTKinds.ATOM_2;
     public val: E0;
     public value: number;
-    constructor(val: E0){
+    constructor(val: E0) {
         this.val = val;
         this.value = ((): number => {
-        return this.val.value;
+            return this.val.value;
         })();
     }
 }
@@ -118,14 +114,15 @@ export class INT {
     public kind: ASTKinds.INT = ASTKinds.INT;
     public val: string;
     public value: number;
-    constructor(val: string){
+    constructor(val: string) {
         this.val = val;
         this.value = ((): number => {
-        return parseInt(this.val);
+            return parseInt(this.val);
         })();
     }
 }
 export type _ = string;
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

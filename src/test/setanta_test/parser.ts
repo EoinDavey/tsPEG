@@ -301,12 +301,12 @@ export class IfStmt {
     public stmt: NonAsgnStmt;
     public elsebranch: Nullable<IfStmt_$0>;
     public accept: Acceptor;
-    constructor(expr: Expr, stmt: NonAsgnStmt, elsebranch: Nullable<IfStmt_$0>){
+    constructor(expr: Expr, stmt: NonAsgnStmt, elsebranch: Nullable<IfStmt_$0>) {
         this.expr = expr;
         this.stmt = stmt;
         this.elsebranch = elsebranch;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitIfStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitIfStmt(this);
         })();
     }
 }
@@ -318,10 +318,10 @@ export class BlockStmt {
     public kind: ASTKinds.BlockStmt = ASTKinds.BlockStmt;
     public blk: AsgnStmt[];
     public accept: Acceptor;
-    constructor(blk: AsgnStmt[]){
+    constructor(blk: AsgnStmt[]) {
         this.blk = blk;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitBlockStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitBlockStmt(this);
         })();
     }
 }
@@ -330,11 +330,11 @@ export class NuairStmt {
     public expr: Expr;
     public stmt: NonAsgnStmt;
     public accept: Acceptor;
-    constructor(expr: Expr, stmt: NonAsgnStmt){
+    constructor(expr: Expr, stmt: NonAsgnStmt) {
         this.expr = expr;
         this.stmt = stmt;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitNuairStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitNuairStmt(this);
         })();
     }
 }
@@ -346,14 +346,14 @@ export class LeStmt {
     public step: Nullable<LeStmt_$0>;
     public stmt: NonAsgnStmt;
     public accept: Acceptor;
-    constructor(id: ID, strt: Expr, end: Expr, step: Nullable<LeStmt_$0>, stmt: NonAsgnStmt){
+    constructor(id: ID, strt: Expr, end: Expr, step: Nullable<LeStmt_$0>, stmt: NonAsgnStmt) {
         this.id = id;
         this.strt = strt;
         this.end = end;
         this.step = step;
         this.stmt = stmt;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitLeStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitLeStmt(this);
         })();
     }
 }
@@ -368,13 +368,13 @@ export class DefnStmt {
     public idend: PosInfo;
     public expr: Expr;
     public accept: Acceptor;
-    constructor(idstart: PosInfo, id: ID, idend: PosInfo, expr: Expr){
+    constructor(idstart: PosInfo, id: ID, idend: PosInfo, expr: Expr) {
         this.idstart = idstart;
         this.id = id;
         this.idend = idend;
         this.expr = expr;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitDefnStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitDefnStmt(this);
         })();
     }
 }
@@ -386,14 +386,14 @@ export class AssgnStmt {
     public op: AsgnOp;
     public expr: Expr;
     public accept: Acceptor;
-    constructor(lstart: PosInfo, lhs: Postfix, lend: PosInfo, op: AsgnOp, expr: Expr){
+    constructor(lstart: PosInfo, lhs: Postfix, lend: PosInfo, op: AsgnOp, expr: Expr) {
         this.lstart = lstart;
         this.lhs = lhs;
         this.lend = lend;
         this.op = op;
         this.expr = expr;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitAssgnStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitAssgnStmt(this);
         })();
     }
 }
@@ -403,12 +403,12 @@ export class GniomhStmt {
     public args: Nullable<CSIDs>;
     public stmts: AsgnStmt[];
     public accept: Acceptor;
-    constructor(id: ID, args: Nullable<CSIDs>, stmts: AsgnStmt[]){
+    constructor(id: ID, args: Nullable<CSIDs>, stmts: AsgnStmt[]) {
         this.id = id;
         this.args = args;
         this.stmts = stmts;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitGniomhStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitGniomhStmt(this);
         })();
     }
 }
@@ -418,12 +418,12 @@ export class CtlchStmt {
     public tuis: Nullable<CtlchStmt_$0>;
     public gniomhs: GniomhStmt[];
     public accept: Acceptor;
-    constructor(id: ID, tuis: Nullable<CtlchStmt_$0>, gniomhs: GniomhStmt[]){
+    constructor(id: ID, tuis: Nullable<CtlchStmt_$0>, gniomhs: GniomhStmt[]) {
         this.id = id;
         this.tuis = tuis;
         this.gniomhs = gniomhs;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitCtlchStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitCtlchStmt(this);
         })();
     }
 }
@@ -443,10 +443,10 @@ export class ToradhStmt {
     public kind: ASTKinds.ToradhStmt = ASTKinds.ToradhStmt;
     public exp: Nullable<Expr>;
     public accept: Acceptor;
-    constructor(exp: Nullable<Expr>){
+    constructor(exp: Nullable<Expr>) {
         this.exp = exp;
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitToradhStmt(this);
+            return <T>(v: ASTVisitor<T>) => v.visitToradhStmt(this);
         })();
     }
 }
@@ -460,19 +460,19 @@ export class And {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(start: PosInfo, head: Or, tail: And_$0[], end: PosInfo){
+    constructor(start: PosInfo, head: Or, tail: And_$0[], end: PosInfo) {
         this.start = start;
         this.head = head;
         this.tail = tail;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return andBinOp(this);
+            return andBinOp(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return andQuickBinOp(this);
+            return andQuickBinOp(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitAnd(this);
+            return <T>(v: ASTVisitor<T>) => v.visitAnd(this);
         })();
     }
 }
@@ -489,19 +489,19 @@ export class Or {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(start: PosInfo, head: Eq, tail: Or_$0[], end: PosInfo){
+    constructor(start: PosInfo, head: Eq, tail: Or_$0[], end: PosInfo) {
         this.start = start;
         this.head = head;
         this.tail = tail;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return orBinOp(this)
+            return orBinOp(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return orQuickBinOp(this);
+            return orQuickBinOp(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitOr(this);
+            return <T>(v: ASTVisitor<T>) => v.visitOr(this);
         })();
     }
 }
@@ -518,19 +518,19 @@ export class Eq {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(start: PosInfo, head: Comp, tail: Eq_$0[], end: PosInfo){
+    constructor(start: PosInfo, head: Comp, tail: Eq_$0[], end: PosInfo) {
         this.start = start;
         this.head = head;
         this.tail = tail;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return binOpEvalFn(this)
+            return binOpEvalFn(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return binOpQuickEvalFn(this);
+            return binOpQuickEvalFn(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitEq(this);
+            return <T>(v: ASTVisitor<T>) => v.visitEq(this);
         })();
     }
 }
@@ -548,19 +548,19 @@ export class Comp {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(start: PosInfo, head: Sum, tail: Comp_$0[], end: PosInfo){
+    constructor(start: PosInfo, head: Sum, tail: Comp_$0[], end: PosInfo) {
         this.start = start;
         this.head = head;
         this.tail = tail;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return binOpEvalFn(this)
+            return binOpEvalFn(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return binOpQuickEvalFn(this);
+            return binOpQuickEvalFn(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitComp(this);
+            return <T>(v: ASTVisitor<T>) => v.visitComp(this);
         })();
     }
 }
@@ -578,19 +578,19 @@ export class Sum {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(start: PosInfo, head: Product, tail: Sum_$0[], end: PosInfo){
+    constructor(start: PosInfo, head: Product, tail: Sum_$0[], end: PosInfo) {
         this.start = start;
         this.head = head;
         this.tail = tail;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return binOpEvalFn(this)
+            return binOpEvalFn(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return binOpQuickEvalFn(this);
+            return binOpQuickEvalFn(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitSum(this);
+            return <T>(v: ASTVisitor<T>) => v.visitSum(this);
         })();
     }
 }
@@ -608,19 +608,19 @@ export class Product {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(start: PosInfo, head: Prefix, tail: Product_$0[], end: PosInfo){
+    constructor(start: PosInfo, head: Prefix, tail: Product_$0[], end: PosInfo) {
         this.start = start;
         this.head = head;
         this.tail = tail;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return binOpEvalFn(this);
+            return binOpEvalFn(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return binOpQuickEvalFn(this);
+            return binOpQuickEvalFn(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitProduct(this);
+            return <T>(v: ASTVisitor<T>) => v.visitProduct(this);
         })();
     }
 }
@@ -637,16 +637,16 @@ export class Prefix {
     public end: PosInfo;
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
-    constructor(start: PosInfo, op: Nullable<string>, pf: Postfix, end: PosInfo){
+    constructor(start: PosInfo, op: Nullable<string>, pf: Postfix, end: PosInfo) {
         this.start = start;
         this.op = op;
         this.pf = pf;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return prefEval(this);
+            return prefEval(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return Quick.qPrefEval(this);
+            return Quick.qPrefEval(this);
         })();
     }
 }
@@ -659,19 +659,19 @@ export class Postfix {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(start: PosInfo, at: ObjLookups, ops: PostOp[], end: PosInfo){
+    constructor(start: PosInfo, at: ObjLookups, ops: PostOp[], end: PosInfo) {
         this.start = start;
         this.at = at;
         this.ops = ops;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return postfixArgsEval(this);
+            return postfixArgsEval(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return Quick.qPostfixArgsEval(this);
+            return Quick.qPostfixArgsEval(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitPostfix(this);
+            return <T>(v: ASTVisitor<T>) => v.visitPostfix(this);
         })();
     }
 }
@@ -684,19 +684,19 @@ export class ObjLookups {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(start: PosInfo, attrs: ObjLookups_$0[], root: Atom, end: PosInfo){
+    constructor(start: PosInfo, attrs: ObjLookups_$0[], root: Atom, end: PosInfo) {
         this.start = start;
         this.attrs = attrs;
         this.root = root;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return objLookupsEval(this);
+            return objLookupsEval(this);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return Quick.qObjLookupsEval(this);
+            return Quick.qObjLookupsEval(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitObjLookups(this);
+            return <T>(v: ASTVisitor<T>) => v.visitObjLookups(this);
         })();
     }
 }
@@ -720,17 +720,17 @@ export class Atom_1 {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(trm: Expr){
+    constructor(trm: Expr) {
         this.trm = trm;
         this.evalfn = ((): EvalFn => {
-        return (env: Context) => this.trm.evalfn(env);
+            return (env: Context) => this.trm.evalfn(env);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        const childF = this.trm.qeval;
-                    return childF === null ? null : childF.bind(this.trm);
+            const childF = this.trm.qeval;
+            return childF === null ? null : childF.bind(this.trm);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitExpr(this.trm);
+            return <T>(v: ASTVisitor<T>) => v.visitExpr(this.trm);
         })();
     }
 }
@@ -748,17 +748,17 @@ export class GniomhExpr {
     public evalfn: EvalFn;
     public qeval: Quick.EvalFn;
     public accept: Acceptor;
-    constructor(args: Nullable<CSIDs>, stmts: AsgnStmt[]){
+    constructor(args: Nullable<CSIDs>, stmts: AsgnStmt[]) {
         this.args = args;
         this.stmts = stmts;
         this.evalfn = ((): EvalFn => {
-        return qEvalToEval(Quick.qGníomhEval(this));
+            return qEvalToEval(Quick.qGníomhEval(this));
         })();
         this.qeval = ((): Quick.EvalFn => {
-        return Quick.qGníomhEval(this);
+            return Quick.qGníomhEval(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitGniomhExpr(this);
+            return <T>(v: ASTVisitor<T>) => v.visitGniomhExpr(this);
         })();
     }
 }
@@ -768,16 +768,16 @@ export class ListLit {
     public evalfn: EvalFn;
     public qeval: Quick.MaybeEv;
     public accept: Acceptor;
-    constructor(els: Nullable<CSArgs>){
+    constructor(els: Nullable<CSArgs>) {
         this.els = els;
         this.evalfn = ((): EvalFn => {
-        return (env: Context) => this.els ? this.els.evalfn(env) : Promise.resolve([]);
+            return (env: Context) => this.els ? this.els.evalfn(env) : Promise.resolve([]);
         })();
         this.qeval = ((): Quick.MaybeEv => {
-        return Quick.qListLitEval(this);
+            return Quick.qListLitEval(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitListLit(this);
+            return <T>(v: ASTVisitor<T>) => v.visitListLit(this);
         })();
     }
 }
@@ -790,19 +790,19 @@ export class CSArgs {
     public evalfn: (env:Context) => Promise<Value[]>;
     public qeval: ((env:Context) => Value[]) | null;
     public exprs: Expr[];
-    constructor(start: PosInfo, head: Expr, tail: CSArgs_$0[], end: PosInfo){
+    constructor(start: PosInfo, head: Expr, tail: CSArgs_$0[], end: PosInfo) {
         this.start = start;
         this.head = head;
         this.tail = tail;
         this.end = end;
         this.evalfn = ((): (env:Context) => Promise<Value[]> => {
-        return csArgsEval(this);
+            return csArgsEval(this);
         })();
         this.qeval = ((): ((env:Context) => Value[]) | null => {
-        return Quick.qCSArgsEval(this);
+            return Quick.qCSArgsEval(this);
         })();
         this.exprs = ((): Expr[] => {
-        return [this.head].concat(this.tail.map((x) => x.exp));
+            return [this.head].concat(this.tail.map((x) => x.exp));
         })();
     }
 }
@@ -815,11 +815,11 @@ export class CSIDs {
     public head: ID;
     public tail: CSIDs_$0[];
     public ids: ID[];
-    constructor(head: ID, tail: CSIDs_$0[]){
+    constructor(head: ID, tail: CSIDs_$0[]) {
         this.head = head;
         this.tail = tail;
         this.ids = ((): ID[] => {
-        return [this.head].concat(this.tail.map((x) => x.id));
+            return [this.head].concat(this.tail.map((x) => x.id));
         })();
     }
 }
@@ -836,21 +836,21 @@ export class ID {
     public qeval: Quick.EvalFn;
     public accept: Acceptor;
     public depth: PossibleResolution;
-    constructor(start: PosInfo, id: string, end: PosInfo){
+    constructor(start: PosInfo, id: string, end: PosInfo) {
         this.start = start;
         this.id = id;
         this.end = end;
         this.evalfn = ((): EvalFn => {
-        return qEvalToEval(Quick.qIdEval(this));
+            return qEvalToEval(Quick.qIdEval(this));
         })();
         this.qeval = ((): Quick.EvalFn => {
-        return Quick.qIdEval(this);
+            return Quick.qIdEval(this);
         })();
         this.accept = ((): Acceptor => {
-        return <T>(v: ASTVisitor<T>) => v.visitID(this);
+            return <T>(v: ASTVisitor<T>) => v.visitID(this);
         })();
         this.depth = ((): PossibleResolution => {
-        return {resolved: false};
+            return { resolved: false };
         })();
     }
 }
@@ -862,13 +862,13 @@ export class Bool {
     public bool: string;
     public evalfn: EvalFn;
     public qeval: Quick.EvalFn;
-    constructor(bool: string){
+    constructor(bool: string) {
         this.bool = bool;
         this.evalfn = ((): EvalFn => {
-        return qEvalToEval(Quick.qBoolEval(this.bool));
+            return qEvalToEval(Quick.qBoolEval(this.bool));
         })();
         this.qeval = ((): Quick.EvalFn => {
-        return Quick.qBoolEval(this.bool);
+            return Quick.qBoolEval(this.bool);
         })();
     }
 }
@@ -876,12 +876,12 @@ export class Neamhni {
     public kind: ASTKinds.Neamhni = ASTKinds.Neamhni;
     public evalfn: EvalFn;
     public qeval: Quick.EvalFn;
-    constructor(){
+    constructor() {
         this.evalfn = ((): EvalFn => {
-        return () => Promise.resolve(null);
+            return () => Promise.resolve(null);
         })();
         this.qeval = ((): Quick.EvalFn => {
-        return () => null;
+            return () => null;
         })();
     }
 }
@@ -890,13 +890,13 @@ export class Int {
     public int: string;
     public evalfn: EvalFn;
     public qeval: Quick.EvalFn;
-    constructor(int: string){
+    constructor(int: string) {
         this.int = int;
         this.evalfn = ((): EvalFn => {
-        return qEvalToEval(Quick.qIntEval(this.int));
+            return qEvalToEval(Quick.qIntEval(this.int));
         })();
         this.qeval = ((): Quick.EvalFn => {
-        return Quick.qIntEval(this.int);
+            return Quick.qIntEval(this.int);
         })();
     }
 }
@@ -905,13 +905,13 @@ export class Teacs {
     public lit: Teacs_$0;
     public evalfn: EvalFn;
     public qeval: Quick.EvalFn;
-    constructor(lit: Teacs_$0){
+    constructor(lit: Teacs_$0) {
         this.lit = lit;
         this.evalfn = ((): EvalFn => {
-        return qEvalToEval(Quick.qTéacsEval(this.lit.val, this.lit.start, this.lit.end));
+            return qEvalToEval(Quick.qTéacsEval(this.lit.val, this.lit.start, this.lit.end));
         })();
         this.qeval = ((): Quick.EvalFn => {
-        return Quick.qTéacsEval(this.lit.val, this.lit.start, this.lit.end);
+            return Quick.qTéacsEval(this.lit.val, this.lit.start, this.lit.end);
         })();
     }
 }
@@ -948,6 +948,7 @@ export type Keyword_6 = string;
 export type Keyword_7 = string;
 export type Keyword_8 = string;
 export type Keyword_9 = string;
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

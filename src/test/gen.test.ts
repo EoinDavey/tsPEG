@@ -1,6 +1,5 @@
 import { parse } from "../parser.gen";
 import { Generator } from "../gen";
-import { writeBlock } from "../util";
 import { matchType } from "../types";
 import { matchRule } from "../rules";
 import { printNode, printNodes } from "../codegen";
@@ -265,14 +264,15 @@ describe("writeRuleClasses Test", () => {
     const tcs: TestCase[] = [
         {
             inp: "rule := 'regex'",
-            ruleClasses: "export type rule = string;",
+            ruleClasses: "export type rule = string;\n",
         },
         {
             inp: "rule := name='named regex'",
             ruleClasses: `export interface rule {
     kind: ASTKinds.rule;
     name: string;
-}`,
+}
+`,
         },
         {
             inp: "rule := name='named regex' .computed = number { return 0; }",
@@ -280,13 +280,14 @@ describe("writeRuleClasses Test", () => {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public name: string;
     public computed: number;
-    constructor(name: string){
+    constructor(name: string) {
         this.name = name;
         this.computed = ((): number => {
-        return 0;
+            return 0;
         })();
     }
-}`,
+}
+`,
         },
         // Test complex type names and code section
         {
@@ -299,14 +300,15 @@ describe("writeRuleClasses Test", () => {
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: (x: number, y: string) => number | boolean;
-    constructor(){
+    constructor() {
         this.computed = ((): (x: number, y: string) => number | boolean => {
-        if(true) {
+            if (true) {
                 return 0;
             }
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a'
@@ -322,30 +324,32 @@ describe("writeRuleClasses Test", () => {
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: <Generic extends Something>(x: Array<Generic>) => number;
-    constructor(){
+    constructor() {
         this.computed = ((): <Generic extends Something>(x: Array<Generic>) => number => {
-        if(nest) {
-                for(;;) {
+            if (nest) {
+                for (;;) {
                 }
-                for(;;) {
-                    if(nested) {}
+                for (;;) {
+                    if (nested) { }
                 }
             }
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a' .computed = A.B.C<Generic>[][] { return "string with {} }}}{{}}"; }`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: A.B.C<Generic>[][];
-    constructor(){
+    constructor() {
         this.computed = ((): A.B.C<Generic>[][] => {
-        return "string with {} }}}{{}}";
+            return "string with {} }}}{{}}";
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a'
@@ -353,89 +357,97 @@ describe("writeRuleClasses Test", () => {
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: (req: number, opt?: boolean, ...rest: A.B<K>[]) => test;
-    constructor(){
+    constructor() {
         this.computed = ((): (req: number, opt?: boolean, ...rest: A.B<K>[]) => test => {
-        return \`}}}{{{}}{{\`;
+            return \`}}}{{{}}{{\`;
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a' .computed = [number, bool, new () => void] {}`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: [number, bool, new () => void];
-    constructor(){
+    constructor() {
         this.computed = ((): [number, bool, new () => void] => {
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a' .computed = (a: (typeof a)[]) => (new () => void) {}`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: (a: (typeof a)[]) => (new () => void);
-    constructor(){
+    constructor() {
         this.computed = ((): (a: (typeof a)[]) => (new () => void) => {
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a' .computed = {a: number; b: boolean} {}`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: {a: number; b: boolean};
-    constructor(){
+    constructor() {
         this.computed = ((): {a: number; b: boolean} => {
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a' .computed = {a: number; b: {nested: () => void};}[] {}`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: {a: number; b: {nested: () => void};}[];
-    constructor(){
+    constructor() {
         this.computed = ((): {a: number; b: {nested: () => void};}[] => {
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a' .computed = { a(x: number): void } {}`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: { a(x: number): void };
-    constructor(){
+    constructor() {
         this.computed = ((): { a(x: number): void } => {
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a' .computed = { [x: string]: void } {}`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: { [x: string]: void };
-    constructor(){
+    constructor() {
         this.computed = ((): { [x: string]: void } => {
         })();
     }
-}`,
+}
+`,
         },
         {
             inp: `rule := 'a' .computed = { "test": test } {}`,
             ruleClasses: `export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public computed: { "test": test };
-    constructor(){
+    constructor() {
         this.computed = ((): { "test": test } => {
         })();
     }
-}`,
+}
+`,
         },
     ];
     for(let i = 0; i < tcs.length; ++i) {
@@ -445,7 +457,7 @@ describe("writeRuleClasses Test", () => {
             expect(res.errs).toEqual([]);
             expect(res.ast).not.toBeNull();
             const g = new Generator(tc.inp);
-            const got = writeBlock(g.writeRuleClasses()).join("\n");
+            const got = printNodes(g.writeRuleClasses());
             expect(got).toEqual(tc.ruleClasses);
         });
     }

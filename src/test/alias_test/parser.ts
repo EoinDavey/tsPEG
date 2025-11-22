@@ -18,21 +18,22 @@ export enum ASTKinds {
 export class A {
     public kind: ASTKinds.A = ASTKinds.A;
     public value: string;
-    constructor(){
+    constructor() {
         this.value = ((): string => {
-        return 'test';
+            return "test";
         })();
     }
 }
 export class B {
     public kind: ASTKinds.B = ASTKinds.B;
     public value: number;
-    constructor(){
+    constructor() {
         this.value = ((): number => {
-        return 1;
+            return 1;
         })();
     }
 }
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

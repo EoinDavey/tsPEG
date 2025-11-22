@@ -29,6 +29,7 @@ export interface EXPR {
     right: Nullable<EXPR>;
 }
 export type _ = string;
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

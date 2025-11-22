@@ -33,10 +33,10 @@ export class rule {
     public kind: ASTKinds.rule = ASTKinds.rule;
     public rule: rule;
     public a: number;
-    constructor(rule: rule){
+    constructor(rule: rule) {
         this.rule = rule;
         this.a = ((): number => {
-        return 0;
+            return 0;
         })();
     }
 }
@@ -48,6 +48,7 @@ export interface rule3 {
     kind: ASTKinds.rule3;
     cr: string;
 }
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

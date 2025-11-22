@@ -42,12 +42,12 @@ export class SUM_1 {
     public op: string;
     public r: FAC;
     public value: number;
-    constructor(l: SUM, op: string, r: FAC){
+    constructor(l: SUM, op: string, r: FAC) {
         this.l = l;
         this.op = op;
         this.r = r;
         this.value = ((): number => {
-        return this.op === "+" ? l.value + r.value : l.value - r.value;
+            return this.op === "+" ? l.value + r.value : l.value - r.value;
         })();
     }
 }
@@ -59,12 +59,12 @@ export class FAC_1 {
     public op: string;
     public r: ATOM;
     public value: number;
-    constructor(l: FAC, op: string, r: ATOM){
+    constructor(l: FAC, op: string, r: ATOM) {
         this.l = l;
         this.op = op;
         this.r = r;
         this.value = ((): number => {
-        return this.op === "*" ? l.value * r.value : l.value / r.value;
+            return this.op === "*" ? l.value * r.value : l.value / r.value;
         })();
     }
 }
@@ -74,10 +74,10 @@ export class ATOM_1 {
     public kind: ASTKinds.ATOM_1 = ASTKinds.ATOM_1;
     public val: INT;
     public value: number;
-    constructor(val: INT){
+    constructor(val: INT) {
         this.val = val;
         this.value = ((): number => {
-        return this.val.value;
+            return this.val.value;
         })();
     }
 }
@@ -85,10 +85,10 @@ export class ATOM_2 {
     public kind: ASTKinds.ATOM_2 = ASTKinds.ATOM_2;
     public val: SUM;
     public value: number;
-    constructor(val: SUM){
+    constructor(val: SUM) {
         this.val = val;
         this.value = ((): number => {
-        return this.val.value;
+            return this.val.value;
         })();
     }
 }
@@ -96,14 +96,15 @@ export class INT {
     public kind: ASTKinds.INT = ASTKinds.INT;
     public val: string;
     public value: number;
-    constructor(val: string){
+    constructor(val: string) {
         this.val = val;
         this.value = ((): number => {
-        return parseInt(this.val);
+            return parseInt(this.val);
         })();
     }
 }
 export type _ = string;
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;

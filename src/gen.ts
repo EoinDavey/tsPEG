@@ -11,11 +11,18 @@ import { ExpansionVisitor } from "./expansionvisitor";
 import { SimpleVisitor } from "./simplevisitor";
 import * as ts from 'typescript';
 import {
+    createBlock,
+    createClassDeclaration,
+    createConstructor,
     createEnumDeclaration,
     createEnumMember,
+    createInterfaceDeclaration,
     createLiteralTypeNode,
     createNumericLiteral,
+    createParameter,
     createPropertyAssignment,
+    createPropertyDeclaration,
+    createPropertySignature,
     createStringLiteral,
     createTypeAliasDeclaration,
     createUnionTypeNode,
@@ -219,48 +226,119 @@ export class Generator {
         ];
     }
 
-    public writeChoice(name: string, sequence: MatchSequence): Block {
+    public writeChoice(name: string, sequence: MatchSequence): ts.Statement[] {
         const type = sequence.getType();
 
         if (type === 'alias') {
             const expressionType = matchType(sequence.matches[0].expression);
-            return [`export type ${name} = ${expressionType};`];
+            return [createTypeAliasDeclaration(
+                name,
+                ts.factory.createTypeReferenceNode(expressionType),
+                [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            )];
         }
 
         const namedTypes = getNamedTypesFromModel(sequence);
 
         if (type === 'class') {
-            return [
-                `export class ${name} {`,
+            return [createClassDeclaration(
+                name,
                 [
-                    `public kind: ${this.astKindsType(name)} = ASTKinds.${name};`,
-                    ...namedTypes.map((x) => `public ${x[0]}: ${x[1]};`),
-                    ...sequence.attributes.map((attr) => `public ${attr.name}: ${attr.type};`),
-                    `constructor(${namedTypes.map((x) => `${x[0]}: ${x[1]}`).join(", ")}){`,
-                    namedTypes.map((x) => `this.${x[0]} = ${x[0]};`),
-                    ...sequence.attributes.map(attr => [`this.${attr.name} = ((): ${attr.type} => {`,
-                        attr.code.trim(),
-                        "})();"]),
-                    "}",
+                    createPropertyDeclaration(
+                        "kind",
+                        ts.factory.createTypeReferenceNode(this.astKindsType(name)),
+                        ts.factory.createPropertyAccessExpression(
+                            ts.factory.createIdentifier("ASTKinds"),
+                            name,
+                        ),
+                        [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+                    ),
+                    ...namedTypes.map((x) => createPropertyDeclaration(
+                        x[0],
+                        ts.factory.createTypeReferenceNode(x[1]),
+                        undefined,
+                        [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+                    )),
+                    ...sequence.attributes.map((attr) => createPropertyDeclaration(
+                        attr.name,
+                        ts.factory.createTypeReferenceNode(attr.type),
+                        undefined,
+                        [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+                    )),
+                    createConstructor(
+                        namedTypes.map((x) => createParameter(
+                            x[0],
+                            ts.factory.createTypeReferenceNode(x[1]),
+                        )),
+                        createBlock([
+                            ...namedTypes.map((x) => ts.factory.createExpressionStatement(
+                                ts.factory.createBinaryExpression(
+                                    ts.factory.createPropertyAccessExpression(
+                                        ts.factory.createThis(),
+                                        x[0],
+                                    ),
+                                    ts.SyntaxKind.EqualsToken,
+                                    ts.factory.createIdentifier(x[0]),
+                                ),
+                            )),
+                            ...sequence.attributes.map(attr => {
+                                const functionWrapper = `function temp() { ${attr.code} }`;
+                                const sourceFile = ts.createSourceFile('temp.ts', functionWrapper, ts.ScriptTarget.Latest, false);
+                                const fnDecl = sourceFile.statements[0] as ts.FunctionDeclaration;
+                                if (!fnDecl.body) {
+                                    throw new Error(`Computed property has no body: ${attr.code}`);
+                                }
+                                const bodyStmts = Array.from(fnDecl.body.statements);
+
+                                return ts.factory.createExpressionStatement(
+                                    ts.factory.createBinaryExpression(
+                                        ts.factory.createPropertyAccessExpression(
+                                            ts.factory.createThis(),
+                                            attr.name,
+                                        ),
+                                        ts.SyntaxKind.EqualsToken,
+                                        ts.factory.createCallExpression(
+                                            ts.factory.createArrowFunction(
+                                                undefined,
+                                                undefined,
+                                                [],
+                                                ts.factory.createTypeReferenceNode(attr.type),
+                                                ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                                                ts.factory.createBlock(bodyStmts, true),
+                                            ),
+                                            undefined,
+                                            [],
+                                        ),
+                                    ),
+                                );
+                            }),
+                        ], true),
+                    ),
                 ],
-                "}",
-            ];
+                [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            )];
         }
 
         // The remaining case is 'interface'
-        return [
-            `export interface ${name} {`,
+        return [createInterfaceDeclaration(
+            name,
             [
-                `kind: ${this.astKindsType(name)};`,
-                ...namedTypes.map((x) => `${x[0]}: ${x[1]};`),
+                createPropertySignature(
+                    "kind",
+                    ts.factory.createTypeReferenceNode(this.astKindsType(name)),
+                ),
+                ...namedTypes.map((x) => createPropertySignature(
+                    x[0],
+                    ts.factory.createTypeReferenceNode(x[1]),
+                )),
             ],
-            "}",
-        ];
+            [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+        )];
     }
 
-    public writeRuleClasses(): Block {
+    public writeRuleClasses(): ts.Statement[] {
         const expandedRules = this.getExpandedRules();
-        const allBlocks: Block = [];
+        const allStatements: ts.Statement[] = [];
 
         for (const rule of expandedRules) {
             const alternatives = rule.definition.alternatives;
@@ -268,15 +346,21 @@ export class Generator {
             // Generate union type if needed
             if (alternatives.length > 1) {
                 const unionNames = alternatives.map(alt => alt.name);
-                allBlocks.push(`export type ${rule.name} = ${unionNames.join(" | ")};`);
+                allStatements.push(createTypeAliasDeclaration(
+                    rule.name,
+                    ts.factory.createUnionTypeNode(
+                        unionNames.map(name => ts.factory.createTypeReferenceNode(name)),
+                    ),
+                    [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+                ));
             }
 
             // Generate the interface/class/alias for each alternative
             for (const alternative of alternatives) {
-                allBlocks.push(...this.writeChoice(alternative.name, alternative));
+                allStatements.push(...this.writeChoice(alternative.name, alternative));
             }
         }
-        return allBlocks;
+        return allStatements;
     }
 
     public writeParseIfStmt(sequence: MatchSequence): Block {
@@ -502,7 +586,7 @@ export class Generator {
             memoClearFn: this.writeMemoClearFn(),
             kinds: [printNodes(this.writeKinds())],
             regexFlags: this.regexFlags,
-            ruleClasses: this.writeRuleClasses(),
+            ruleClasses: [printNodes(this.writeRuleClasses())],
             ruleParseFns: this.writeAllRuleParseFns(),
             parseResult: this.writeParseResultClass(),
             usesEOF: this.usesEOFInModel(),

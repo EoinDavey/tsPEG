@@ -22,6 +22,7 @@ export type S_$0 = S_$0_1 | S_$0_2 | S_$0_3;
 export type S_$0_1 = string[];
 export type S_$0_2 = string[];
 export type S_$0_3 = string[];
+
 export class Parser {
     private readonly input: string;
     private pos: PosInfo;
