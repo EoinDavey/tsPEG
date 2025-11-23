@@ -41,9 +41,14 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-        this.$scope$A$memo.clear();
-    }
-    protected $scope$A$memo: Map<number, [Nullable<A>, PosInfo]> = new Map();
+    this.$scope$A$memo.clear();
+}
+
+    protected $scope$A$memo: Map<number, [
+    Nullable<A>,
+    PosInfo
+]> = new Map();
+
     public matchA($$dpth: number, $$cr?: ErrorTracker): Nullable<A> {
         const fn = () => {
             return this.choice<A>([
@@ -243,6 +248,7 @@ export interface ParseResult {
     ast: Nullable<A>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

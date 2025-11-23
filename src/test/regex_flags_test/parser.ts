@@ -29,7 +29,8 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-    }
+}
+
     public matchtest($$dpth: number, $$cr?: ErrorTracker): Nullable<test> {
         return this.regexAccept(String.raw `(?:\p{Alpha}+)`, "", $$dpth + 1, $$cr);
     }
@@ -172,6 +173,7 @@ export interface ParseResult {
     ast: Nullable<test>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

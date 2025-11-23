@@ -212,18 +212,54 @@ export class Generator {
                 .filter(rule => this.boundedRecRules.has(rule.name));
     }
 
-    public writeMemos(): Block {
+    public writeMemos(): ts.PropertyDeclaration[] {
         return this.memoRules().map(rule =>
-            `protected ${memoName(rule.name)}: Map<number, [Nullable<${rule.name}>, PosInfo]> = new Map();`);
+            createPropertyDeclaration(
+                memoName(rule.name),
+                ts.factory.createTypeReferenceNode("Map", [
+                    ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+                    ts.factory.createTupleTypeNode([
+                        ts.factory.createTypeReferenceNode("Nullable", [ts.factory.createTypeReferenceNode(rule.name)]),
+                        ts.factory.createTypeReferenceNode("PosInfo"),
+                    ]),
+                ]),
+                ts.factory.createNewExpression(
+                    ts.factory.createIdentifier("Map"),
+                    undefined,
+                    [],
+                ),
+                [ts.factory.createModifier(ts.SyntaxKind.ProtectedKeyword)],
+            ),
+        );
     }
 
-    public writeMemoClearFn(): Block {
-        const ls: Block = this.memoRules().map(rule => `this.${memoName(rule.name)}.clear();`);
-        return [
-            'public clearMemos(): void {',
-            ls,
-            '}',
-        ];
+    public writeMemoClearFn(): ts.MethodDeclaration[] {
+        const statements = this.memoRules().map(rule =>
+            ts.factory.createExpressionStatement(
+                ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(
+                        ts.factory.createPropertyAccessExpression(
+                            ts.factory.createThis(),
+                            memoName(rule.name),
+                        ),
+                        "clear",
+                    ),
+                    undefined,
+                    [],
+                ),
+            ),
+        );
+
+        return [ts.factory.createMethodDeclaration(
+            [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+            undefined,
+            "clearMemos",
+            undefined,
+            undefined,
+            [],
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+            createBlock(statements, true),
+        )];
     }
 
     public writeChoice(name: string, sequence: MatchSequence): ts.Statement[] {
@@ -560,15 +596,22 @@ export class Generator {
         ];
     }
 
-    public writeParseResultClass(): Block {
+    public writeParseResultInterface(): ts.Statement[] {
         const startname = this.model.rules[0].name;
-        return ["export interface ParseResult {",
+        return [createInterfaceDeclaration(
+            "ParseResult",
             [
-                `ast: Nullable<${startname}>;`,
-                "errs: SyntaxErr[];",
+                createPropertySignature(
+                    "ast",
+                    ts.factory.createTypeReferenceNode("Nullable", [ts.factory.createTypeReferenceNode(startname)]),
+                ),
+                createPropertySignature(
+                    "errs",
+                    ts.factory.createArrayTypeNode(ts.factory.createTypeReferenceNode("SyntaxErr")),
+                ),
             ],
-            "}",
-        ];
+            [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+        )];
     }
 
     public generate(): string {
@@ -582,13 +625,13 @@ export class Generator {
         const parseBlock = expandTemplate({
             inputStr: this.input,
             header: hdr,
-            memos: this.writeMemos(),
-            memoClearFn: this.writeMemoClearFn(),
+            memos: [printNodes(this.writeMemos())],
+            memoClearFn: [printNodes(this.writeMemoClearFn())],
             kinds: [printNodes(this.writeKinds())],
             regexFlags: this.regexFlags,
             ruleClasses: [printNodes(this.writeRuleClasses())],
             ruleParseFns: this.writeAllRuleParseFns(),
-            parseResult: this.writeParseResultClass(),
+            parseResult: [printNodes(this.writeParseResultInterface())],
             usesEOF: this.usesEOFInModel(),
             eofType: this.erasableSyntax ? this.astKindsType("$EOF") : `ASTKinds.$EOF`,
             includeGrammar: this.includeGrammar,

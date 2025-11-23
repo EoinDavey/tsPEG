@@ -39,7 +39,8 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-    }
+}
+
     public matchS($$dpth: number, $$cr?: ErrorTracker): Nullable<S> {
         return this.run<S>($$dpth,
             () => {
@@ -214,6 +215,7 @@ export interface ParseResult {
     ast: Nullable<S>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

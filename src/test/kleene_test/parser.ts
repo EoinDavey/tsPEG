@@ -33,7 +33,8 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-    }
+}
+
     public matchspec($$dpth: number, $$cr?: ErrorTracker): Nullable<spec> {
         return this.loop<spec_$0>(() => this.matchspec_$0($$dpth + 1, $$cr), 0, -1);
     }
@@ -189,6 +190,7 @@ export interface ParseResult {
     ast: Nullable<spec>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

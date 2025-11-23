@@ -65,9 +65,14 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-        this.$scope$rule$memo.clear();
-    }
-    protected $scope$rule$memo: Map<number, [Nullable<rule>, PosInfo]> = new Map();
+    this.$scope$rule$memo.clear();
+}
+
+    protected $scope$rule$memo: Map<number, [
+    Nullable<rule>,
+    PosInfo
+]> = new Map();
+
     public matchlowercase($$dpth: number, $$cr?: ErrorTracker): Nullable<lowercase> {
         return this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr);
     }
@@ -284,6 +289,7 @@ export interface ParseResult {
     ast: Nullable<lowercase>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

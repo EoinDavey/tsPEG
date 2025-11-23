@@ -494,7 +494,8 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-    }
+}
+
     public matchGRAM($$dpth: number, $$cr?: ErrorTracker): Nullable<GRAM> {
         return this.run<GRAM>($$dpth,
             () => {
@@ -1886,6 +1887,7 @@ export interface ParseResult {
     ast: Nullable<GRAM>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

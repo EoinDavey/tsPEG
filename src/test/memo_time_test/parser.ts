@@ -174,21 +174,44 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-        this.$scope$E0$memo.clear();
-        this.$scope$E1$memo.clear();
-        this.$scope$E2$memo.clear();
-        this.$scope$E3$memo.clear();
-        this.$scope$E4$memo.clear();
-        this.$scope$ATOM$memo.clear();
-        this.$scope$INT$memo.clear();
-    }
-    protected $scope$E0$memo: Map<number, [Nullable<E0>, PosInfo]> = new Map();
-    protected $scope$E1$memo: Map<number, [Nullable<E1>, PosInfo]> = new Map();
-    protected $scope$E2$memo: Map<number, [Nullable<E2>, PosInfo]> = new Map();
-    protected $scope$E3$memo: Map<number, [Nullable<E3>, PosInfo]> = new Map();
-    protected $scope$E4$memo: Map<number, [Nullable<E4>, PosInfo]> = new Map();
-    protected $scope$ATOM$memo: Map<number, [Nullable<ATOM>, PosInfo]> = new Map();
-    protected $scope$INT$memo: Map<number, [Nullable<INT>, PosInfo]> = new Map();
+    this.$scope$E0$memo.clear();
+    this.$scope$E1$memo.clear();
+    this.$scope$E2$memo.clear();
+    this.$scope$E3$memo.clear();
+    this.$scope$E4$memo.clear();
+    this.$scope$ATOM$memo.clear();
+    this.$scope$INT$memo.clear();
+}
+
+    protected $scope$E0$memo: Map<number, [
+    Nullable<E0>,
+    PosInfo
+]> = new Map();
+protected $scope$E1$memo: Map<number, [
+    Nullable<E1>,
+    PosInfo
+]> = new Map();
+protected $scope$E2$memo: Map<number, [
+    Nullable<E2>,
+    PosInfo
+]> = new Map();
+protected $scope$E3$memo: Map<number, [
+    Nullable<E3>,
+    PosInfo
+]> = new Map();
+protected $scope$E4$memo: Map<number, [
+    Nullable<E4>,
+    PosInfo
+]> = new Map();
+protected $scope$ATOM$memo: Map<number, [
+    Nullable<ATOM>,
+    PosInfo
+]> = new Map();
+protected $scope$INT$memo: Map<number, [
+    Nullable<INT>,
+    PosInfo
+]> = new Map();
+
     public matchE0($$dpth: number, $$cr?: ErrorTracker): Nullable<E0> {
         return this.memoise(
             () => {
@@ -540,6 +563,7 @@ export interface ParseResult {
     ast: Nullable<E0>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

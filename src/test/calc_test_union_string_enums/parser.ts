@@ -129,7 +129,8 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-    }
+}
+
     public matchSUM($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM> {
         return this.run<SUM>($$dpth,
             () => {
@@ -383,6 +384,7 @@ export interface ParseResult {
     ast: Nullable<SUM>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

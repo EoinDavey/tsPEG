@@ -121,11 +121,19 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-        this.$scope$SUM$memo.clear();
-        this.$scope$FAC$memo.clear();
-    }
-    protected $scope$SUM$memo: Map<number, [Nullable<SUM>, PosInfo]> = new Map();
-    protected $scope$FAC$memo: Map<number, [Nullable<FAC>, PosInfo]> = new Map();
+    this.$scope$SUM$memo.clear();
+    this.$scope$FAC$memo.clear();
+}
+
+    protected $scope$SUM$memo: Map<number, [
+    Nullable<SUM>,
+    PosInfo
+]> = new Map();
+protected $scope$FAC$memo: Map<number, [
+    Nullable<FAC>,
+    PosInfo
+]> = new Map();
+
     public matchSUM($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM> {
         const fn = () => {
             return this.choice<SUM>([
@@ -423,6 +431,7 @@ export interface ParseResult {
     ast: Nullable<SUM>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;

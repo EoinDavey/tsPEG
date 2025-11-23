@@ -139,19 +139,39 @@ export class Parser {
         return this.pos.overallPos === this.input.length;
     }
     public clearMemos(): void {
-        this.$scope$S$memo.clear();
-        this.$scope$E0$memo.clear();
-        this.$scope$E1$memo.clear();
-        this.$scope$ATOM$memo.clear();
-        this.$scope$INT$memo.clear();
-        this.$scope$_$memo.clear();
-    }
-    protected $scope$S$memo: Map<number, [Nullable<S>, PosInfo]> = new Map();
-    protected $scope$E0$memo: Map<number, [Nullable<E0>, PosInfo]> = new Map();
-    protected $scope$E1$memo: Map<number, [Nullable<E1>, PosInfo]> = new Map();
-    protected $scope$ATOM$memo: Map<number, [Nullable<ATOM>, PosInfo]> = new Map();
-    protected $scope$INT$memo: Map<number, [Nullable<INT>, PosInfo]> = new Map();
-    protected $scope$_$memo: Map<number, [Nullable<_>, PosInfo]> = new Map();
+    this.$scope$S$memo.clear();
+    this.$scope$E0$memo.clear();
+    this.$scope$E1$memo.clear();
+    this.$scope$ATOM$memo.clear();
+    this.$scope$INT$memo.clear();
+    this.$scope$_$memo.clear();
+}
+
+    protected $scope$S$memo: Map<number, [
+    Nullable<S>,
+    PosInfo
+]> = new Map();
+protected $scope$E0$memo: Map<number, [
+    Nullable<E0>,
+    PosInfo
+]> = new Map();
+protected $scope$E1$memo: Map<number, [
+    Nullable<E1>,
+    PosInfo
+]> = new Map();
+protected $scope$ATOM$memo: Map<number, [
+    Nullable<ATOM>,
+    PosInfo
+]> = new Map();
+protected $scope$INT$memo: Map<number, [
+    Nullable<INT>,
+    PosInfo
+]> = new Map();
+protected $scope$_$memo: Map<number, [
+    Nullable<_>,
+    PosInfo
+]> = new Map();
+
     public matchS($$dpth: number, $$cr?: ErrorTracker): Nullable<S> {
         return this.memoise(
             () => {
@@ -449,6 +469,7 @@ export interface ParseResult {
     ast: Nullable<S>;
     errs: SyntaxErr[];
 }
+
 export interface PosInfo {
     readonly overallPos: number;
     readonly line: number;
