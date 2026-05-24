@@ -53,48 +53,44 @@ export class Parser {
 }
 
     public matchA($$dpth: number, $$cr?: ErrorTracker): Nullable<A> {
-        return this.run<A>($$dpth,
-            () => {
-                let $$res: Nullable<A> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:match something)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = new A();
-                }
-                return $$res;
-            });
+    return this.run<A>($$dpth, () => {
+        var $$res: Nullable<A> = null;
+        if (true && this.regexAccept(String.raw `(?:match something)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = new A();
+        }
+        return $$res;
+    });
+}
+public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
+    return this.run<B>($$dpth, () => {
+        var $$res: Nullable<B> = null;
+        if (true && this.matchA($$dpth + 1, $$cr) !== null) {
+            $$res = new B();
+        }
+        return $$res;
+    });
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchA(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchA(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
-        return this.run<B>($$dpth,
-            () => {
-                let $$res: Nullable<B> = null;
-                if (true
-                    && this.matchA($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = new B();
-                }
-                return $$res;
-            });
-    }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchA(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchA(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchA(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchA(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

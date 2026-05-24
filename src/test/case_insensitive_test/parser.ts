@@ -35,39 +35,35 @@ export class Parser {
 }
 
     public matchstart($$dpth: number, $$cr?: ErrorTracker): Nullable<start> {
-        return this.run<start>($$dpth,
-            () => {
-                let $$res: Nullable<start> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:SELECT)`, "i", $$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:FROM)`, "i", $$dpth + 1, $$cr) !== null
-                    && this.match$EOF($$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.start, };
-                }
-                return $$res;
-            });
+    return this.run<start>($$dpth, () => {
+        var $$res: Nullable<start> = null;
+        if (true && this.regexAccept(String.raw `(?:SELECT)`, "i", $$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:FROM)`, "i", $$dpth + 1, $$cr) !== null && this.match$EOF($$cr) !== null) {
+            $$res = { kind: ASTKinds.start };
+        }
+        return $$res;
+    });
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchstart(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchstart(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchstart(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchstart(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchstart(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchstart(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

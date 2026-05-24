@@ -209,494 +209,326 @@ export class Parser {
 }
 
     public matchProgram($$dpth: number, $$cr?: ErrorTracker): Nullable<Program> {
-        return this.run<Program>($$dpth,
-            () => {
-                let $$res: Nullable<Program> = null;
-                if (true
-                    && this.loop<Melody>(() => this.matchMelody($$dpth + 1, $$cr), 0, -1) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Program, };
-                }
-                return $$res;
-            });
+    return this.run<Program>($$dpth, () => {
+        var $$res: Nullable<Program> = null;
+        if (true && this.loop<Melody>(() => this.matchMelody($$dpth + 1, $$cr), 0, -1) !== null && this.match_($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.Program };
+        }
+        return $$res;
+    });
+}
+public matchMelody($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody> {
+    return this.run<Melody>($$dpth, () => {
+        var $$res: Nullable<Melody> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:melody)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchKID($$dpth + 1, $$cr) !== null && this.loop<Melody_$0>(() => this.matchMelody_$0($$dpth + 1, $$cr), 0, -1) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:start)`, "", $$dpth + 1, $$cr) !== null && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.Melody };
+        }
+        return $$res;
+    });
+}
+public matchMelody_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody_$0> {
+    return this.run<Melody_$0>($$dpth, () => {
+        var $$res: Nullable<Melody_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchKID($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.Melody_$0 };
+        }
+        return $$res;
+    });
+}
+public matchStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt> {
+    return this.choice<Stmt>([() => this.matchStmt_1($$dpth + 1, $$cr), () => this.matchStmt_2($$dpth + 1, $$cr), () => this.matchStmt_3($$dpth + 1, $$cr), () => this.matchStmt_4($$dpth + 1, $$cr)]);
+}
+public matchStmt_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_1> {
+    return this.matchKeyStmt($$dpth + 1, $$cr);
+}
+public matchStmt_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_2> {
+    return this.matchAssignStmt($$dpth + 1, $$cr);
+}
+public matchStmt_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_3> {
+    return this.matchForStmt($$dpth + 1, $$cr);
+}
+public matchStmt_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_4> {
+    return this.matchIfStmt($$dpth + 1, $$cr);
+}
+public matchKeyStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<KeyStmt> {
+    return this.run<KeyStmt>($$dpth, () => {
+        var $$res: Nullable<KeyStmt> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchFuncs($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchExpr($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.KeyStmt };
+        }
+        return $$res;
+    });
+}
+public matchAssignStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<AssignStmt> {
+    return this.run<AssignStmt>($$dpth, () => {
+        var $$res: Nullable<AssignStmt> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchKID($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:=)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchExpr($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.AssignStmt };
+        }
+        return $$res;
+    });
+}
+public matchForStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<ForStmt> {
+    return this.run<ForStmt>($$dpth, () => {
+        var $$res: Nullable<ForStmt> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:for)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchKID($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:from)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchExpr($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:to)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchExpr($$dpth + 1, $$cr) !== null && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.ForStmt };
+        }
+        return $$res;
+    });
+}
+public matchIfStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt> {
+    return this.run<IfStmt>($$dpth, () => {
+        var $$res: Nullable<IfStmt> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:if)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchExpr($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:then)`, "", $$dpth + 1, $$cr) !== null && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null && this.matchIfStmt_$0($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.IfStmt };
+        }
+        return $$res;
+    });
+}
+public matchIfStmt_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0> {
+    return this.choice<IfStmt_$0>([() => this.matchIfStmt_$0_1($$dpth + 1, $$cr), () => this.matchIfStmt_$0_2($$dpth + 1, $$cr)]);
+}
+public matchIfStmt_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_1> {
+    return this.run<IfStmt_$0_1>($$dpth, () => {
+        var $$res: Nullable<IfStmt_$0_1> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.IfStmt_$0_1 };
+        }
+        return $$res;
+    });
+}
+public matchIfStmt_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_2> {
+    return this.run<IfStmt_$0_2>($$dpth, () => {
+        var $$res: Nullable<IfStmt_$0_2> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:else)`, "", $$dpth + 1, $$cr) !== null && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.IfStmt_$0_2 };
+        }
+        return $$res;
+    });
+}
+public matchFuncExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr> {
+    return this.run<FuncExpr>($$dpth, () => {
+        var $$res: Nullable<FuncExpr> = null;
+        if (true && this.matchExpr($$dpth + 1, $$cr) !== null && this.loop<FuncExpr_$0>(() => this.matchFuncExpr_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.FuncExpr };
+        }
+        return $$res;
+    });
+}
+public matchFuncExpr_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr_$0> {
+    return this.run<FuncExpr_$0>($$dpth, () => {
+        var $$res: Nullable<FuncExpr_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchExpr($$dpth + 1, $$cr) !== null && this.loop<string>(() => this.regexAccept(String.raw `(?: )`, "", $$dpth + 1, $$cr), 0, -1) !== null && this.negate(() => this.regexAccept(String.raw `(?:\n)`, "", $$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.FuncExpr_$0 };
+        }
+        return $$res;
+    });
+}
+public matchExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<Expr> {
+    return this.matchEq($$dpth + 1, $$cr);
+}
+public matchEq($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq> {
+    return this.run<Eq>($$dpth, () => {
+        var $$res: Nullable<Eq> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchComp($$dpth + 1, $$cr) !== null && this.loop<Eq_$0>(() => this.matchEq_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.Eq };
+        }
+        return $$res;
+    });
+}
+public matchEq_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq_$0> {
+    return this.run<Eq_$0>($$dpth, () => {
+        var $$res: Nullable<Eq_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:==)`, "", $$dpth + 1, $$cr) !== null && this.matchComp($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.Eq_$0 };
+        }
+        return $$res;
+    });
+}
+public matchComp($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp> {
+    return this.run<Comp>($$dpth, () => {
+        var $$res: Nullable<Comp> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchSum($$dpth + 1, $$cr) !== null && this.loop<Comp_$0>(() => this.matchComp_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.Comp };
+        }
+        return $$res;
+    });
+}
+public matchComp_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp_$0> {
+    return this.run<Comp_$0>($$dpth, () => {
+        var $$res: Nullable<Comp_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchCompare($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchSum($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.Comp_$0 };
+        }
+        return $$res;
+    });
+}
+public matchSum($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum> {
+    return this.run<Sum>($$dpth, () => {
+        var $$res: Nullable<Sum> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchProduct($$dpth + 1, $$cr) !== null && this.loop<Sum_$0>(() => this.matchSum_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.Sum };
+        }
+        return $$res;
+    });
+}
+public matchSum_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum_$0> {
+    return this.run<Sum_$0>($$dpth, () => {
+        var $$res: Nullable<Sum_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchPlusMinus($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchProduct($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.Sum_$0 };
+        }
+        return $$res;
+    });
+}
+public matchProduct($$dpth: number, $$cr?: ErrorTracker): Nullable<Product> {
+    return this.run<Product>($$dpth, () => {
+        var $$res: Nullable<Product> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchAtom($$dpth + 1, $$cr) !== null && this.loop<Product_$0>(() => this.matchProduct_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.Product };
+        }
+        return $$res;
+    });
+}
+public matchProduct_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Product_$0> {
+    return this.run<Product_$0>($$dpth, () => {
+        var $$res: Nullable<Product_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchMulDiv($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchAtom($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.Product_$0 };
+        }
+        return $$res;
+    });
+}
+public matchAtom($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom> {
+    return this.choice<Atom>([() => this.matchAtom_1($$dpth + 1, $$cr), () => this.matchAtom_2($$dpth + 1, $$cr), () => this.matchAtom_3($$dpth + 1, $$cr), () => this.matchAtom_4($$dpth + 1, $$cr)]);
+}
+public matchAtom_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_1> {
+    return this.matchNoteLit($$dpth + 1, $$cr);
+}
+public matchAtom_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_2> {
+    return this.matchKID($$dpth + 1, $$cr);
+}
+public matchAtom_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_3> {
+    return this.matchINT($$dpth + 1, $$cr);
+}
+public matchAtom_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_4> {
+    return this.run<Atom_4>($$dpth, () => {
+        var $$res: Nullable<Atom_4> = null;
+        if (true && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && this.matchFuncExpr($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.Atom_4 };
+        }
+        return $$res;
+    });
+}
+public matchPlusMinus($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus> {
+    return this.choice<PlusMinus>([() => this.matchPlusMinus_1($$dpth + 1, $$cr), () => this.matchPlusMinus_2($$dpth + 1, $$cr)]);
+}
+public matchPlusMinus_1($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus_1> {
+    return this.regexAccept(String.raw `(?:\+)`, "", $$dpth + 1, $$cr);
+}
+public matchPlusMinus_2($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus_2> {
+    return this.regexAccept(String.raw `(?:-)`, "", $$dpth + 1, $$cr);
+}
+public matchMulDiv($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv> {
+    return this.choice<MulDiv>([() => this.matchMulDiv_1($$dpth + 1, $$cr), () => this.matchMulDiv_2($$dpth + 1, $$cr), () => this.matchMulDiv_3($$dpth + 1, $$cr)]);
+}
+public matchMulDiv_1($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_1> {
+    return this.regexAccept(String.raw `(?:\*)`, "", $$dpth + 1, $$cr);
+}
+public matchMulDiv_2($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_2> {
+    return this.regexAccept(String.raw `(?:\/)`, "", $$dpth + 1, $$cr);
+}
+public matchMulDiv_3($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_3> {
+    return this.regexAccept(String.raw `(?:%)`, "", $$dpth + 1, $$cr);
+}
+public matchCompare($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare> {
+    return this.choice<Compare>([() => this.matchCompare_1($$dpth + 1, $$cr), () => this.matchCompare_2($$dpth + 1, $$cr), () => this.matchCompare_3($$dpth + 1, $$cr), () => this.matchCompare_4($$dpth + 1, $$cr)]);
+}
+public matchCompare_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_1> {
+    return this.regexAccept(String.raw `(?:<=)`, "", $$dpth + 1, $$cr);
+}
+public matchCompare_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_2> {
+    return this.regexAccept(String.raw `(?:>=)`, "", $$dpth + 1, $$cr);
+}
+public matchCompare_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_3> {
+    return this.regexAccept(String.raw `(?:<)`, "", $$dpth + 1, $$cr);
+}
+public matchCompare_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_4> {
+    return this.regexAccept(String.raw `(?:>)`, "", $$dpth + 1, $$cr);
+}
+public matchNoteLit($$dpth: number, $$cr?: ErrorTracker): Nullable<NoteLit> {
+    return this.regexAccept(String.raw `(?:[A-G][#b]?\d)`, "", $$dpth + 1, $$cr);
+}
+public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
+    return this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr);
+}
+public matchKeyword($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword> {
+    return this.choice<Keyword>([() => this.matchKeyword_1($$dpth + 1, $$cr), () => this.matchKeyword_2($$dpth + 1, $$cr), () => this.matchKeyword_3($$dpth + 1, $$cr), () => this.matchKeyword_4($$dpth + 1, $$cr), () => this.matchKeyword_5($$dpth + 1, $$cr), () => this.matchKeyword_6($$dpth + 1, $$cr)]);
+}
+public matchKeyword_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_1> {
+    return this.regexAccept(String.raw `(?:start)`, "", $$dpth + 1, $$cr);
+}
+public matchKeyword_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_2> {
+    return this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr);
+}
+public matchKeyword_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_3> {
+    return this.regexAccept(String.raw `(?:for)`, "", $$dpth + 1, $$cr);
+}
+public matchKeyword_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_4> {
+    return this.regexAccept(String.raw `(?:else)`, "", $$dpth + 1, $$cr);
+}
+public matchKeyword_5($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_5> {
+    return this.regexAccept(String.raw `(?:if)`, "", $$dpth + 1, $$cr);
+}
+public matchKeyword_6($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_6> {
+    return this.regexAccept(String.raw `(?:then)`, "", $$dpth + 1, $$cr);
+}
+public matchFuncs($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs> {
+    return this.choice<Funcs>([() => this.matchFuncs_1($$dpth + 1, $$cr), () => this.matchFuncs_2($$dpth + 1, $$cr)]);
+}
+public matchFuncs_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs_1> {
+    return this.regexAccept(String.raw `(?:play)`, "", $$dpth + 1, $$cr);
+}
+public matchFuncs_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs_2> {
+    return this.regexAccept(String.raw `(?:wait)`, "", $$dpth + 1, $$cr);
+}
+public matchKID($$dpth: number, $$cr?: ErrorTracker): Nullable<KID> {
+    return this.run<KID>($$dpth, () => {
+        var $$res: Nullable<KID> = null;
+        if (true && this.negate(() => this.matchKeyword($$dpth + 1, $$cr)) !== null && this.matchID($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.KID };
+        }
+        return $$res;
+    });
+}
+public matchID($$dpth: number, $$cr?: ErrorTracker): Nullable<ID> {
+    return this.regexAccept(String.raw `(?:[a-zA-Z_]+)`, "", $$dpth + 1, $$cr);
+}
+public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
+    return this.loop<string>(() => this.regexAccept(String.raw `(?:\s)`, "", $$dpth + 1, $$cr), 0, -1);
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchProgram(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchProgram(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public matchMelody($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody> {
-        return this.run<Melody>($$dpth,
-            () => {
-                let $$res: Nullable<Melody> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:melody)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchKID($$dpth + 1, $$cr) !== null
-                    && this.loop<Melody_$0>(() => this.matchMelody_$0($$dpth + 1, $$cr), 0, -1) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:start)`, "", $$dpth + 1, $$cr) !== null
-                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Melody, };
-                }
-                return $$res;
-            });
-    }
-    public matchMelody_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Melody_$0> {
-        return this.run<Melody_$0>($$dpth,
-            () => {
-                let $$res: Nullable<Melody_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchKID($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Melody_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt> {
-        return this.choice<Stmt>([
-            () => this.matchStmt_1($$dpth + 1, $$cr),
-            () => this.matchStmt_2($$dpth + 1, $$cr),
-            () => this.matchStmt_3($$dpth + 1, $$cr),
-            () => this.matchStmt_4($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchStmt_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_1> {
-        return this.matchKeyStmt($$dpth + 1, $$cr);
-    }
-    public matchStmt_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_2> {
-        return this.matchAssignStmt($$dpth + 1, $$cr);
-    }
-    public matchStmt_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_3> {
-        return this.matchForStmt($$dpth + 1, $$cr);
-    }
-    public matchStmt_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Stmt_4> {
-        return this.matchIfStmt($$dpth + 1, $$cr);
-    }
-    public matchKeyStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<KeyStmt> {
-        return this.run<KeyStmt>($$dpth,
-            () => {
-                let $$res: Nullable<KeyStmt> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchFuncs($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchExpr($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.KeyStmt, };
-                }
-                return $$res;
-            });
-    }
-    public matchAssignStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<AssignStmt> {
-        return this.run<AssignStmt>($$dpth,
-            () => {
-                let $$res: Nullable<AssignStmt> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchKID($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:=)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchExpr($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.AssignStmt, };
-                }
-                return $$res;
-            });
-    }
-    public matchForStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<ForStmt> {
-        return this.run<ForStmt>($$dpth,
-            () => {
-                let $$res: Nullable<ForStmt> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:for)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchKID($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:from)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchExpr($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:to)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchExpr($$dpth + 1, $$cr) !== null
-                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.ForStmt, };
-                }
-                return $$res;
-            });
-    }
-    public matchIfStmt($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt> {
-        return this.run<IfStmt>($$dpth,
-            () => {
-                let $$res: Nullable<IfStmt> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:if)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchExpr($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:then)`, "", $$dpth + 1, $$cr) !== null
-                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null
-                    && this.matchIfStmt_$0($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.IfStmt, };
-                }
-                return $$res;
-            });
-    }
-    public matchIfStmt_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0> {
-        return this.choice<IfStmt_$0>([
-            () => this.matchIfStmt_$0_1($$dpth + 1, $$cr),
-            () => this.matchIfStmt_$0_2($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchIfStmt_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_1> {
-        return this.run<IfStmt_$0_1>($$dpth,
-            () => {
-                let $$res: Nullable<IfStmt_$0_1> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.IfStmt_$0_1, };
-                }
-                return $$res;
-            });
-    }
-    public matchIfStmt_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<IfStmt_$0_2> {
-        return this.run<IfStmt_$0_2>($$dpth,
-            () => {
-                let $$res: Nullable<IfStmt_$0_2> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:else)`, "", $$dpth + 1, $$cr) !== null
-                    && this.loop<Stmt>(() => this.matchStmt($$dpth + 1, $$cr), 0, -1) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.IfStmt_$0_2, };
-                }
-                return $$res;
-            });
-    }
-    public matchFuncExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr> {
-        return this.run<FuncExpr>($$dpth,
-            () => {
-                let $$res: Nullable<FuncExpr> = null;
-                if (true
-                    && this.matchExpr($$dpth + 1, $$cr) !== null
-                    && this.loop<FuncExpr_$0>(() => this.matchFuncExpr_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.FuncExpr, };
-                }
-                return $$res;
-            });
-    }
-    public matchFuncExpr_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<FuncExpr_$0> {
-        return this.run<FuncExpr_$0>($$dpth,
-            () => {
-                let $$res: Nullable<FuncExpr_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchExpr($$dpth + 1, $$cr) !== null
-                    && this.loop<string>(() => this.regexAccept(String.raw `(?: )`, "", $$dpth + 1, $$cr), 0, -1) !== null
-                    && this.negate(() => this.regexAccept(String.raw `(?:\n)`, "", $$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.FuncExpr_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchExpr($$dpth: number, $$cr?: ErrorTracker): Nullable<Expr> {
-        return this.matchEq($$dpth + 1, $$cr);
-    }
-    public matchEq($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq> {
-        return this.run<Eq>($$dpth,
-            () => {
-                let $$res: Nullable<Eq> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchComp($$dpth + 1, $$cr) !== null
-                    && this.loop<Eq_$0>(() => this.matchEq_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Eq, };
-                }
-                return $$res;
-            });
-    }
-    public matchEq_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Eq_$0> {
-        return this.run<Eq_$0>($$dpth,
-            () => {
-                let $$res: Nullable<Eq_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:==)`, "", $$dpth + 1, $$cr) !== null
-                    && this.matchComp($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Eq_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchComp($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp> {
-        return this.run<Comp>($$dpth,
-            () => {
-                let $$res: Nullable<Comp> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchSum($$dpth + 1, $$cr) !== null
-                    && this.loop<Comp_$0>(() => this.matchComp_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Comp, };
-                }
-                return $$res;
-            });
-    }
-    public matchComp_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Comp_$0> {
-        return this.run<Comp_$0>($$dpth,
-            () => {
-                let $$res: Nullable<Comp_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchCompare($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchSum($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Comp_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchSum($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum> {
-        return this.run<Sum>($$dpth,
-            () => {
-                let $$res: Nullable<Sum> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchProduct($$dpth + 1, $$cr) !== null
-                    && this.loop<Sum_$0>(() => this.matchSum_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Sum, };
-                }
-                return $$res;
-            });
-    }
-    public matchSum_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Sum_$0> {
-        return this.run<Sum_$0>($$dpth,
-            () => {
-                let $$res: Nullable<Sum_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchPlusMinus($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchProduct($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Sum_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchProduct($$dpth: number, $$cr?: ErrorTracker): Nullable<Product> {
-        return this.run<Product>($$dpth,
-            () => {
-                let $$res: Nullable<Product> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchAtom($$dpth + 1, $$cr) !== null
-                    && this.loop<Product_$0>(() => this.matchProduct_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Product, };
-                }
-                return $$res;
-            });
-    }
-    public matchProduct_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<Product_$0> {
-        return this.run<Product_$0>($$dpth,
-            () => {
-                let $$res: Nullable<Product_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchMulDiv($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchAtom($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Product_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchAtom($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom> {
-        return this.choice<Atom>([
-            () => this.matchAtom_1($$dpth + 1, $$cr),
-            () => this.matchAtom_2($$dpth + 1, $$cr),
-            () => this.matchAtom_3($$dpth + 1, $$cr),
-            () => this.matchAtom_4($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchAtom_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_1> {
-        return this.matchNoteLit($$dpth + 1, $$cr);
-    }
-    public matchAtom_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_2> {
-        return this.matchKID($$dpth + 1, $$cr);
-    }
-    public matchAtom_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_3> {
-        return this.matchINT($$dpth + 1, $$cr);
-    }
-    public matchAtom_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Atom_4> {
-        return this.run<Atom_4>($$dpth,
-            () => {
-                let $$res: Nullable<Atom_4> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && this.matchFuncExpr($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.Atom_4, };
-                }
-                return $$res;
-            });
-    }
-    public matchPlusMinus($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus> {
-        return this.choice<PlusMinus>([
-            () => this.matchPlusMinus_1($$dpth + 1, $$cr),
-            () => this.matchPlusMinus_2($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchPlusMinus_1($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus_1> {
-        return this.regexAccept(String.raw `(?:\+)`, "", $$dpth + 1, $$cr);
-    }
-    public matchPlusMinus_2($$dpth: number, $$cr?: ErrorTracker): Nullable<PlusMinus_2> {
-        return this.regexAccept(String.raw `(?:-)`, "", $$dpth + 1, $$cr);
-    }
-    public matchMulDiv($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv> {
-        return this.choice<MulDiv>([
-            () => this.matchMulDiv_1($$dpth + 1, $$cr),
-            () => this.matchMulDiv_2($$dpth + 1, $$cr),
-            () => this.matchMulDiv_3($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchMulDiv_1($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_1> {
-        return this.regexAccept(String.raw `(?:\*)`, "", $$dpth + 1, $$cr);
-    }
-    public matchMulDiv_2($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_2> {
-        return this.regexAccept(String.raw `(?:\/)`, "", $$dpth + 1, $$cr);
-    }
-    public matchMulDiv_3($$dpth: number, $$cr?: ErrorTracker): Nullable<MulDiv_3> {
-        return this.regexAccept(String.raw `(?:%)`, "", $$dpth + 1, $$cr);
-    }
-    public matchCompare($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare> {
-        return this.choice<Compare>([
-            () => this.matchCompare_1($$dpth + 1, $$cr),
-            () => this.matchCompare_2($$dpth + 1, $$cr),
-            () => this.matchCompare_3($$dpth + 1, $$cr),
-            () => this.matchCompare_4($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchCompare_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_1> {
-        return this.regexAccept(String.raw `(?:<=)`, "", $$dpth + 1, $$cr);
-    }
-    public matchCompare_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_2> {
-        return this.regexAccept(String.raw `(?:>=)`, "", $$dpth + 1, $$cr);
-    }
-    public matchCompare_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_3> {
-        return this.regexAccept(String.raw `(?:<)`, "", $$dpth + 1, $$cr);
-    }
-    public matchCompare_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Compare_4> {
-        return this.regexAccept(String.raw `(?:>)`, "", $$dpth + 1, $$cr);
-    }
-    public matchNoteLit($$dpth: number, $$cr?: ErrorTracker): Nullable<NoteLit> {
-        return this.regexAccept(String.raw `(?:[A-G][#b]?\d)`, "", $$dpth + 1, $$cr);
-    }
-    public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
-        return this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr);
-    }
-    public matchKeyword($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword> {
-        return this.choice<Keyword>([
-            () => this.matchKeyword_1($$dpth + 1, $$cr),
-            () => this.matchKeyword_2($$dpth + 1, $$cr),
-            () => this.matchKeyword_3($$dpth + 1, $$cr),
-            () => this.matchKeyword_4($$dpth + 1, $$cr),
-            () => this.matchKeyword_5($$dpth + 1, $$cr),
-            () => this.matchKeyword_6($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchKeyword_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_1> {
-        return this.regexAccept(String.raw `(?:start)`, "", $$dpth + 1, $$cr);
-    }
-    public matchKeyword_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_2> {
-        return this.regexAccept(String.raw `(?:end)`, "", $$dpth + 1, $$cr);
-    }
-    public matchKeyword_3($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_3> {
-        return this.regexAccept(String.raw `(?:for)`, "", $$dpth + 1, $$cr);
-    }
-    public matchKeyword_4($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_4> {
-        return this.regexAccept(String.raw `(?:else)`, "", $$dpth + 1, $$cr);
-    }
-    public matchKeyword_5($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_5> {
-        return this.regexAccept(String.raw `(?:if)`, "", $$dpth + 1, $$cr);
-    }
-    public matchKeyword_6($$dpth: number, $$cr?: ErrorTracker): Nullable<Keyword_6> {
-        return this.regexAccept(String.raw `(?:then)`, "", $$dpth + 1, $$cr);
-    }
-    public matchFuncs($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs> {
-        return this.choice<Funcs>([
-            () => this.matchFuncs_1($$dpth + 1, $$cr),
-            () => this.matchFuncs_2($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchFuncs_1($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs_1> {
-        return this.regexAccept(String.raw `(?:play)`, "", $$dpth + 1, $$cr);
-    }
-    public matchFuncs_2($$dpth: number, $$cr?: ErrorTracker): Nullable<Funcs_2> {
-        return this.regexAccept(String.raw `(?:wait)`, "", $$dpth + 1, $$cr);
-    }
-    public matchKID($$dpth: number, $$cr?: ErrorTracker): Nullable<KID> {
-        return this.run<KID>($$dpth,
-            () => {
-                let $$res: Nullable<KID> = null;
-                if (true
-                    && this.negate(() => this.matchKeyword($$dpth + 1, $$cr)) !== null
-                    && this.matchID($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.KID, };
-                }
-                return $$res;
-            });
-    }
-    public matchID($$dpth: number, $$cr?: ErrorTracker): Nullable<ID> {
-        return this.regexAccept(String.raw `(?:[a-zA-Z_]+)`, "", $$dpth + 1, $$cr);
-    }
-    public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.loop<string>(() => this.regexAccept(String.raw `(?:\s)`, "", $$dpth + 1, $$cr), 0, -1);
-    }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchProgram(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchProgram(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchProgram(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchProgram(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

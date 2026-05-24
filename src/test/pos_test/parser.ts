@@ -49,50 +49,42 @@ export class Parser {
 }
 
     public matchEXPR($$dpth: number, $$cr?: ErrorTracker): Nullable<EXPR> {
-        return this.run<EXPR>($$dpth,
-            () => {
-                let $scope$strt: Nullable<PosInfo>;
-                let $scope$left: Nullable<Nullable<EXPR>>;
-                let $scope$end: Nullable<PosInfo>;
-                let $scope$right: Nullable<Nullable<EXPR>>;
-                let $$res: Nullable<EXPR> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$strt = this.mark()) !== null
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && (($scope$left = this.matchEXPR($$dpth + 1, $$cr)) || true)
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$end = this.mark()) !== null
-                    && (($scope$right = this.matchEXPR($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.EXPR, strt: $scope$strt, left: $scope$left, end: $scope$end, right: $scope$right};
-                }
-                return $$res;
-            });
+    return this.run<EXPR>($$dpth, () => {
+        var $scope$strt: Nullable<PosInfo>;
+        var $scope$left: Nullable<Nullable<EXPR>>;
+        var $scope$end: Nullable<PosInfo>;
+        var $scope$right: Nullable<Nullable<EXPR>>;
+        var $$res: Nullable<EXPR> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && ($scope$strt = this.mark()) !== null && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && (($scope$left = this.matchEXPR($$dpth + 1, $$cr)) || true) && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null && ($scope$end = this.mark()) !== null && (($scope$right = this.matchEXPR($$dpth + 1, $$cr)) || true) && this.match_($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.EXPR, strt: $scope$strt, left: $scope$left, end: $scope$end, right: $scope$right };
+        }
+        return $$res;
+    });
+}
+public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
+    return this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr);
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchEXPR(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchEXPR(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr);
-    }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchEXPR(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchEXPR(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchEXPR(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchEXPR(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

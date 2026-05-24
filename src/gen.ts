@@ -1,6 +1,6 @@
 import { Parser, PosInfo, SyntaxErr }  from "./parser.gen";
 import { expandTemplate } from "./template";
-import { Block, flattenBlock, writeBlock } from "./util";
+import { Block, writeBlock } from "./util";
 import { BannedNamesChecker, Checker, NoKeywords, NoRuleNameCollisionChecker, RulesExistChecker } from "./checks";
 import { matchType } from "./types";
 import { matchRule } from "./rules";
@@ -23,10 +23,10 @@ import {
     createPropertyAssignment,
     createPropertyDeclaration,
     createPropertySignature,
+    createReturnStatement,
     createStringLiteral,
     createTypeAliasDeclaration,
     createUnionTypeNode,
-    printNode,
     printNodes,
 } from "./codegen";
 
@@ -64,19 +64,6 @@ function buildAstKindsByName(astKinds: string[], numEnums: boolean): ReadonlyMap
         astKindsByName.set(kind, numEnums ? String(index) : `"${kind}"`);
     });
     return astKindsByName;
-}
-
-function memoedBody(memo: string, body: Block): Block {
-    return [
-        'return this.memoise(',
-        [
-            '() => {',
-            body,
-            '},',
-            `this.${memoName(memo)},`,
-        ],
-        ');',
-    ];
 }
 
 export function getMatchedSubstr(t: {start: PosInfo, end: PosInfo}, inputStr: string): string {
@@ -399,8 +386,8 @@ export class Generator {
         return allStatements;
     }
 
-    public writeParseIfStmt(sequence: MatchSequence): Block {
-        const checks: string[] = [];
+    public writeParseIfStmt(sequence: MatchSequence): ts.Expression[] {
+        const checks: ts.Expression[] = [];
         for (const match of sequence.matches) {
             const expr = match.expression;
             const rn = matchRule(expr);
@@ -408,40 +395,90 @@ export class Generator {
                                (expr as PostfixExpression).op.kind === PostfixOpKind.Optional;
 
             if (match.name) {
-                // Optional match
+                const assignment = ts.factory.createBinaryExpression(
+                    ts.factory.createIdentifier(addScope(match.name)),
+                    ts.SyntaxKind.EqualsToken,
+                    rn,
+                );
                 if (isOptional) {
-                    checks.push(`&& ((${addScope(match.name)} = ${printNode(rn)}) || true)`);
+                    checks.push(ts.factory.createBinaryExpression(
+                        ts.factory.createParenthesizedExpression(assignment),
+                        ts.SyntaxKind.BarBarToken,
+                        ts.factory.createTrue(),
+                    ));
                 } else {
-                    checks.push(`&& (${addScope(match.name)} = ${printNode(rn)}) !== null`);
+                    checks.push(ts.factory.createBinaryExpression(
+                        assignment,
+                        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+                        ts.factory.createNull(),
+                    ));
                 }
             } else {
-                // Optional match
                 if (isOptional) {
-                    checks.push(`&& ((${printNode(rn)}) || true)`);
+                    checks.push(ts.factory.createBinaryExpression(
+                        rn,
+                        ts.SyntaxKind.BarBarToken,
+                        ts.factory.createTrue(),
+                    ));
                 } else {
-                    checks.push(`&& ${printNode(rn)} !== null`);
+                    checks.push(ts.factory.createBinaryExpression(
+                        rn,
+                        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+                        ts.factory.createNull(),
+                    ));
                 }
             }
         }
         return checks;
     }
 
-    public writeRuleAliasFnBody(expr: MatchExpression): Block {
+    public writeRuleAliasFnBody(expr: MatchExpression): ts.Statement[] {
         return [
-            `return ${printNode(matchRule(expr))};`,
+            createReturnStatement(matchRule(expr)),
         ];
     }
 
-    public writeChoiceParseFn(name: string, sequence: MatchSequence, memo = false): Block {
-        return [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
-            memo
-                ? memoedBody(name, this.writeChoiceParseFnBody(name, sequence))
-                : this.writeChoiceParseFnBody(name, sequence),
-            "}",
-        ];
+    public writeChoiceParseFn(name: string, sequence: MatchSequence, memo = false): ts.MethodDeclaration[] {
+        let body: ts.Statement[];
+
+        if (memo) {
+            body = [createReturnStatement(
+                ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "memoise"),
+                    undefined,
+                    [
+                        ts.factory.createArrowFunction(
+                            undefined,
+                            undefined,
+                            [],
+                            undefined,
+                            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                            createBlock(this.writeChoiceParseFnBody(name, sequence), true),
+                        ),
+                        ts.factory.createPropertyAccessExpression(ts.factory.createThis(), memoName(name)),
+                    ],
+                ),
+            )];
+        } else {
+            body = this.writeChoiceParseFnBody(name, sequence);
+        }
+
+        return [ts.factory.createMethodDeclaration(
+            [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+            undefined,
+            `match${name}`,
+            undefined,
+            undefined,
+            [
+                createParameter("$$dpth", ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)),
+                createParameter("$$cr", ts.factory.createTypeReferenceNode("ErrorTracker"), undefined, true),
+            ],
+            ts.factory.createTypeReferenceNode("Nullable", [ts.factory.createTypeReferenceNode(name)]),
+            createBlock(body, true),
+        )];
     }
 
-    public writeChoiceParseFnBody(name: string, sequence: MatchSequence): Block {
+    public writeChoiceParseFnBody(name: string, sequence: MatchSequence): ts.Statement[] {
         const namedTypes = getNamedTypesFromModel(sequence);
         const type = sequence.getType();
 
@@ -449,72 +486,273 @@ export class Generator {
             return this.writeRuleAliasFnBody(sequence.matches[0].expression);
         }
 
-        return [
-            `return this.run<${name}>($$dpth,`,
-            [
-                "() => {",
+        const ifStmtCondition = this.writeParseIfStmt(sequence).reduce(
+            (acc, expr) => ts.factory.createBinaryExpression(acc, ts.SyntaxKind.AmpersandAmpersandToken, expr),
+            ts.factory.createTrue(),
+        );
+
+        const resAssignment = ts.factory.createBinaryExpression(
+            ts.factory.createIdentifier("$$res"),
+            ts.SyntaxKind.EqualsToken,
+            type === 'class'
+                ? ts.factory.createNewExpression(
+                    ts.factory.createIdentifier(name),
+                    undefined,
+                    namedTypes.map(x => ts.factory.createIdentifier(addScope(x[0]))),
+                )
+                : ts.factory.createObjectLiteralExpression([
+                    ts.factory.createPropertyAssignment("kind", ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier("ASTKinds"), name)),
+                    ...namedTypes.map(x => ts.factory.createPropertyAssignment(x[0], ts.factory.createIdentifier(addScope(x[0])))),
+                ]),
+        );
+
+        return [createReturnStatement(
+            ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "run"),
+                [ts.factory.createTypeReferenceNode(name)],
                 [
-                    ...namedTypes.map((x) => `let ${addScope(x[0])}: Nullable<${x[1]}>;`),
-                    `let $$res: Nullable<${name}> = null;`,
-                    "if (true",
-                    this.writeParseIfStmt(sequence),
-                    ") {",
-                    [
-                        type === 'class'
-                            ? `$$res = new ${name}(${namedTypes.map(x => addScope(x[0])).join(", ")});`
-                            : `$$res = {kind: ASTKinds.${name}, ${namedTypes.map(x => `${x[0]}: ${addScope(x[0])}`).join(", ")}};`,
-                    ],
-                    "}",
-                    "return $$res;",
+                    ts.factory.createIdentifier("$$dpth"),
+                    ts.factory.createArrowFunction(
+                        undefined,
+                        undefined,
+                        [],
+                        undefined,
+                        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                        createBlock([
+                            ...namedTypes.map(x => ts.factory.createVariableStatement(
+                                undefined,
+                                [ts.factory.createVariableDeclaration(
+                                    addScope(x[0]),
+                                    undefined,
+                                    ts.factory.createTypeReferenceNode("Nullable", [ts.factory.createTypeReferenceNode(x[1])]),
+                                )],
+                            )),
+                            ts.factory.createVariableStatement(
+                                undefined,
+                                [ts.factory.createVariableDeclaration(
+                                    "$$res",
+                                    undefined,
+                                    ts.factory.createTypeReferenceNode("Nullable", [ts.factory.createTypeReferenceNode(name)]),
+                                    ts.factory.createNull(),
+                                )],
+                            ),
+                            ts.factory.createIfStatement(ifStmtCondition, createBlock([
+                                ts.factory.createExpressionStatement(resAssignment),
+                            ])),
+                            createReturnStatement(ts.factory.createIdentifier("$$res")),
+                        ], true),
+                    ),
                 ],
-                "});",
-            ],
-        ];
+            ),
+        )];
     }
 
-    private writeLeftRecRuleParseFn(name: string, body: Block): Block {
+    private writeLeftRecRuleParseFn(name: string, body: ts.Statement[]): ts.MethodDeclaration[] {
         const memo = memoName(name);
         const posVar = addScope("pos");
         const oldMemoSafe = addScope("oldMemoSafe");
-        const t: Block = [`public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
+
+        return [ts.factory.createMethodDeclaration(
+            [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+            undefined,
+            `match${name}`,
+            undefined,
+            undefined,
             [
-                'const fn = () => {',
-                body,
-                '};',
-                `const ${posVar} = this.mark();`,
-                `const memo = this.${memo}.get(${posVar}.overallPos);`,
-                'if(memo !== undefined) {',
-                '    this.reset(memo[1]);',
-                '    return memo[0];',
-                '}',
-                `const ${oldMemoSafe} = this.memoSafe;`,
-                'this.memoSafe = false;',
-                `this.${memo}.set(${posVar}.overallPos, [null, ${posVar}]);`,
-                `let lastRes: Nullable<${name}> = null;`,
-                `let lastPos: PosInfo = ${posVar};`,
-                'for(;;) {',
-                [
-                    `this.reset(${posVar});`,
-                    'const res = fn();',
-                    'const end = this.mark();',
-                    'if(end.overallPos <= lastPos.overallPos)',
-                    [
-                        'break;',
-                    ],
-                    'lastRes = res;',
-                    'lastPos = end;',
-                    `this.${memo}.set(${posVar}.overallPos, [lastRes, lastPos]);`,
-                ],
-                '}',
-                'this.reset(lastPos);',
-                `this.memoSafe = ${oldMemoSafe};`,
-                'return lastRes;',
+                createParameter("$$dpth", ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)),
+                createParameter("$$cr", ts.factory.createTypeReferenceNode("ErrorTracker"), undefined, true),
             ],
-            '}'];
-        return t;
+            ts.factory.createTypeReferenceNode("Nullable", [ts.factory.createTypeReferenceNode(name)]),
+            createBlock([
+                ts.factory.createVariableStatement(
+                    [ts.factory.createModifier(ts.SyntaxKind.ConstKeyword)],
+                    [ts.factory.createVariableDeclaration(
+                        "fn",
+                        undefined,
+                        undefined,
+                        ts.factory.createArrowFunction(
+                            undefined,
+                            undefined,
+                            [],
+                            undefined,
+                            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                            createBlock(body, true),
+                        ),
+                    )],
+                ),
+                ts.factory.createVariableStatement(
+                    [ts.factory.createModifier(ts.SyntaxKind.ConstKeyword)],
+                    [ts.factory.createVariableDeclaration(
+                        posVar,
+                        undefined,
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "mark"),
+                            undefined,
+                            [],
+                        ),
+                    )],
+                ),
+                ts.factory.createVariableStatement(
+                    [ts.factory.createModifier(ts.SyntaxKind.ConstKeyword)],
+                    [ts.factory.createVariableDeclaration(
+                        "memo",
+                        undefined,
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(
+                                ts.factory.createPropertyAccessExpression(ts.factory.createThis(), memo),
+                                "get",
+                            ),
+                            undefined,
+                            [ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(posVar), "overallPos")],
+                        ),
+                    )],
+                ),
+                ts.factory.createIfStatement(
+                    ts.factory.createBinaryExpression(
+                        ts.factory.createIdentifier("memo"),
+                        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+                        ts.factory.createIdentifier("undefined"),
+                    ),
+                    createBlock([
+                        ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "reset"),
+                            undefined,
+                            [ts.factory.createElementAccessExpression(ts.factory.createIdentifier("memo"), 1)],
+                        )),
+                        createReturnStatement(ts.factory.createElementAccessExpression(ts.factory.createIdentifier("memo"), 0)),
+                    ]),
+                ),
+                ts.factory.createVariableStatement(
+                    [ts.factory.createModifier(ts.SyntaxKind.ConstKeyword)],
+                    [ts.factory.createVariableDeclaration(
+                        oldMemoSafe,
+                        undefined,
+                        undefined,
+                        ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "memoSafe"),
+                    )],
+                ),
+                ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "memoSafe"),
+                    ts.SyntaxKind.EqualsToken,
+                    ts.factory.createFalse(),
+                )),
+                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(
+                        ts.factory.createPropertyAccessExpression(ts.factory.createThis(), memo),
+                        "set",
+                    ),
+                    undefined,
+                    [
+                        ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(posVar), "overallPos"),
+                        ts.factory.createArrayLiteralExpression([ts.factory.createNull(), ts.factory.createIdentifier(posVar)]),
+                    ],
+                )),
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([
+                        ts.factory.createVariableDeclaration(
+                            "lastRes",
+                            undefined,
+                            ts.factory.createTypeReferenceNode("Nullable", [ts.factory.createTypeReferenceNode(name)]),
+                            ts.factory.createNull(),
+                        )
+                    ], ts.NodeFlags.Let),
+                ),
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([
+                        ts.factory.createVariableDeclaration(
+                            "lastPos",
+                            undefined,
+                            ts.factory.createTypeReferenceNode("PosInfo"),
+                            ts.factory.createIdentifier(posVar),
+                        )
+                    ], ts.NodeFlags.Let),
+                ),
+                ts.factory.createForStatement(
+                    undefined,
+                    ts.factory.createTrue(),
+                    undefined,
+                    createBlock([
+                        ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "reset"),
+                            undefined,
+                            [ts.factory.createIdentifier(posVar)],
+                        )),
+                        ts.factory.createVariableStatement(
+                            [ts.factory.createModifier(ts.SyntaxKind.ConstKeyword)],
+                            [ts.factory.createVariableDeclaration(
+                                "res",
+                                undefined,
+                                undefined,
+                                ts.factory.createCallExpression(ts.factory.createIdentifier("fn"), undefined, []),
+                            )],
+                        ),
+                        ts.factory.createVariableStatement(
+                            [ts.factory.createModifier(ts.SyntaxKind.ConstKeyword)],
+                            [ts.factory.createVariableDeclaration(
+                                "end",
+                                undefined,
+                                undefined,
+                                ts.factory.createCallExpression(
+                                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "mark"),
+                                    undefined,
+                                    [],
+                                ),
+                            )],
+                        ),
+                        ts.factory.createIfStatement(
+                            ts.factory.createBinaryExpression(
+                                ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier("end"), "overallPos"),
+                                ts.SyntaxKind.LessThanEqualsToken,
+                                ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier("lastPos"), "overallPos"),
+                            ),
+                            ts.factory.createBlock([ts.factory.createBreakStatement()]),
+                        ),
+                        ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+                            ts.factory.createIdentifier("lastRes"),
+                            ts.SyntaxKind.EqualsToken,
+                            ts.factory.createIdentifier("res"),
+                        )),
+                        ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+                            ts.factory.createIdentifier("lastPos"),
+                            ts.SyntaxKind.EqualsToken,
+                            ts.factory.createIdentifier("end"),
+                        )),
+                        ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(
+                                ts.factory.createPropertyAccessExpression(ts.factory.createThis(), memo),
+                                "set",
+                            ),
+                            undefined,
+                            [
+                                ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(posVar), "overallPos"),
+                                ts.factory.createArrayLiteralExpression([
+                                    ts.factory.createIdentifier("lastRes"),
+                                    ts.factory.createIdentifier("lastPos"),
+                                ]),
+                            ],
+                        )),
+                    ], true),
+                ),
+                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "reset"),
+                    undefined,
+                    [ts.factory.createIdentifier("lastPos")],
+                )),
+                ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "memoSafe"),
+                    ts.SyntaxKind.EqualsToken,
+                    ts.factory.createIdentifier(oldMemoSafe),
+                )),
+                createReturnStatement(ts.factory.createIdentifier("lastRes")),
+            ], true),
+        )];
     }
 
-    public writeRuleParseFns(rule: Rule): Block {
+    public writeRuleParseFns(rule: Rule): ts.MethodDeclaration[] {
         const nm = rule.name;
         const nms = rule.definition.alternatives.map(alt => alt.name);
 
@@ -524,76 +762,256 @@ export class Generator {
                 const body = this.writeChoiceParseFnBody(nms[0], rule.definition.alternatives[0]);
                 if(nm !== nms[0])
                     throw `${nm} != ${nms[0]}`;
-                const fn = this.writeLeftRecRuleParseFn(nm, body);
-
-                return fn;
+                return this.writeLeftRecRuleParseFn(nm, body);
             }
             const body = this.writeUnionParseBody(nm, nms);
             const fn = this.writeLeftRecRuleParseFn(nm, body);
-            const choiceFns = flattenBlock(nms.map((name, i) =>
-                this.writeChoiceParseFn(name, rule.definition.alternatives[i])));
+            const choiceFns = nms.flatMap((name, i) =>
+                this.writeChoiceParseFn(name, rule.definition.alternatives[i]));
 
             return [...fn, ...choiceFns];
         }
         if(rule.definition.alternatives.length <= 1)
             return this.writeChoiceParseFn(nm, rule.definition.alternatives[0], this.enableMemos);
+
         const union = this.writeUnionParseFn(nm, nms, this.enableMemos);
-        const choiceFns = flattenBlock(
-            nms.map((name, i) => this.writeChoiceParseFn(name, rule.definition.alternatives[i])));
+        const choiceFns = nms.flatMap((name, i) =>
+            this.writeChoiceParseFn(name, rule.definition.alternatives[i]));
         return [...union, ...choiceFns];
     }
 
-    public writeUnionParseFn(name: string, alts: string[], memo = false): Block {
-        return [
-            `public match${name}($$dpth: number, $$cr?: ErrorTracker): Nullable<${name}> {`,
-            memo
-                ? memoedBody(name, this.writeUnionParseBody(name, alts))
-                : this.writeUnionParseBody(name, alts),
-            `}`,
-        ];
+    public writeUnionParseFn(name: string, alts: string[], memo = false): ts.MethodDeclaration[] {
+        let body: ts.Statement[];
+        if (memo) {
+            body = [createReturnStatement(
+                ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "memoise"),
+                    undefined,
+                    [
+                        ts.factory.createArrowFunction(
+                            undefined,
+                            undefined,
+                            [],
+                            undefined,
+                            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                            createBlock(this.writeUnionParseBody(name, alts), true),
+                        ),
+                        ts.factory.createPropertyAccessExpression(ts.factory.createThis(), memoName(name)),
+                    ],
+                ),
+            )];
+        } else {
+            body = this.writeUnionParseBody(name, alts);
+        }
+
+        return [ts.factory.createMethodDeclaration(
+            [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+            undefined,
+            `match${name}`,
+            undefined,
+            undefined,
+            [
+                createParameter("$$dpth", ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)),
+                createParameter("$$cr", ts.factory.createTypeReferenceNode("ErrorTracker"), undefined, true),
+            ],
+            ts.factory.createTypeReferenceNode("Nullable", [ts.factory.createTypeReferenceNode(name)]),
+            createBlock(body, true),
+        )];
     }
 
-    public writeUnionParseBody(name: string, alts: string[]): Block {
-        return [
-            `return this.choice<${name}>([`,
-            alts.map(x => `() => this.match${x}($$dpth + 1, $$cr),`),
-            `]);`,
-        ];
+    public writeUnionParseBody(name: string, alts: string[]): ts.Statement[] {
+        return [createReturnStatement(
+            ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "choice"),
+                [ts.factory.createTypeReferenceNode(name)],
+                [ts.factory.createArrayLiteralExpression(
+                    alts.map(x => ts.factory.createArrowFunction(
+                        undefined,
+                        undefined,
+                        [],
+                        undefined,
+                        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), `match${x}`),
+                            undefined,
+                            [
+                                ts.factory.createBinaryExpression(
+                                    ts.factory.createIdentifier("$$dpth"),
+                                    ts.SyntaxKind.PlusToken,
+                                    ts.factory.createNumericLiteral(1),
+                                ),
+                                ts.factory.createIdentifier("$$cr"),
+                            ],
+                        ),
+                    )),
+                )],
+            ),
+        )];
     }
 
-    public writeAllRuleParseFns(): Block {
+    public writeAllRuleParseFns(): ts.MethodDeclaration[] {
         const rules = this.getExpandedRules();
-        const fns: Block = [];
+        const fns: ts.MethodDeclaration[] = [];
         for (const rule of rules)
             fns.push(...this.writeRuleParseFns(rule));
         const S: string = rules[0].name;
-        return [...fns,
-            "public test(): boolean {",
-            [
-                "const mrk = this.mark();",
-                `const res = this.match${S}(0);`,
-                "const ans = res !== null;",
-                "this.reset(mrk);",
-                "return ans;",
-            ],
-            "}",
-            "public parse(): ParseResult {",
-            [
-                "const mrk = this.mark();",
-                `const res = this.match${S}(0);`,
-                "if (res)",
-                [
-                    "return {ast: res, errs: []};",
-                ],
-                "this.reset(mrk);",
-                "const rec = new ErrorTracker();",
-                "this.clearMemos();",
-                `this.match${S}(0, rec);`,
-                "const err = rec.getErr()",
-                "return {ast: res, errs: err !== null ? [err] : []}",
-            ],
-            "}",
-        ];
+
+        const testMethod = ts.factory.createMethodDeclaration(
+            [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+            undefined,
+            "test",
+            undefined,
+            undefined,
+            [],
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.BooleanKeyword),
+            createBlock([
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
+                        "mrk",
+                        undefined,
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "mark"),
+                            undefined,
+                            [],
+                        ),
+                    )], ts.NodeFlags.Const),
+                ),
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
+                        "res",
+                        undefined,
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), `match${S}`),
+                            undefined,
+                            [ts.factory.createNumericLiteral(0)],
+                        ),
+                    )], ts.NodeFlags.Const),
+                ),
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
+                        "ans",
+                        undefined,
+                        undefined,
+                        ts.factory.createBinaryExpression(
+                            ts.factory.createIdentifier("res"),
+                            ts.SyntaxKind.ExclamationEqualsEqualsToken,
+                            ts.factory.createNull(),
+                        ),
+                    )], ts.NodeFlags.Const),
+                ),
+                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "reset"),
+                    undefined,
+                    [ts.factory.createIdentifier("mrk")],
+                )),
+                createReturnStatement(ts.factory.createIdentifier("ans")),
+            ], true),
+        );
+
+        const parseMethod = ts.factory.createMethodDeclaration(
+            [ts.factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+            undefined,
+            "parse",
+            undefined,
+            undefined,
+            [],
+            ts.factory.createTypeReferenceNode("ParseResult"),
+            createBlock([
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
+                        "mrk",
+                        undefined,
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "mark"),
+                            undefined,
+                            [],
+                        ),
+                    )], ts.NodeFlags.Const),
+                ),
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
+                        "res",
+                        undefined,
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), `match${S}`),
+                            undefined,
+                            [ts.factory.createNumericLiteral(0)],
+                        ),
+                    )], ts.NodeFlags.Const),
+                ),
+                ts.factory.createIfStatement(
+                    ts.factory.createIdentifier("res"),
+                    createBlock([
+                        createReturnStatement(ts.factory.createObjectLiteralExpression([
+                            ts.factory.createPropertyAssignment("ast", ts.factory.createIdentifier("res")),
+                            ts.factory.createPropertyAssignment("errs", ts.factory.createArrayLiteralExpression([])),
+                        ])),
+                    ]),
+                ),
+                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "reset"),
+                    undefined,
+                    [ts.factory.createIdentifier("mrk")],
+                )),
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
+                        "rec",
+                        undefined,
+                        undefined,
+                        ts.factory.createNewExpression(ts.factory.createIdentifier("ErrorTracker"), undefined, []),
+                    )], ts.NodeFlags.Const),
+                ),
+                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), "clearMemos"),
+                    undefined,
+                    [],
+                )),
+                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), `match${S}`),
+                    undefined,
+                    [ts.factory.createNumericLiteral(0), ts.factory.createIdentifier("rec")],
+                )),
+                ts.factory.createVariableStatement(
+                    undefined,
+                    ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
+                        "err",
+                        undefined,
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier("rec"), "getErr"),
+                            undefined,
+                            [],
+                        ),
+                    )], ts.NodeFlags.Const),
+                ),
+                createReturnStatement(ts.factory.createObjectLiteralExpression([
+                    ts.factory.createPropertyAssignment("ast", ts.factory.createIdentifier("res")),
+                    ts.factory.createPropertyAssignment("errs", ts.factory.createConditionalExpression(
+                        ts.factory.createBinaryExpression(
+                            ts.factory.createIdentifier("err"),
+                            ts.SyntaxKind.ExclamationEqualsEqualsToken,
+                            ts.factory.createNull(),
+                        ),
+                        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+                        ts.factory.createArrayLiteralExpression([ts.factory.createIdentifier("err")]),
+                        ts.factory.createToken(ts.SyntaxKind.ColonToken),
+                        ts.factory.createArrayLiteralExpression([]),
+                    )),
+                ])),
+            ], true),
+        );
+
+        return [...fns, testMethod, parseMethod];
     }
 
     public writeParseResultInterface(): ts.Statement[] {
@@ -630,7 +1048,7 @@ export class Generator {
             kinds: [printNodes(this.writeKinds())],
             regexFlags: this.regexFlags,
             ruleClasses: [printNodes(this.writeRuleClasses())],
-            ruleParseFns: this.writeAllRuleParseFns(),
+            ruleParseFns: [printNodes(this.writeAllRuleParseFns())],
             parseResult: [printNodes(this.writeParseResultInterface())],
             usesEOF: this.usesEOFInModel(),
             eofType: this.erasableSyntax ? this.astKindsType("$EOF") : `ASTKinds.$EOF`,

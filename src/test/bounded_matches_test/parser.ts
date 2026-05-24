@@ -42,53 +42,47 @@ export class Parser {
 }
 
     public matchS($$dpth: number, $$cr?: ErrorTracker): Nullable<S> {
-        return this.run<S>($$dpth,
-            () => {
-                let $$res: Nullable<S> = null;
-                if (true
-                    && this.matchS_$0($$dpth + 1, $$cr) !== null
-                    && this.match$EOF($$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.S, };
-                }
-                return $$res;
-            });
+    return this.run<S>($$dpth, () => {
+        var $$res: Nullable<S> = null;
+        if (true && this.matchS_$0($$dpth + 1, $$cr) !== null && this.match$EOF($$cr) !== null) {
+            $$res = { kind: ASTKinds.S };
+        }
+        return $$res;
+    });
+}
+public matchS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0> {
+    return this.choice<S_$0>([() => this.matchS_$0_1($$dpth + 1, $$cr), () => this.matchS_$0_2($$dpth + 1, $$cr), () => this.matchS_$0_3($$dpth + 1, $$cr)]);
+}
+public matchS_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_1> {
+    return this.loop<string>(() => this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr), 2, 2);
+}
+public matchS_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_2> {
+    return this.loop<string>(() => this.regexAccept(String.raw `(?:b)`, "", $$dpth + 1, $$cr), 3, -1);
+}
+public matchS_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_3> {
+    return this.loop<string>(() => this.regexAccept(String.raw `(?:c)`, "", $$dpth + 1, $$cr), 3, 5);
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchS(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchS(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public matchS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0> {
-        return this.choice<S_$0>([
-            () => this.matchS_$0_1($$dpth + 1, $$cr),
-            () => this.matchS_$0_2($$dpth + 1, $$cr),
-            () => this.matchS_$0_3($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchS_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_1> {
-        return this.loop<string>(() => this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr), 2, 2);
-    }
-    public matchS_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_2> {
-        return this.loop<string>(() => this.regexAccept(String.raw `(?:b)`, "", $$dpth + 1, $$cr), 3, -1);
-    }
-    public matchS_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<S_$0_3> {
-        return this.loop<string>(() => this.regexAccept(String.raw `(?:c)`, "", $$dpth + 1, $$cr), 3, 5);
-    }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchS(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchS(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchS(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchS(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

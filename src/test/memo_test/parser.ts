@@ -173,176 +173,120 @@ protected $scope$_$memo: Map<number, [
 ]> = new Map();
 
     public matchS($$dpth: number, $$cr?: ErrorTracker): Nullable<S> {
-        return this.memoise(
-            () => {
-                return this.run<S>($$dpth,
-                    () => {
-                        let $scope$expr: Nullable<E0>;
-                        let $$res: Nullable<S> = null;
-                        if (true
-                            && ($scope$expr = this.matchE0($$dpth + 1, $$cr)) !== null
-                            && this.match_($$dpth + 1, $$cr) !== null
-                            && this.match$EOF($$cr) !== null
-                        ) {
-                            $$res = new S($scope$expr);
-                        }
-                        return $$res;
-                    });
-            },
-            this.$scope$S$memo,
-        );
+    return this.memoise(() => {
+        return this.run<S>($$dpth, () => {
+            var $scope$expr: Nullable<E0>;
+            var $$res: Nullable<S> = null;
+            if (true && ($scope$expr = this.matchE0($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && this.match$EOF($$cr) !== null) {
+                $$res = new S($scope$expr);
+            }
+            return $$res;
+        });
+    }, this.$scope$S$memo);
+}
+public matchE0($$dpth: number, $$cr?: ErrorTracker): Nullable<E0> {
+    return this.memoise(() => {
+        return this.choice<E0>([() => this.matchE0_1($$dpth + 1, $$cr), () => this.matchE0_2($$dpth + 1, $$cr)]);
+    }, this.$scope$E0$memo);
+}
+public matchE0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<E0_1> {
+    return this.run<E0_1>($$dpth, () => {
+        var $scope$a: Nullable<E1>;
+        var $scope$op: Nullable<string>;
+        var $scope$b: Nullable<E0>;
+        var $$res: Nullable<E0_1> = null;
+        if (true && ($scope$a = this.matchE1($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && ($scope$op = this.regexAccept(String.raw `(?:\+|-)`, "", $$dpth + 1, $$cr)) !== null && ($scope$b = this.matchE0($$dpth + 1, $$cr)) !== null) {
+            $$res = new E0_1($scope$a, $scope$op, $scope$b);
+        }
+        return $$res;
+    });
+}
+public matchE0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<E0_2> {
+    return this.matchE1($$dpth + 1, $$cr);
+}
+public matchE1($$dpth: number, $$cr?: ErrorTracker): Nullable<E1> {
+    return this.memoise(() => {
+        return this.choice<E1>([() => this.matchE1_1($$dpth + 1, $$cr), () => this.matchE1_2($$dpth + 1, $$cr)]);
+    }, this.$scope$E1$memo);
+}
+public matchE1_1($$dpth: number, $$cr?: ErrorTracker): Nullable<E1_1> {
+    return this.run<E1_1>($$dpth, () => {
+        var $scope$a: Nullable<ATOM>;
+        var $scope$op: Nullable<string>;
+        var $scope$b: Nullable<E1>;
+        var $$res: Nullable<E1_1> = null;
+        if (true && ($scope$a = this.matchATOM($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && ($scope$op = this.regexAccept(String.raw `(?:\*|\/)`, "", $$dpth + 1, $$cr)) !== null && ($scope$b = this.matchE1($$dpth + 1, $$cr)) !== null) {
+            $$res = new E1_1($scope$a, $scope$op, $scope$b);
+        }
+        return $$res;
+    });
+}
+public matchE1_2($$dpth: number, $$cr?: ErrorTracker): Nullable<E1_2> {
+    return this.matchATOM($$dpth + 1, $$cr);
+}
+public matchATOM($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM> {
+    return this.memoise(() => {
+        return this.choice<ATOM>([() => this.matchATOM_1($$dpth + 1, $$cr), () => this.matchATOM_2($$dpth + 1, $$cr)]);
+    }, this.$scope$ATOM$memo);
+}
+public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
+    return this.run<ATOM_1>($$dpth, () => {
+        var $scope$val: Nullable<INT>;
+        var $$res: Nullable<ATOM_1> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && ($scope$val = this.matchINT($$dpth + 1, $$cr)) !== null) {
+            $$res = new ATOM_1($scope$val);
+        }
+        return $$res;
+    });
+}
+public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
+    return this.run<ATOM_2>($$dpth, () => {
+        var $scope$val: Nullable<E0>;
+        var $$res: Nullable<ATOM_2> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && ($scope$val = this.matchE0($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = new ATOM_2($scope$val);
+        }
+        return $$res;
+    });
+}
+public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
+    return this.memoise(() => {
+        return this.run<INT>($$dpth, () => {
+            var $scope$val: Nullable<string>;
+            var $$res: Nullable<INT> = null;
+            if (true && ($scope$val = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null) {
+                $$res = new INT($scope$val);
+            }
+            return $$res;
+        });
+    }, this.$scope$INT$memo);
+}
+public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
+    return this.memoise(() => {
+        return this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr);
+    }, this.$scope$_$memo);
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchS(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchS(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public matchE0($$dpth: number, $$cr?: ErrorTracker): Nullable<E0> {
-        return this.memoise(
-            () => {
-                return this.choice<E0>([
-                    () => this.matchE0_1($$dpth + 1, $$cr),
-                    () => this.matchE0_2($$dpth + 1, $$cr),
-                ]);
-            },
-            this.$scope$E0$memo,
-        );
-    }
-    public matchE0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<E0_1> {
-        return this.run<E0_1>($$dpth,
-            () => {
-                let $scope$a: Nullable<E1>;
-                let $scope$op: Nullable<string>;
-                let $scope$b: Nullable<E0>;
-                let $$res: Nullable<E0_1> = null;
-                if (true
-                    && ($scope$a = this.matchE1($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$op = this.regexAccept(String.raw `(?:\+|-)`, "", $$dpth + 1, $$cr)) !== null
-                    && ($scope$b = this.matchE0($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = new E0_1($scope$a, $scope$op, $scope$b);
-                }
-                return $$res;
-            });
-    }
-    public matchE0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<E0_2> {
-        return this.matchE1($$dpth + 1, $$cr);
-    }
-    public matchE1($$dpth: number, $$cr?: ErrorTracker): Nullable<E1> {
-        return this.memoise(
-            () => {
-                return this.choice<E1>([
-                    () => this.matchE1_1($$dpth + 1, $$cr),
-                    () => this.matchE1_2($$dpth + 1, $$cr),
-                ]);
-            },
-            this.$scope$E1$memo,
-        );
-    }
-    public matchE1_1($$dpth: number, $$cr?: ErrorTracker): Nullable<E1_1> {
-        return this.run<E1_1>($$dpth,
-            () => {
-                let $scope$a: Nullable<ATOM>;
-                let $scope$op: Nullable<string>;
-                let $scope$b: Nullable<E1>;
-                let $$res: Nullable<E1_1> = null;
-                if (true
-                    && ($scope$a = this.matchATOM($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$op = this.regexAccept(String.raw `(?:\*|\/)`, "", $$dpth + 1, $$cr)) !== null
-                    && ($scope$b = this.matchE1($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = new E1_1($scope$a, $scope$op, $scope$b);
-                }
-                return $$res;
-            });
-    }
-    public matchE1_2($$dpth: number, $$cr?: ErrorTracker): Nullable<E1_2> {
-        return this.matchATOM($$dpth + 1, $$cr);
-    }
-    public matchATOM($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM> {
-        return this.memoise(
-            () => {
-                return this.choice<ATOM>([
-                    () => this.matchATOM_1($$dpth + 1, $$cr),
-                    () => this.matchATOM_2($$dpth + 1, $$cr),
-                ]);
-            },
-            this.$scope$ATOM$memo,
-        );
-    }
-    public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
-        return this.run<ATOM_1>($$dpth,
-            () => {
-                let $scope$val: Nullable<INT>;
-                let $$res: Nullable<ATOM_1> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.matchINT($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = new ATOM_1($scope$val);
-                }
-                return $$res;
-            });
-    }
-    public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
-        return this.run<ATOM_2>($$dpth,
-            () => {
-                let $scope$val: Nullable<E0>;
-                let $$res: Nullable<ATOM_2> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.matchE0($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = new ATOM_2($scope$val);
-                }
-                return $$res;
-            });
-    }
-    public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
-        return this.memoise(
-            () => {
-                return this.run<INT>($$dpth,
-                    () => {
-                        let $scope$val: Nullable<string>;
-                        let $$res: Nullable<INT> = null;
-                        if (true
-                            && ($scope$val = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
-                        ) {
-                            $$res = new INT($scope$val);
-                        }
-                        return $$res;
-                    });
-            },
-            this.$scope$INT$memo,
-        );
-    }
-    public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.memoise(
-            () => {
-                return this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr);
-            },
-            this.$scope$_$memo,
-        );
-    }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchS(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchS(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchS(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchS(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

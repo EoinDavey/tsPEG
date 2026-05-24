@@ -50,84 +50,77 @@ export class Parser {
 ]> = new Map();
 
     public matchA($$dpth: number, $$cr?: ErrorTracker): Nullable<A> {
-        const fn = () => {
-            return this.choice<A>([
-                () => this.matchA_1($$dpth + 1, $$cr),
-                () => this.matchA_2($$dpth + 1, $$cr),
-            ]);
-        };
-        const $scope$pos = this.mark();
-        const memo = this.$scope$A$memo.get($scope$pos.overallPos);
-        if(memo !== undefined) {
-            this.reset(memo[1]);
-            return memo[0];
+    const var fn = () => {
+        return this.choice<A>([() => this.matchA_1($$dpth + 1, $$cr), () => this.matchA_2($$dpth + 1, $$cr)]);
+    };
+    const var $scope$pos = this.mark();
+    const var memo = this.$scope$A$memo.get($scope$pos.overallPos);
+    if (memo !== undefined) {
+        this.reset(memo[1]);
+        return memo[0];
+    }
+    const var $scope$oldMemoSafe = this.memoSafe;
+    this.memoSafe = false;
+    this.$scope$A$memo.set($scope$pos.overallPos, [null, $scope$pos]);
+    let lastRes: Nullable<A> = null;
+    let lastPos: PosInfo = $scope$pos;
+    for (; true;) {
+        this.reset($scope$pos);
+        const var res = fn();
+        const var end = this.mark();
+        if (end.overallPos <= lastPos.overallPos) {
+            break;
         }
-        const $scope$oldMemoSafe = this.memoSafe;
-        this.memoSafe = false;
-        this.$scope$A$memo.set($scope$pos.overallPos, [null, $scope$pos]);
-        let lastRes: Nullable<A> = null;
-        let lastPos: PosInfo = $scope$pos;
-        for(;;) {
-            this.reset($scope$pos);
-            const res = fn();
-            const end = this.mark();
-            if(end.overallPos <= lastPos.overallPos)
-                break;
-            lastRes = res;
-            lastPos = end;
-            this.$scope$A$memo.set($scope$pos.overallPos, [lastRes, lastPos]);
+        lastRes = res;
+        lastPos = end;
+        this.$scope$A$memo.set($scope$pos.overallPos, [lastRes, lastPos]);
+    }
+    this.reset(lastPos);
+    this.memoSafe = $scope$oldMemoSafe;
+    return lastRes;
+}
+public matchA_1($$dpth: number, $$cr?: ErrorTracker): Nullable<A_1> {
+    return this.run<A_1>($$dpth, () => {
+        var $$res: Nullable<A_1> = null;
+        if (true && this.matchB($$dpth + 1, $$cr) !== null && this.matchB($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.A_1 };
         }
-        this.reset(lastPos);
-        this.memoSafe = $scope$oldMemoSafe;
-        return lastRes;
+        return $$res;
+    });
+}
+public matchA_2($$dpth: number, $$cr?: ErrorTracker): Nullable<A_2> {
+    return this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr);
+}
+public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
+    return this.choice<B>([() => this.matchB_1($$dpth + 1, $$cr), () => this.matchB_2($$dpth + 1, $$cr)]);
+}
+public matchB_1($$dpth: number, $$cr?: ErrorTracker): Nullable<B_1> {
+    return this.matchA($$dpth + 1, $$cr);
+}
+public matchB_2($$dpth: number, $$cr?: ErrorTracker): Nullable<B_2> {
+    return this.regexAccept(String.raw `(?:b)`, "", $$dpth + 1, $$cr);
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchA(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchA(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public matchA_1($$dpth: number, $$cr?: ErrorTracker): Nullable<A_1> {
-        return this.run<A_1>($$dpth,
-            () => {
-                let $$res: Nullable<A_1> = null;
-                if (true
-                    && this.matchB($$dpth + 1, $$cr) !== null
-                    && this.matchB($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.A_1, };
-                }
-                return $$res;
-            });
-    }
-    public matchA_2($$dpth: number, $$cr?: ErrorTracker): Nullable<A_2> {
-        return this.regexAccept(String.raw `(?:a)`, "", $$dpth + 1, $$cr);
-    }
-    public matchB($$dpth: number, $$cr?: ErrorTracker): Nullable<B> {
-        return this.choice<B>([
-            () => this.matchB_1($$dpth + 1, $$cr),
-            () => this.matchB_2($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchB_1($$dpth: number, $$cr?: ErrorTracker): Nullable<B_1> {
-        return this.matchA($$dpth + 1, $$cr);
-    }
-    public matchB_2($$dpth: number, $$cr?: ErrorTracker): Nullable<B_2> {
-        return this.regexAccept(String.raw `(?:b)`, "", $$dpth + 1, $$cr);
-    }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchA(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchA(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchA(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchA(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

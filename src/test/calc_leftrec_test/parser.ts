@@ -135,182 +135,152 @@ protected $scope$FAC$memo: Map<number, [
 ]> = new Map();
 
     public matchSUM($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM> {
-        const fn = () => {
-            return this.choice<SUM>([
-                () => this.matchSUM_1($$dpth + 1, $$cr),
-                () => this.matchSUM_2($$dpth + 1, $$cr),
-            ]);
-        };
-        const $scope$pos = this.mark();
-        const memo = this.$scope$SUM$memo.get($scope$pos.overallPos);
-        if(memo !== undefined) {
-            this.reset(memo[1]);
-            return memo[0];
+    const var fn = () => {
+        return this.choice<SUM>([() => this.matchSUM_1($$dpth + 1, $$cr), () => this.matchSUM_2($$dpth + 1, $$cr)]);
+    };
+    const var $scope$pos = this.mark();
+    const var memo = this.$scope$SUM$memo.get($scope$pos.overallPos);
+    if (memo !== undefined) {
+        this.reset(memo[1]);
+        return memo[0];
+    }
+    const var $scope$oldMemoSafe = this.memoSafe;
+    this.memoSafe = false;
+    this.$scope$SUM$memo.set($scope$pos.overallPos, [null, $scope$pos]);
+    let lastRes: Nullable<SUM> = null;
+    let lastPos: PosInfo = $scope$pos;
+    for (; true;) {
+        this.reset($scope$pos);
+        const var res = fn();
+        const var end = this.mark();
+        if (end.overallPos <= lastPos.overallPos) {
+            break;
         }
-        const $scope$oldMemoSafe = this.memoSafe;
-        this.memoSafe = false;
-        this.$scope$SUM$memo.set($scope$pos.overallPos, [null, $scope$pos]);
-        let lastRes: Nullable<SUM> = null;
-        let lastPos: PosInfo = $scope$pos;
-        for(;;) {
-            this.reset($scope$pos);
-            const res = fn();
-            const end = this.mark();
-            if(end.overallPos <= lastPos.overallPos)
-                break;
-            lastRes = res;
-            lastPos = end;
-            this.$scope$SUM$memo.set($scope$pos.overallPos, [lastRes, lastPos]);
+        lastRes = res;
+        lastPos = end;
+        this.$scope$SUM$memo.set($scope$pos.overallPos, [lastRes, lastPos]);
+    }
+    this.reset(lastPos);
+    this.memoSafe = $scope$oldMemoSafe;
+    return lastRes;
+}
+public matchSUM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM_1> {
+    return this.run<SUM_1>($$dpth, () => {
+        var $scope$l: Nullable<SUM>;
+        var $scope$op: Nullable<string>;
+        var $scope$r: Nullable<FAC>;
+        var $$res: Nullable<SUM_1> = null;
+        if (true && ($scope$l = this.matchSUM($$dpth + 1, $$cr)) !== null && ($scope$op = this.regexAccept(String.raw `(?:\+|-)`, "", $$dpth + 1, $$cr)) !== null && ($scope$r = this.matchFAC($$dpth + 1, $$cr)) !== null) {
+            $$res = new SUM_1($scope$l, $scope$op, $scope$r);
         }
-        this.reset(lastPos);
-        this.memoSafe = $scope$oldMemoSafe;
-        return lastRes;
+        return $$res;
+    });
+}
+public matchSUM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM_2> {
+    return this.matchFAC($$dpth + 1, $$cr);
+}
+public matchFAC($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC> {
+    const var fn = () => {
+        return this.choice<FAC>([() => this.matchFAC_1($$dpth + 1, $$cr), () => this.matchFAC_2($$dpth + 1, $$cr)]);
+    };
+    const var $scope$pos = this.mark();
+    const var memo = this.$scope$FAC$memo.get($scope$pos.overallPos);
+    if (memo !== undefined) {
+        this.reset(memo[1]);
+        return memo[0];
     }
-    public matchSUM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM_1> {
-        return this.run<SUM_1>($$dpth,
-            () => {
-                let $scope$l: Nullable<SUM>;
-                let $scope$op: Nullable<string>;
-                let $scope$r: Nullable<FAC>;
-                let $$res: Nullable<SUM_1> = null;
-                if (true
-                    && ($scope$l = this.matchSUM($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw `(?:\+|-)`, "", $$dpth + 1, $$cr)) !== null
-                    && ($scope$r = this.matchFAC($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = new SUM_1($scope$l, $scope$op, $scope$r);
-                }
-                return $$res;
-            });
-    }
-    public matchSUM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<SUM_2> {
-        return this.matchFAC($$dpth + 1, $$cr);
-    }
-    public matchFAC($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC> {
-        const fn = () => {
-            return this.choice<FAC>([
-                () => this.matchFAC_1($$dpth + 1, $$cr),
-                () => this.matchFAC_2($$dpth + 1, $$cr),
-            ]);
-        };
-        const $scope$pos = this.mark();
-        const memo = this.$scope$FAC$memo.get($scope$pos.overallPos);
-        if(memo !== undefined) {
-            this.reset(memo[1]);
-            return memo[0];
+    const var $scope$oldMemoSafe = this.memoSafe;
+    this.memoSafe = false;
+    this.$scope$FAC$memo.set($scope$pos.overallPos, [null, $scope$pos]);
+    let lastRes: Nullable<FAC> = null;
+    let lastPos: PosInfo = $scope$pos;
+    for (; true;) {
+        this.reset($scope$pos);
+        const var res = fn();
+        const var end = this.mark();
+        if (end.overallPos <= lastPos.overallPos) {
+            break;
         }
-        const $scope$oldMemoSafe = this.memoSafe;
-        this.memoSafe = false;
-        this.$scope$FAC$memo.set($scope$pos.overallPos, [null, $scope$pos]);
-        let lastRes: Nullable<FAC> = null;
-        let lastPos: PosInfo = $scope$pos;
-        for(;;) {
-            this.reset($scope$pos);
-            const res = fn();
-            const end = this.mark();
-            if(end.overallPos <= lastPos.overallPos)
-                break;
-            lastRes = res;
-            lastPos = end;
-            this.$scope$FAC$memo.set($scope$pos.overallPos, [lastRes, lastPos]);
+        lastRes = res;
+        lastPos = end;
+        this.$scope$FAC$memo.set($scope$pos.overallPos, [lastRes, lastPos]);
+    }
+    this.reset(lastPos);
+    this.memoSafe = $scope$oldMemoSafe;
+    return lastRes;
+}
+public matchFAC_1($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC_1> {
+    return this.run<FAC_1>($$dpth, () => {
+        var $scope$l: Nullable<FAC>;
+        var $scope$op: Nullable<string>;
+        var $scope$r: Nullable<ATOM>;
+        var $$res: Nullable<FAC_1> = null;
+        if (true && ($scope$l = this.matchFAC($$dpth + 1, $$cr)) !== null && ($scope$op = this.regexAccept(String.raw `(?:\*|/)`, "", $$dpth + 1, $$cr)) !== null && ($scope$r = this.matchATOM($$dpth + 1, $$cr)) !== null) {
+            $$res = new FAC_1($scope$l, $scope$op, $scope$r);
         }
-        this.reset(lastPos);
-        this.memoSafe = $scope$oldMemoSafe;
-        return lastRes;
+        return $$res;
+    });
+}
+public matchFAC_2($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC_2> {
+    return this.matchATOM($$dpth + 1, $$cr);
+}
+public matchATOM($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM> {
+    return this.choice<ATOM>([() => this.matchATOM_1($$dpth + 1, $$cr), () => this.matchATOM_2($$dpth + 1, $$cr)]);
+}
+public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
+    return this.run<ATOM_1>($$dpth, () => {
+        var $scope$val: Nullable<INT>;
+        var $$res: Nullable<ATOM_1> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && ($scope$val = this.matchINT($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null) {
+            $$res = new ATOM_1($scope$val);
+        }
+        return $$res;
+    });
+}
+public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
+    return this.run<ATOM_2>($$dpth, () => {
+        var $scope$val: Nullable<SUM>;
+        var $$res: Nullable<ATOM_2> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && ($scope$val = this.matchSUM($$dpth + 1, $$cr)) !== null && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null) {
+            $$res = new ATOM_2($scope$val);
+        }
+        return $$res;
+    });
+}
+public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
+    return this.run<INT>($$dpth, () => {
+        var $scope$val: Nullable<string>;
+        var $$res: Nullable<INT> = null;
+        if (true && ($scope$val = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null) {
+            $$res = new INT($scope$val);
+        }
+        return $$res;
+    });
+}
+public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
+    return this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr);
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchSUM(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchSUM(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public matchFAC_1($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC_1> {
-        return this.run<FAC_1>($$dpth,
-            () => {
-                let $scope$l: Nullable<FAC>;
-                let $scope$op: Nullable<string>;
-                let $scope$r: Nullable<ATOM>;
-                let $$res: Nullable<FAC_1> = null;
-                if (true
-                    && ($scope$l = this.matchFAC($$dpth + 1, $$cr)) !== null
-                    && ($scope$op = this.regexAccept(String.raw `(?:\*|/)`, "", $$dpth + 1, $$cr)) !== null
-                    && ($scope$r = this.matchATOM($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = new FAC_1($scope$l, $scope$op, $scope$r);
-                }
-                return $$res;
-            });
-    }
-    public matchFAC_2($$dpth: number, $$cr?: ErrorTracker): Nullable<FAC_2> {
-        return this.matchATOM($$dpth + 1, $$cr);
-    }
-    public matchATOM($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM> {
-        return this.choice<ATOM>([
-            () => this.matchATOM_1($$dpth + 1, $$cr),
-            () => this.matchATOM_2($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
-        return this.run<ATOM_1>($$dpth,
-            () => {
-                let $scope$val: Nullable<INT>;
-                let $$res: Nullable<ATOM_1> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.matchINT($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = new ATOM_1($scope$val);
-                }
-                return $$res;
-            });
-    }
-    public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
-        return this.run<ATOM_2>($$dpth,
-            () => {
-                let $scope$val: Nullable<SUM>;
-                let $$res: Nullable<ATOM_2> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.matchSUM($$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = new ATOM_2($scope$val);
-                }
-                return $$res;
-            });
-    }
-    public matchINT($$dpth: number, $$cr?: ErrorTracker): Nullable<INT> {
-        return this.run<INT>($$dpth,
-            () => {
-                let $scope$val: Nullable<string>;
-                let $$res: Nullable<INT> = null;
-                if (true
-                    && ($scope$val = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = new INT($scope$val);
-                }
-                return $$res;
-            });
-    }
-    public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.regexAccept(String.raw `(?:\s*)`, "", $$dpth + 1, $$cr);
-    }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchSUM(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchSUM(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchSUM(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchSUM(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

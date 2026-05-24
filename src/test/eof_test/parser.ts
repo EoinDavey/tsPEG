@@ -36,37 +36,35 @@ export class Parser {
 }
 
     public matchRULE($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE> {
-        return this.run<RULE>($$dpth,
-            () => {
-                let $$res: Nullable<RULE> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:abcde)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match$EOF($$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.RULE, };
-                }
-                return $$res;
-            });
+    return this.run<RULE>($$dpth, () => {
+        var $$res: Nullable<RULE> = null;
+        if (true && this.regexAccept(String.raw `(?:abcde)`, "", $$dpth + 1, $$cr) !== null && this.match$EOF($$cr) !== null) {
+            $$res = { kind: ASTKinds.RULE };
+        }
+        return $$res;
+    });
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchRULE(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchRULE(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchRULE(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchRULE(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchRULE(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchRULE(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

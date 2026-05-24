@@ -497,1270 +497,779 @@ export class Parser {
 }
 
     public matchGRAM($$dpth: number, $$cr?: ErrorTracker): Nullable<GRAM> {
-        return this.run<GRAM>($$dpth,
-            () => {
-                let $scope$header: Nullable<Nullable<HDR>>;
-                let $scope$rules: Nullable<[RULEDEF, ...RULEDEF[]]>;
-                let $$res: Nullable<GRAM> = null;
-                if (true
-                    && (($scope$header = this.matchHDR($$dpth + 1, $$cr)) || true)
-                    && ($scope$rules = this.loopPlus<RULEDEF>(() => this.matchRULEDEF($$dpth + 1, $$cr))) !== null
-                    && this.match$EOF($$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.GRAM, header: $scope$header, rules: $scope$rules};
-                }
-                return $$res;
-            });
-    }
-    public matchHDR($$dpth: number, $$cr?: ErrorTracker): Nullable<HDR> {
-        return this.run<HDR>($$dpth,
-            () => {
-                let $scope$content: Nullable<string>;
-                let $$res: Nullable<HDR> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:---)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$content = this.regexAccept(String.raw `(?:((?!---)(.|\r\n|\n))*)`, "", $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw `(?:---)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.HDR, content: $scope$content};
-                }
-                return $$res;
-            });
-    }
-    public matchRULEDEF($$dpth: number, $$cr?: ErrorTracker): Nullable<RULEDEF> {
-        return this.run<RULEDEF>($$dpth,
-            () => {
-                let $scope$namestart: Nullable<PosInfo>;
-                let $scope$name: Nullable<NAME>;
-                let $scope$nameend: Nullable<PosInfo>;
-                let $scope$rule: Nullable<RULE>;
-                let $$res: Nullable<RULEDEF> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$namestart = this.mark()) !== null
-                    && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
-                    && ($scope$nameend = this.mark()) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::=)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$rule = this.matchRULE($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.RULEDEF, namestart: $scope$namestart, name: $scope$name, nameend: $scope$nameend, rule: $scope$rule};
-                }
-                return $$res;
-            });
-    }
-    public matchRULE($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE> {
-        return this.run<RULE>($$dpth,
-            () => {
-                let $scope$head: Nullable<ALT>;
-                let $scope$tail: Nullable<RULE_$0[]>;
-                let $$res: Nullable<RULE> = null;
-                if (true
-                    && ($scope$head = this.matchALT($$dpth + 1, $$cr)) !== null
-                    && ($scope$tail = this.loop<RULE_$0>(() => this.matchRULE_$0($$dpth + 1, $$cr), 0, -1)) !== null
-                ) {
-                    $$res = new RULE($scope$head, $scope$tail);
-                }
-                return $$res;
-            });
-    }
-    public matchRULE_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE_$0> {
-        return this.run<RULE_$0>($$dpth,
-            () => {
-                let $scope$alt: Nullable<ALT>;
-                let $$res: Nullable<RULE_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\|)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$alt = this.matchALT($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.RULE_$0, alt: $scope$alt};
-                }
-                return $$res;
-            });
-    }
-    public matchALT($$dpth: number, $$cr?: ErrorTracker): Nullable<ALT> {
-        return this.run<ALT>($$dpth,
-            () => {
-                let $scope$matches: Nullable<[MATCHSPEC, ...MATCHSPEC[]]>;
-                let $scope$attrs: Nullable<ATTR[]>;
-                let $$res: Nullable<ALT> = null;
-                if (true
-                    && ($scope$matches = this.loopPlus<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, $$cr))) !== null
-                    && ($scope$attrs = this.loop<ATTR>(() => this.matchATTR($$dpth + 1, $$cr), 0, -1)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.ALT, matches: $scope$matches, attrs: $scope$attrs};
-                }
-                return $$res;
-            });
-    }
-    public matchMATCHSPEC($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCHSPEC> {
-        return this.run<MATCHSPEC>($$dpth,
-            () => {
-                let $scope$named: Nullable<Nullable<MATCHSPEC_$0>>;
-                let $scope$rule: Nullable<MATCH>;
-                let $$res: Nullable<MATCHSPEC> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && (($scope$named = this.matchMATCHSPEC_$0($$dpth + 1, $$cr)) || true)
-                    && ($scope$rule = this.matchMATCH($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.MATCHSPEC, named: $scope$named, rule: $scope$rule};
-                }
-                return $$res;
-            });
-    }
-    public matchMATCHSPEC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCHSPEC_$0> {
-        return this.run<MATCHSPEC_$0>($$dpth,
-            () => {
-                let $scope$start: Nullable<PosInfo>;
-                let $scope$name: Nullable<NAME>;
-                let $$res: Nullable<MATCHSPEC_$0> = null;
-                if (true
-                    && ($scope$start = this.mark()) !== null
-                    && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:=)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.MATCHSPEC_$0, start: $scope$start, name: $scope$name};
-                }
-                return $$res;
-            });
-    }
-    public matchMATCH($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCH> {
-        return this.choice<MATCH>([
-            () => this.matchMATCH_1($$dpth + 1, $$cr),
-            () => this.matchMATCH_2($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchMATCH_1($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCH_1> {
-        return this.matchSPECIAL($$dpth + 1, $$cr);
-    }
-    public matchMATCH_2($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCH_2> {
-        return this.matchPOSTOP($$dpth + 1, $$cr);
-    }
-    public matchSPECIAL($$dpth: number, $$cr?: ErrorTracker): Nullable<SPECIAL> {
-        return this.run<SPECIAL>($$dpth,
-            () => {
-                let $scope$op: Nullable<string>;
-                let $$res: Nullable<SPECIAL> = null;
-                if (true
-                    && ($scope$op = this.regexAccept(String.raw `(?:@)`, "", $$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.SPECIAL, op: $scope$op};
-                }
-                return $$res;
-            });
-    }
-    public matchPOSTOP($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP> {
-        return this.run<POSTOP>($$dpth,
-            () => {
-                let $scope$pre: Nullable<PREOP>;
-                let $scope$op: Nullable<Nullable<POSTOP_$0>>;
-                let $$res: Nullable<POSTOP> = null;
-                if (true
-                    && ($scope$pre = this.matchPREOP($$dpth + 1, $$cr)) !== null
-                    && (($scope$op = this.matchPOSTOP_$0($$dpth + 1, $$cr)) || true)
-                ) {
-                    $$res = {kind: ASTKinds.POSTOP, pre: $scope$pre, op: $scope$op};
-                }
-                return $$res;
-            });
-    }
-    public matchPOSTOP_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0> {
-        return this.choice<POSTOP_$0>([
-            () => this.matchPOSTOP_$0_1($$dpth + 1, $$cr),
-            () => this.matchPOSTOP_$0_2($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchPOSTOP_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0_1> {
-        return this.run<POSTOP_$0_1>($$dpth,
-            () => {
-                let $scope$op: Nullable<string>;
-                let $$res: Nullable<POSTOP_$0_1> = null;
-                if (true
-                    && ($scope$op = this.regexAccept(String.raw `(?:\+|\*|\?)`, "", $$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.POSTOP_$0_1, op: $scope$op};
-                }
-                return $$res;
-            });
-    }
-    public matchPOSTOP_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0_2> {
-        return this.matchRANGESPEC($$dpth + 1, $$cr);
-    }
-    public matchPREOP($$dpth: number, $$cr?: ErrorTracker): Nullable<PREOP> {
-        return this.run<PREOP>($$dpth,
-            () => {
-                let $scope$start: Nullable<PosInfo>;
-                let $scope$op: Nullable<Nullable<string>>;
-                let $scope$at: Nullable<ATOM>;
-                let $$res: Nullable<PREOP> = null;
-                if (true
-                    && ($scope$start = this.mark()) !== null
-                    && (($scope$op = this.regexAccept(String.raw `(?:\&|!)`, "", $$dpth + 1, $$cr)) || true)
-                    && ($scope$at = this.matchATOM($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.PREOP, start: $scope$start, op: $scope$op, at: $scope$at};
-                }
-                return $$res;
-            });
-    }
-    public matchATOM($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM> {
-        return this.choice<ATOM>([
-            () => this.matchATOM_1($$dpth + 1, $$cr),
-            () => this.matchATOM_2($$dpth + 1, $$cr),
-            () => this.matchATOM_3($$dpth + 1, $$cr),
-            () => this.matchATOM_4($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
-        return this.run<ATOM_1>($$dpth,
-            () => {
-                let $scope$start: Nullable<PosInfo>;
-                let $scope$name: Nullable<NAME>;
-                let $$res: Nullable<ATOM_1> = null;
-                if (true
-                    && ($scope$start = this.mark()) !== null
-                    && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
-                    && this.negate(() => this.regexAccept(String.raw `(?:\s*:=)`, "", $$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.ATOM_1, start: $scope$start, name: $scope$name};
-                }
-                return $$res;
-            });
-    }
-    public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
-        return this.run<ATOM_2>($$dpth,
-            () => {
-                let $scope$match: Nullable<STRLIT>;
-                let $$res: Nullable<ATOM_2> = null;
-                if (true
-                    && ($scope$match = this.matchSTRLIT($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.ATOM_2, match: $scope$match};
-                }
-                return $$res;
-            });
-    }
-    public matchATOM_3($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_3> {
-        return this.run<ATOM_3>($$dpth,
-            () => {
-                let $scope$start: Nullable<PosInfo>;
-                let $scope$sub: Nullable<RULE>;
-                let $$res: Nullable<ATOM_3> = null;
-                if (true
-                    && ($scope$start = this.mark()) !== null
-                    && this.regexAccept(String.raw `(?:{)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$sub = this.matchRULE($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:})`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.ATOM_3, start: $scope$start, sub: $scope$sub};
-                }
-                return $$res;
-            });
-    }
-    public matchATOM_4($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_4> {
-        return this.matchEOF($$dpth + 1, $$cr);
-    }
-    public matchEOF($$dpth: number, $$cr?: ErrorTracker): Nullable<EOF> {
-        return this.run<EOF>($$dpth,
-            () => {
-                let $scope$symb: Nullable<string>;
-                let $$res: Nullable<EOF> = null;
-                if (true
-                    && ($scope$symb = this.regexAccept(String.raw `(?:\$)`, "", $$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.EOF, symb: $scope$symb};
-                }
-                return $$res;
-            });
-    }
-    public matchATTR($$dpth: number, $$cr?: ErrorTracker): Nullable<ATTR> {
-        return this.run<ATTR>($$dpth,
-            () => {
-                let $scope$name: Nullable<NAME>;
-                let $scope$type: Nullable<TS_TYPE>;
-                let $scope$code: Nullable<CODE_SECTION>;
-                let $$res: Nullable<ATTR> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\.)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:=)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$type = this.matchTS_TYPE($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$code = this.matchCODE_SECTION($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.ATTR, name: $scope$name, type: $scope$type, code: $scope$code};
-                }
-                return $$res;
-            });
-    }
-    public matchNAME($$dpth: number, $$cr?: ErrorTracker): Nullable<NAME> {
-        return this.regexAccept(String.raw `(?:[a-zA-Z_][a-zA-Z0-9_]*)`, "", $$dpth + 1, $$cr);
-    }
-    public matchSTRLIT($$dpth: number, $$cr?: ErrorTracker): Nullable<STRLIT> {
-        return this.run<STRLIT>($$dpth,
-            () => {
-                let $scope$start: Nullable<PosInfo>;
-                let $scope$val: Nullable<string>;
-                let $scope$mods: Nullable<string>;
-                let $$res: Nullable<STRLIT> = null;
-                if (true
-                    && ($scope$start = this.mark()) !== null
-                    && this.regexAccept(String.raw `(?:\')`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.regexAccept(String.raw `(?:([^\'\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw `(?:\')`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$mods = this.regexAccept(String.raw `(?:[mius]*)`, "", $$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.STRLIT, start: $scope$start, val: $scope$val, mods: $scope$mods};
-                }
-                return $$res;
-            });
-    }
-    public matchRANGESPEC($$dpth: number, $$cr?: ErrorTracker): Nullable<RANGESPEC> {
-        return this.run<RANGESPEC>($$dpth,
-            () => {
-                let $scope$a: Nullable<string>;
-                let $scope$u: Nullable<Nullable<RANGESPEC_$0>>;
-                let $$res: Nullable<RANGESPEC> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\[\s*)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$a = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null
-                    && (($scope$u = this.matchRANGESPEC_$0($$dpth + 1, $$cr)) || true)
-                    && this.regexAccept(String.raw `(?:\s*\])`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = new RANGESPEC($scope$a, $scope$u);
-                }
-                return $$res;
-            });
-    }
-    public matchRANGESPEC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<RANGESPEC_$0> {
-        return this.run<RANGESPEC_$0>($$dpth,
-            () => {
-                let $scope$b: Nullable<Nullable<string>>;
-                let $$res: Nullable<RANGESPEC_$0> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:,\s*)`, "", $$dpth + 1, $$cr) !== null
-                    && (($scope$b = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) || true)
-                ) {
-                    $$res = {kind: ASTKinds.RANGESPEC_$0, b: $scope$b};
-                }
-                return $$res;
-            });
-    }
-    public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
-        return this.regexAccept(String.raw `(?:(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*)`, "", $$dpth + 1, $$cr);
-    }
-    public matchTS_TYPE($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE> {
-        return this.run<TS_TYPE>($$dpth,
-            () => {
-                let $scope$start: Nullable<PosInfo>;
-                let $scope$end: Nullable<PosInfo>;
-                let $$res: Nullable<TS_TYPE> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ($scope$start = this.mark()) !== null
-                    && this.matchTS_TYPE_$0($$dpth + 1, $$cr) !== null
-                    && ($scope$end = this.mark()) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE, start: $scope$start, end: $scope$end};
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0> {
-        return this.choice<TS_TYPE_$0>([
-            () => this.matchTS_TYPE_$0_1($$dpth + 1, $$cr),
-            () => this.matchTS_TYPE_$0_2($$dpth + 1, $$cr),
-            () => this.matchTS_TYPE_$0_3($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchTS_TYPE_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_1> {
-        return this.matchTS_FUNCTION($$dpth + 1, $$cr);
-    }
-    public matchTS_TYPE_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_2> {
-        return this.matchTS_CONSTRUCTOR($$dpth + 1, $$cr);
-    }
-    public matchTS_TYPE_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_3> {
-        return this.matchTS_EXPR($$dpth + 1, $$cr);
-    }
-    public matchTS_EXPR($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_EXPR> {
-        return this.run<TS_EXPR>($$dpth,
-            () => {
-                let $$res: Nullable<TS_EXPR> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_PRIM($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_EXPR_$0>(() => this.matchTS_EXPR_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_EXPR, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_EXPR_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_EXPR_$0> {
-        return this.run<TS_EXPR_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_EXPR_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:[&|])`, "", $$dpth + 1, $$cr) !== null
-                    && this.matchTS_PRIM($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_EXPR_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PRIM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM> {
-        return this.run<TS_PRIM>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PRIM> = null;
-                if (true
-                    && this.matchTS_PRIM_$0($$dpth + 1, $$cr) !== null
-                    && this.loop<string>(() => this.regexAccept(String.raw `(?:\[\])`, "", $$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PRIM, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PRIM_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0> {
-        return this.choice<TS_PRIM_$0>([
-            () => this.matchTS_PRIM_$0_1($$dpth + 1, $$cr),
-            () => this.matchTS_PRIM_$0_2($$dpth + 1, $$cr),
-            () => this.matchTS_PRIM_$0_3($$dpth + 1, $$cr),
-            () => this.matchTS_PRIM_$0_4($$dpth + 1, $$cr),
-            () => this.matchTS_PRIM_$0_5($$dpth + 1, $$cr),
-            () => this.matchTS_PRIM_$0_6($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchTS_PRIM_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_1> {
-        return this.run<TS_PRIM_$0_1>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PRIM_$0_1> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_1, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PRIM_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_2> {
-        return this.matchTS_TYPE_QUERY($$dpth + 1, $$cr);
-    }
-    public matchTS_PRIM_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_3> {
-        return this.matchTS_TYPE_REF($$dpth + 1, $$cr);
-    }
-    public matchTS_PRIM_$0_4($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_4> {
-        return this.matchTS_PROPERTY_NAME($$dpth + 1, $$cr);
-    }
-    public matchTS_PRIM_$0_5($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_5> {
-        return this.run<TS_PRIM_$0_5>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PRIM_$0_5> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\{)`, "", $$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PRIM_$0_$0($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\})`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_5, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PRIM_$0_6($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_6> {
-        return this.run<TS_PRIM_$0_6>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PRIM_$0_6> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\[)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PRIM_$0_$1($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\])`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_6, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PRIM_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$0> {
-        return this.run<TS_PRIM_$0_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PRIM_$0_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE_MEMBER($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_PRIM_$0_$0_$0>(() => this.matchTS_PRIM_$0_$0_$0($$dpth + 1, $$cr), 0, -1) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:[;,]?)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PRIM_$0_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$0_$0> {
-        return this.run<TS_PRIM_$0_$0_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PRIM_$0_$0_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:[;,])`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE_MEMBER($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_$0_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PRIM_$0_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$1> {
-        return this.run<TS_PRIM_$0_$1>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PRIM_$0_$1> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_PRIM_$0_$1_$0>(() => this.matchTS_PRIM_$0_$1_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_$1, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PRIM_$0_$1_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$1_$0> {
-        return this.run<TS_PRIM_$0_$1_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PRIM_$0_$1_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PRIM_$0_$1_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_REF($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF> {
-        return this.run<TS_TYPE_REF>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_REF> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_TYPE_REF_$0>(() => this.matchTS_TYPE_REF_$0($$dpth + 1, $$cr), 0, -1) !== null
-                    && ((this.matchTS_TYPE_REF_$1($$dpth + 1, $$cr)) || true)
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_REF, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_REF_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF_$0> {
-        return this.run<TS_TYPE_REF_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_REF_$0> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\.)`, "", $$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_REF_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_REF_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF_$1> {
-        return this.run<TS_TYPE_REF_$1>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_REF_$1> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_GENERIC_ARGS($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_REF_$1, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_QUERY($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_QUERY> {
-        return this.run<TS_TYPE_QUERY>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_QUERY> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:typeof)`, "", $$dpth + 1, $$cr) !== null
-                    && this.noConsume<_>(() => this.match_($$dpth + 1, $$cr)) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_TYPE_QUERY_$0>(() => this.matchTS_TYPE_QUERY_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_QUERY, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_QUERY_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_QUERY_$0> {
-        return this.run<TS_TYPE_QUERY_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_QUERY_$0> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\.)`, "", $$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_QUERY_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_FUNCTION($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_FUNCTION> {
-        return this.run<TS_FUNCTION>($$dpth,
-            () => {
-                let $$res: Nullable<TS_FUNCTION> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:=>)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_FUNCTION, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_CONSTRUCTOR($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_CONSTRUCTOR> {
-        return this.run<TS_CONSTRUCTOR>($$dpth,
-            () => {
-                let $$res: Nullable<TS_CONSTRUCTOR> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:new)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_FUNCTION($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_CONSTRUCTOR, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_GENERIC_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS> {
-        return this.run<TS_GENERIC_PARAMS>($$dpth,
-            () => {
-                let $$res: Nullable<TS_GENERIC_PARAMS> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:<)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_GENERIC_PARAMS_$0($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:>)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_GENERIC_PARAMS, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_GENERIC_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS_$0> {
-        return this.run<TS_GENERIC_PARAMS_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_GENERIC_PARAMS_$0> = null;
-                if (true
-                    && this.matchTS_GENERIC_PARAM($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_GENERIC_PARAMS_$0_$0>(() => this.matchTS_GENERIC_PARAMS_$0_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_GENERIC_PARAMS_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_GENERIC_PARAMS_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS_$0_$0> {
-        return this.run<TS_GENERIC_PARAMS_$0_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_GENERIC_PARAMS_$0_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_GENERIC_PARAM($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_GENERIC_PARAMS_$0_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_GENERIC_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAM> {
-        return this.run<TS_GENERIC_PARAM>($$dpth,
-            () => {
-                let $$res: Nullable<TS_GENERIC_PARAM> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_GENERIC_PARAM_$0($$dpth + 1, $$cr)) || true)
-                ) {
-                    $$res = {kind: ASTKinds.TS_GENERIC_PARAM, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_GENERIC_PARAM_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAM_$0> {
-        return this.run<TS_GENERIC_PARAM_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_GENERIC_PARAM_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:extends)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_GENERIC_PARAM_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_GENERIC_ARGS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS> {
-        return this.run<TS_GENERIC_ARGS>($$dpth,
-            () => {
-                let $$res: Nullable<TS_GENERIC_ARGS> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:<)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_GENERIC_ARGS_$0($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:>)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_GENERIC_ARGS, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_GENERIC_ARGS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS_$0> {
-        return this.run<TS_GENERIC_ARGS_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_GENERIC_ARGS_$0> = null;
-                if (true
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_GENERIC_ARGS_$0_$0>(() => this.matchTS_GENERIC_ARGS_$0_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_GENERIC_ARGS_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_GENERIC_ARGS_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS_$0_$0> {
-        return this.run<TS_GENERIC_ARGS_$0_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_GENERIC_ARGS_$0_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_GENERIC_ARGS_$0_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PARAM_LIST($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST> {
-        return this.choice<TS_PARAM_LIST>([
-            () => this.matchTS_PARAM_LIST_1($$dpth + 1, $$cr),
-            () => this.matchTS_PARAM_LIST_2($$dpth + 1, $$cr),
-            () => this.matchTS_PARAM_LIST_3($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchTS_PARAM_LIST_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_1> {
-        return this.run<TS_PARAM_LIST_1>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PARAM_LIST_1> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_REQUIRED_PARAMS($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PARAM_LIST_$0($$dpth + 1, $$cr)) || true)
-                    && ((this.matchTS_PARAM_LIST_$1($$dpth + 1, $$cr)) || true)
-                ) {
-                    $$res = {kind: ASTKinds.TS_PARAM_LIST_1, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PARAM_LIST_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_2> {
-        return this.run<TS_PARAM_LIST_2>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PARAM_LIST_2> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_OPTIONAL_PARAMS($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PARAM_LIST_$2($$dpth + 1, $$cr)) || true)
-                ) {
-                    $$res = {kind: ASTKinds.TS_PARAM_LIST_2, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PARAM_LIST_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_3> {
-        return this.run<TS_PARAM_LIST_3>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PARAM_LIST_3> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PARAM_LIST_3, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PARAM_LIST_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$0> {
-        return this.run<TS_PARAM_LIST_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PARAM_LIST_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_OPTIONAL_PARAMS($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PARAM_LIST_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PARAM_LIST_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$1> {
-        return this.run<TS_PARAM_LIST_$1>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PARAM_LIST_$1> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PARAM_LIST_$1, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PARAM_LIST_$2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$2> {
-        return this.run<TS_PARAM_LIST_$2>($$dpth,
-            () => {
-                let $$res: Nullable<TS_PARAM_LIST_$2> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_PARAM_LIST_$2, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_REQUIRED_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAMS> {
-        return this.run<TS_REQUIRED_PARAMS>($$dpth,
-            () => {
-                let $$res: Nullable<TS_REQUIRED_PARAMS> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_REQUIRED_PARAM($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_REQUIRED_PARAMS_$0>(() => this.matchTS_REQUIRED_PARAMS_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_REQUIRED_PARAMS, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_REQUIRED_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAMS_$0> {
-        return this.run<TS_REQUIRED_PARAMS_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_REQUIRED_PARAMS_$0> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_REQUIRED_PARAM($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_REQUIRED_PARAMS_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_REQUIRED_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAM> {
-        return this.run<TS_REQUIRED_PARAM>($$dpth,
-            () => {
-                let $$res: Nullable<TS_REQUIRED_PARAM> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_REQUIRED_PARAM, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_OPTIONAL_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAMS> {
-        return this.run<TS_OPTIONAL_PARAMS>($$dpth,
-            () => {
-                let $$res: Nullable<TS_OPTIONAL_PARAMS> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_OPTIONAL_PARAM($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.loop<TS_OPTIONAL_PARAMS_$0>(() => this.matchTS_OPTIONAL_PARAMS_$0($$dpth + 1, $$cr), 0, -1) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_OPTIONAL_PARAMS, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_OPTIONAL_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAMS_$0> {
-        return this.run<TS_OPTIONAL_PARAMS_$0>($$dpth,
-            () => {
-                let $$res: Nullable<TS_OPTIONAL_PARAMS_$0> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_OPTIONAL_PARAM($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_OPTIONAL_PARAMS_$0, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_OPTIONAL_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAM> {
-        return this.run<TS_OPTIONAL_PARAM>($$dpth,
-            () => {
-                let $$res: Nullable<TS_OPTIONAL_PARAM> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\?)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_OPTIONAL_PARAM, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_REST_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REST_PARAM> {
-        return this.run<TS_REST_PARAM>($$dpth,
-            () => {
-                let $$res: Nullable<TS_REST_PARAM> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\.\.\.)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_REST_PARAM, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_MEMBER($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER> {
-        return this.choice<TS_TYPE_MEMBER>([
-            () => this.matchTS_TYPE_MEMBER_1($$dpth + 1, $$cr),
-            () => this.matchTS_TYPE_MEMBER_2($$dpth + 1, $$cr),
-            () => this.matchTS_TYPE_MEMBER_3($$dpth + 1, $$cr),
-            () => this.matchTS_TYPE_MEMBER_4($$dpth + 1, $$cr),
-            () => this.matchTS_TYPE_MEMBER_5($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchTS_TYPE_MEMBER_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_1> {
-        return this.run<TS_TYPE_MEMBER_1>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_MEMBER_1> = null;
-                if (true
-                    && this.matchTS_PROPERTY_NAME($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\??)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_1, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_MEMBER_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_2> {
-        return this.run<TS_TYPE_MEMBER_2>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_MEMBER_2> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_2, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_MEMBER_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_3> {
-        return this.run<TS_TYPE_MEMBER_3>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_MEMBER_3> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:new)`, "", $$dpth + 1, $$cr) !== null
-                    && this.noConsume<_>(() => this.match_($$dpth + 1, $$cr)) !== null
-                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_3, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_MEMBER_4($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_4> {
-        return this.run<TS_TYPE_MEMBER_4>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_MEMBER_4> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\[)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\])`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_4, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_TYPE_MEMBER_5($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_5> {
-        return this.run<TS_TYPE_MEMBER_5>($$dpth,
-            () => {
-                let $$res: Nullable<TS_TYPE_MEMBER_5> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchNAME($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\??)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && ((this.matchTS_PARAM_LIST($$dpth + 1, $$cr)) || true)
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.matchTS_TYPE($$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_TYPE_MEMBER_5, };
-                }
-                return $$res;
-            });
-    }
-    public matchTS_PROPERTY_NAME($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME> {
-        return this.choice<TS_PROPERTY_NAME>([
-            () => this.matchTS_PROPERTY_NAME_1($$dpth + 1, $$cr),
-            () => this.matchTS_PROPERTY_NAME_2($$dpth + 1, $$cr),
-            () => this.matchTS_PROPERTY_NAME_3($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchTS_PROPERTY_NAME_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_1> {
-        return this.matchNAME($$dpth + 1, $$cr);
-    }
-    public matchTS_PROPERTY_NAME_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_2> {
-        return this.matchTS_STRING($$dpth + 1, $$cr);
-    }
-    public matchTS_PROPERTY_NAME_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_3> {
-        return this.matchTS_NUM($$dpth + 1, $$cr);
-    }
-    public matchTS_STRING($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING> {
-        return this.choice<TS_STRING>([
-            () => this.matchTS_STRING_1($$dpth + 1, $$cr),
-            () => this.matchTS_STRING_2($$dpth + 1, $$cr),
-            () => this.matchTS_STRING_3($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchTS_STRING_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_1> {
-        return this.run<TS_STRING_1>($$dpth,
-            () => {
-                let $scope$val: Nullable<string>;
-                let $$res: Nullable<TS_STRING_1> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:")`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.regexAccept(String.raw `(?:([^"\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw `(?:")`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_STRING_1, val: $scope$val};
-                }
-                return $$res;
-            });
-    }
-    public matchTS_STRING_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_2> {
-        return this.run<TS_STRING_2>($$dpth,
-            () => {
-                let $scope$val: Nullable<string>;
-                let $$res: Nullable<TS_STRING_2> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\')`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.regexAccept(String.raw `(?:([^\'\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw `(?:\')`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_STRING_2, val: $scope$val};
-                }
-                return $$res;
-            });
-    }
-    public matchTS_STRING_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_3> {
-        return this.run<TS_STRING_3>($$dpth,
-            () => {
-                let $scope$val: Nullable<string>;
-                let $$res: Nullable<TS_STRING_3> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\`)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$val = this.regexAccept(String.raw `(?:([^\`\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null
-                    && this.regexAccept(String.raw `(?:\`)`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TS_STRING_3, val: $scope$val};
-                }
-                return $$res;
-            });
-    }
-    public matchTS_NUM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_NUM> {
-        return this.regexAccept(String.raw `(?:-?[0-9]+(?:\.[0-9]+)?)`, "", $$dpth + 1, $$cr);
-    }
-    public matchCODE_SECTION($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_SECTION> {
-        return this.run<CODE_SECTION>($$dpth,
-            () => {
-                let $scope$start: Nullable<PosInfo>;
-                let $scope$end: Nullable<PosInfo>;
-                let $$res: Nullable<CODE_SECTION> = null;
-                if (true
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\{)`, "", $$dpth + 1, $$cr) !== null
-                    && ($scope$start = this.mark()) !== null
-                    && ((this.matchCODE_REC($$dpth + 1, $$cr)) || true)
-                    && ($scope$end = this.mark()) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\})`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.CODE_SECTION, start: $scope$start, end: $scope$end};
-                }
-                return $$res;
-            });
-    }
-    public matchCODE_REC($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC> {
-        return this.loop<CODE_REC_$0>(() => this.matchCODE_REC_$0($$dpth + 1, $$cr), 0, -1);
-    }
-    public matchCODE_REC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0> {
-        return this.choice<CODE_REC_$0>([
-            () => this.matchCODE_REC_$0_1($$dpth + 1, $$cr),
-            () => this.matchCODE_REC_$0_2($$dpth + 1, $$cr),
-            () => this.matchCODE_REC_$0_3($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchCODE_REC_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_1> {
-        return this.regexAccept(String.raw `(?:[^{}\'"\`]+)`, "", $$dpth + 1, $$cr);
-    }
-    public matchCODE_REC_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_2> {
-        return this.matchTS_STRING($$dpth + 1, $$cr);
-    }
-    public matchCODE_REC_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_3> {
-        return this.run<CODE_REC_$0_3>($$dpth,
-            () => {
-                let $$res: Nullable<CODE_REC_$0_3> = null;
-                if (true
-                    && this.regexAccept(String.raw `(?:\{)`, "", $$dpth + 1, $$cr) !== null
-                    && this.matchCODE_REC($$dpth + 1, $$cr) !== null
-                    && this.match_($$dpth + 1, $$cr) !== null
-                    && this.regexAccept(String.raw `(?:\})`, "", $$dpth + 1, $$cr) !== null
-                ) {
-                    $$res = {kind: ASTKinds.CODE_REC_$0_3, };
-                }
-                return $$res;
-            });
-    }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchGRAM(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchGRAM(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchGRAM(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    return this.run<GRAM>($$dpth, () => {
+        var $scope$header: Nullable<Nullable<HDR>>;
+        var $scope$rules: Nullable<[RULEDEF, ...RULEDEF[]]>;
+        var $$res: Nullable<GRAM> = null;
+        if (true && (($scope$header = this.matchHDR($$dpth + 1, $$cr)) || true) && ($scope$rules = this.loopPlus<RULEDEF>(() => this.matchRULEDEF($$dpth + 1, $$cr))) !== null && this.match$EOF($$cr) !== null) {
+            $$res = { kind: ASTKinds.GRAM, header: $scope$header, rules: $scope$rules };
+        }
+        return $$res;
+    });
+}
+public matchHDR($$dpth: number, $$cr?: ErrorTracker): Nullable<HDR> {
+    return this.run<HDR>($$dpth, () => {
+        var $scope$content: Nullable<string>;
+        var $$res: Nullable<HDR> = null;
+        if (true && this.regexAccept(String.raw `(?:---)`, "", $$dpth + 1, $$cr) !== null && ($scope$content = this.regexAccept(String.raw `(?:((?!---)(.|\r\n|\n))*)`, "", $$dpth + 1, $$cr)) !== null && this.regexAccept(String.raw `(?:---)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.HDR, content: $scope$content };
+        }
+        return $$res;
+    });
+}
+public matchRULEDEF($$dpth: number, $$cr?: ErrorTracker): Nullable<RULEDEF> {
+    return this.run<RULEDEF>($$dpth, () => {
+        var $scope$namestart: Nullable<PosInfo>;
+        var $scope$name: Nullable<NAME>;
+        var $scope$nameend: Nullable<PosInfo>;
+        var $scope$rule: Nullable<RULE>;
+        var $$res: Nullable<RULEDEF> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && ($scope$namestart = this.mark()) !== null && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null && ($scope$nameend = this.mark()) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::=)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && ($scope$rule = this.matchRULE($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.RULEDEF, namestart: $scope$namestart, name: $scope$name, nameend: $scope$nameend, rule: $scope$rule };
+        }
+        return $$res;
+    });
+}
+public matchRULE($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE> {
+    return this.run<RULE>($$dpth, () => {
+        var $scope$head: Nullable<ALT>;
+        var $scope$tail: Nullable<RULE_$0[]>;
+        var $$res: Nullable<RULE> = null;
+        if (true && ($scope$head = this.matchALT($$dpth + 1, $$cr)) !== null && ($scope$tail = this.loop<RULE_$0>(() => this.matchRULE_$0($$dpth + 1, $$cr), 0, -1)) !== null) {
+            $$res = new RULE($scope$head, $scope$tail);
+        }
+        return $$res;
+    });
+}
+public matchRULE_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<RULE_$0> {
+    return this.run<RULE_$0>($$dpth, () => {
+        var $scope$alt: Nullable<ALT>;
+        var $$res: Nullable<RULE_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\|)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && ($scope$alt = this.matchALT($$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.RULE_$0, alt: $scope$alt };
+        }
+        return $$res;
+    });
+}
+public matchALT($$dpth: number, $$cr?: ErrorTracker): Nullable<ALT> {
+    return this.run<ALT>($$dpth, () => {
+        var $scope$matches: Nullable<[MATCHSPEC, ...MATCHSPEC[]]>;
+        var $scope$attrs: Nullable<ATTR[]>;
+        var $$res: Nullable<ALT> = null;
+        if (true && ($scope$matches = this.loopPlus<MATCHSPEC>(() => this.matchMATCHSPEC($$dpth + 1, $$cr))) !== null && ($scope$attrs = this.loop<ATTR>(() => this.matchATTR($$dpth + 1, $$cr), 0, -1)) !== null) {
+            $$res = { kind: ASTKinds.ALT, matches: $scope$matches, attrs: $scope$attrs };
+        }
+        return $$res;
+    });
+}
+public matchMATCHSPEC($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCHSPEC> {
+    return this.run<MATCHSPEC>($$dpth, () => {
+        var $scope$named: Nullable<Nullable<MATCHSPEC_$0>>;
+        var $scope$rule: Nullable<MATCH>;
+        var $$res: Nullable<MATCHSPEC> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && (($scope$named = this.matchMATCHSPEC_$0($$dpth + 1, $$cr)) || true) && ($scope$rule = this.matchMATCH($$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.MATCHSPEC, named: $scope$named, rule: $scope$rule };
+        }
+        return $$res;
+    });
+}
+public matchMATCHSPEC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCHSPEC_$0> {
+    return this.run<MATCHSPEC_$0>($$dpth, () => {
+        var $scope$start: Nullable<PosInfo>;
+        var $scope$name: Nullable<NAME>;
+        var $$res: Nullable<MATCHSPEC_$0> = null;
+        if (true && ($scope$start = this.mark()) !== null && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:=)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.MATCHSPEC_$0, start: $scope$start, name: $scope$name };
+        }
+        return $$res;
+    });
+}
+public matchMATCH($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCH> {
+    return this.choice<MATCH>([() => this.matchMATCH_1($$dpth + 1, $$cr), () => this.matchMATCH_2($$dpth + 1, $$cr)]);
+}
+public matchMATCH_1($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCH_1> {
+    return this.matchSPECIAL($$dpth + 1, $$cr);
+}
+public matchMATCH_2($$dpth: number, $$cr?: ErrorTracker): Nullable<MATCH_2> {
+    return this.matchPOSTOP($$dpth + 1, $$cr);
+}
+public matchSPECIAL($$dpth: number, $$cr?: ErrorTracker): Nullable<SPECIAL> {
+    return this.run<SPECIAL>($$dpth, () => {
+        var $scope$op: Nullable<string>;
+        var $$res: Nullable<SPECIAL> = null;
+        if (true && ($scope$op = this.regexAccept(String.raw `(?:@)`, "", $$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.SPECIAL, op: $scope$op };
+        }
+        return $$res;
+    });
+}
+public matchPOSTOP($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP> {
+    return this.run<POSTOP>($$dpth, () => {
+        var $scope$pre: Nullable<PREOP>;
+        var $scope$op: Nullable<Nullable<POSTOP_$0>>;
+        var $$res: Nullable<POSTOP> = null;
+        if (true && ($scope$pre = this.matchPREOP($$dpth + 1, $$cr)) !== null && (($scope$op = this.matchPOSTOP_$0($$dpth + 1, $$cr)) || true)) {
+            $$res = { kind: ASTKinds.POSTOP, pre: $scope$pre, op: $scope$op };
+        }
+        return $$res;
+    });
+}
+public matchPOSTOP_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0> {
+    return this.choice<POSTOP_$0>([() => this.matchPOSTOP_$0_1($$dpth + 1, $$cr), () => this.matchPOSTOP_$0_2($$dpth + 1, $$cr)]);
+}
+public matchPOSTOP_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0_1> {
+    return this.run<POSTOP_$0_1>($$dpth, () => {
+        var $scope$op: Nullable<string>;
+        var $$res: Nullable<POSTOP_$0_1> = null;
+        if (true && ($scope$op = this.regexAccept(String.raw `(?:\+|\*|\?)`, "", $$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.POSTOP_$0_1, op: $scope$op };
+        }
+        return $$res;
+    });
+}
+public matchPOSTOP_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<POSTOP_$0_2> {
+    return this.matchRANGESPEC($$dpth + 1, $$cr);
+}
+public matchPREOP($$dpth: number, $$cr?: ErrorTracker): Nullable<PREOP> {
+    return this.run<PREOP>($$dpth, () => {
+        var $scope$start: Nullable<PosInfo>;
+        var $scope$op: Nullable<Nullable<string>>;
+        var $scope$at: Nullable<ATOM>;
+        var $$res: Nullable<PREOP> = null;
+        if (true && ($scope$start = this.mark()) !== null && (($scope$op = this.regexAccept(String.raw `(?:\&|!)`, "", $$dpth + 1, $$cr)) || true) && ($scope$at = this.matchATOM($$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.PREOP, start: $scope$start, op: $scope$op, at: $scope$at };
+        }
+        return $$res;
+    });
+}
+public matchATOM($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM> {
+    return this.choice<ATOM>([() => this.matchATOM_1($$dpth + 1, $$cr), () => this.matchATOM_2($$dpth + 1, $$cr), () => this.matchATOM_3($$dpth + 1, $$cr), () => this.matchATOM_4($$dpth + 1, $$cr)]);
+}
+public matchATOM_1($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_1> {
+    return this.run<ATOM_1>($$dpth, () => {
+        var $scope$start: Nullable<PosInfo>;
+        var $scope$name: Nullable<NAME>;
+        var $$res: Nullable<ATOM_1> = null;
+        if (true && ($scope$start = this.mark()) !== null && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null && this.negate(() => this.regexAccept(String.raw `(?:\s*:=)`, "", $$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.ATOM_1, start: $scope$start, name: $scope$name };
+        }
+        return $$res;
+    });
+}
+public matchATOM_2($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_2> {
+    return this.run<ATOM_2>($$dpth, () => {
+        var $scope$match: Nullable<STRLIT>;
+        var $$res: Nullable<ATOM_2> = null;
+        if (true && ($scope$match = this.matchSTRLIT($$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.ATOM_2, match: $scope$match };
+        }
+        return $$res;
+    });
+}
+public matchATOM_3($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_3> {
+    return this.run<ATOM_3>($$dpth, () => {
+        var $scope$start: Nullable<PosInfo>;
+        var $scope$sub: Nullable<RULE>;
+        var $$res: Nullable<ATOM_3> = null;
+        if (true && ($scope$start = this.mark()) !== null && this.regexAccept(String.raw `(?:{)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && ($scope$sub = this.matchRULE($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:})`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.ATOM_3, start: $scope$start, sub: $scope$sub };
+        }
+        return $$res;
+    });
+}
+public matchATOM_4($$dpth: number, $$cr?: ErrorTracker): Nullable<ATOM_4> {
+    return this.matchEOF($$dpth + 1, $$cr);
+}
+public matchEOF($$dpth: number, $$cr?: ErrorTracker): Nullable<EOF> {
+    return this.run<EOF>($$dpth, () => {
+        var $scope$symb: Nullable<string>;
+        var $$res: Nullable<EOF> = null;
+        if (true && ($scope$symb = this.regexAccept(String.raw `(?:\$)`, "", $$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.EOF, symb: $scope$symb };
+        }
+        return $$res;
+    });
+}
+public matchATTR($$dpth: number, $$cr?: ErrorTracker): Nullable<ATTR> {
+    return this.run<ATTR>($$dpth, () => {
+        var $scope$name: Nullable<NAME>;
+        var $scope$type: Nullable<TS_TYPE>;
+        var $scope$code: Nullable<CODE_SECTION>;
+        var $$res: Nullable<ATTR> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\.)`, "", $$dpth + 1, $$cr) !== null && ($scope$name = this.matchNAME($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:=)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && ($scope$type = this.matchTS_TYPE($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && ($scope$code = this.matchCODE_SECTION($$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.ATTR, name: $scope$name, type: $scope$type, code: $scope$code };
+        }
+        return $$res;
+    });
+}
+public matchNAME($$dpth: number, $$cr?: ErrorTracker): Nullable<NAME> {
+    return this.regexAccept(String.raw `(?:[a-zA-Z_][a-zA-Z0-9_]*)`, "", $$dpth + 1, $$cr);
+}
+public matchSTRLIT($$dpth: number, $$cr?: ErrorTracker): Nullable<STRLIT> {
+    return this.run<STRLIT>($$dpth, () => {
+        var $scope$start: Nullable<PosInfo>;
+        var $scope$val: Nullable<string>;
+        var $scope$mods: Nullable<string>;
+        var $$res: Nullable<STRLIT> = null;
+        if (true && ($scope$start = this.mark()) !== null && this.regexAccept(String.raw `(?:\')`, "", $$dpth + 1, $$cr) !== null && ($scope$val = this.regexAccept(String.raw `(?:([^\'\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null && this.regexAccept(String.raw `(?:\')`, "", $$dpth + 1, $$cr) !== null && ($scope$mods = this.regexAccept(String.raw `(?:[mius]*)`, "", $$dpth + 1, $$cr)) !== null) {
+            $$res = { kind: ASTKinds.STRLIT, start: $scope$start, val: $scope$val, mods: $scope$mods };
+        }
+        return $$res;
+    });
+}
+public matchRANGESPEC($$dpth: number, $$cr?: ErrorTracker): Nullable<RANGESPEC> {
+    return this.run<RANGESPEC>($$dpth, () => {
+        var $scope$a: Nullable<string>;
+        var $scope$u: Nullable<Nullable<RANGESPEC_$0>>;
+        var $$res: Nullable<RANGESPEC> = null;
+        if (true && this.regexAccept(String.raw `(?:\[\s*)`, "", $$dpth + 1, $$cr) !== null && ($scope$a = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) !== null && (($scope$u = this.matchRANGESPEC_$0($$dpth + 1, $$cr)) || true) && this.regexAccept(String.raw `(?:\s*\])`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = new RANGESPEC($scope$a, $scope$u);
+        }
+        return $$res;
+    });
+}
+public matchRANGESPEC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<RANGESPEC_$0> {
+    return this.run<RANGESPEC_$0>($$dpth, () => {
+        var $scope$b: Nullable<Nullable<string>>;
+        var $$res: Nullable<RANGESPEC_$0> = null;
+        if (true && this.regexAccept(String.raw `(?:,\s*)`, "", $$dpth + 1, $$cr) !== null && (($scope$b = this.regexAccept(String.raw `(?:[0-9]+)`, "", $$dpth + 1, $$cr)) || true)) {
+            $$res = { kind: ASTKinds.RANGESPEC_$0, b: $scope$b };
+        }
+        return $$res;
+    });
+}
+public match_($$dpth: number, $$cr?: ErrorTracker): Nullable<_> {
+    return this.regexAccept(String.raw `(?:(?:\s|(?:\/\/.*(?:\r\n|\n|$)))*)`, "", $$dpth + 1, $$cr);
+}
+public matchTS_TYPE($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE> {
+    return this.run<TS_TYPE>($$dpth, () => {
+        var $scope$start: Nullable<PosInfo>;
+        var $scope$end: Nullable<PosInfo>;
+        var $$res: Nullable<TS_TYPE> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && ($scope$start = this.mark()) !== null && this.matchTS_TYPE_$0($$dpth + 1, $$cr) !== null && ($scope$end = this.mark()) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE, start: $scope$start, end: $scope$end };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0> {
+    return this.choice<TS_TYPE_$0>([() => this.matchTS_TYPE_$0_1($$dpth + 1, $$cr), () => this.matchTS_TYPE_$0_2($$dpth + 1, $$cr), () => this.matchTS_TYPE_$0_3($$dpth + 1, $$cr)]);
+}
+public matchTS_TYPE_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_1> {
+    return this.matchTS_FUNCTION($$dpth + 1, $$cr);
+}
+public matchTS_TYPE_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_2> {
+    return this.matchTS_CONSTRUCTOR($$dpth + 1, $$cr);
+}
+public matchTS_TYPE_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_$0_3> {
+    return this.matchTS_EXPR($$dpth + 1, $$cr);
+}
+public matchTS_EXPR($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_EXPR> {
+    return this.run<TS_EXPR>($$dpth, () => {
+        var $$res: Nullable<TS_EXPR> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_PRIM($$dpth + 1, $$cr) !== null && this.loop<TS_EXPR_$0>(() => this.matchTS_EXPR_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.TS_EXPR };
+        }
+        return $$res;
+    });
+}
+public matchTS_EXPR_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_EXPR_$0> {
+    return this.run<TS_EXPR_$0>($$dpth, () => {
+        var $$res: Nullable<TS_EXPR_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:[&|])`, "", $$dpth + 1, $$cr) !== null && this.matchTS_PRIM($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_EXPR_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PRIM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM> {
+    return this.run<TS_PRIM>($$dpth, () => {
+        var $$res: Nullable<TS_PRIM> = null;
+        if (true && this.matchTS_PRIM_$0($$dpth + 1, $$cr) !== null && this.loop<string>(() => this.regexAccept(String.raw `(?:\[\])`, "", $$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.TS_PRIM };
+        }
+        return $$res;
+    });
+}
+public matchTS_PRIM_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0> {
+    return this.choice<TS_PRIM_$0>([() => this.matchTS_PRIM_$0_1($$dpth + 1, $$cr), () => this.matchTS_PRIM_$0_2($$dpth + 1, $$cr), () => this.matchTS_PRIM_$0_3($$dpth + 1, $$cr), () => this.matchTS_PRIM_$0_4($$dpth + 1, $$cr), () => this.matchTS_PRIM_$0_5($$dpth + 1, $$cr), () => this.matchTS_PRIM_$0_6($$dpth + 1, $$cr)]);
+}
+public matchTS_PRIM_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_1> {
+    return this.run<TS_PRIM_$0_1>($$dpth, () => {
+        var $$res: Nullable<TS_PRIM_$0_1> = null;
+        if (true && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PRIM_$0_1 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PRIM_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_2> {
+    return this.matchTS_TYPE_QUERY($$dpth + 1, $$cr);
+}
+public matchTS_PRIM_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_3> {
+    return this.matchTS_TYPE_REF($$dpth + 1, $$cr);
+}
+public matchTS_PRIM_$0_4($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_4> {
+    return this.matchTS_PROPERTY_NAME($$dpth + 1, $$cr);
+}
+public matchTS_PRIM_$0_5($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_5> {
+    return this.run<TS_PRIM_$0_5>($$dpth, () => {
+        var $$res: Nullable<TS_PRIM_$0_5> = null;
+        if (true && this.regexAccept(String.raw `(?:\{)`, "", $$dpth + 1, $$cr) !== null && (this.matchTS_PRIM_$0_$0($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\})`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PRIM_$0_5 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PRIM_$0_6($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_6> {
+    return this.run<TS_PRIM_$0_6>($$dpth, () => {
+        var $$res: Nullable<TS_PRIM_$0_6> = null;
+        if (true && this.regexAccept(String.raw `(?:\[)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_PRIM_$0_$1($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\])`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PRIM_$0_6 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PRIM_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$0> {
+    return this.run<TS_PRIM_$0_$0>($$dpth, () => {
+        var $$res: Nullable<TS_PRIM_$0_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE_MEMBER($$dpth + 1, $$cr) !== null && this.loop<TS_PRIM_$0_$0_$0>(() => this.matchTS_PRIM_$0_$0_$0($$dpth + 1, $$cr), 0, -1) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:[;,]?)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PRIM_$0_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PRIM_$0_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$0_$0> {
+    return this.run<TS_PRIM_$0_$0_$0>($$dpth, () => {
+        var $$res: Nullable<TS_PRIM_$0_$0_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:[;,])`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE_MEMBER($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PRIM_$0_$0_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PRIM_$0_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$1> {
+    return this.run<TS_PRIM_$0_$1>($$dpth, () => {
+        var $$res: Nullable<TS_PRIM_$0_$1> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null && this.loop<TS_PRIM_$0_$1_$0>(() => this.matchTS_PRIM_$0_$1_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.TS_PRIM_$0_$1 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PRIM_$0_$1_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PRIM_$0_$1_$0> {
+    return this.run<TS_PRIM_$0_$1_$0>($$dpth, () => {
+        var $$res: Nullable<TS_PRIM_$0_$1_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PRIM_$0_$1_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_REF($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF> {
+    return this.run<TS_TYPE_REF>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_REF> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && this.loop<TS_TYPE_REF_$0>(() => this.matchTS_TYPE_REF_$0($$dpth + 1, $$cr), 0, -1) !== null && (this.matchTS_TYPE_REF_$1($$dpth + 1, $$cr) || true)) {
+            $$res = { kind: ASTKinds.TS_TYPE_REF };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_REF_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF_$0> {
+    return this.run<TS_TYPE_REF_$0>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_REF_$0> = null;
+        if (true && this.regexAccept(String.raw `(?:\.)`, "", $$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_REF_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_REF_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_REF_$1> {
+    return this.run<TS_TYPE_REF_$1>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_REF_$1> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_GENERIC_ARGS($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_REF_$1 };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_QUERY($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_QUERY> {
+    return this.run<TS_TYPE_QUERY>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_QUERY> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:typeof)`, "", $$dpth + 1, $$cr) !== null && this.noConsume<_>(() => this.match_($$dpth + 1, $$cr)) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && this.loop<TS_TYPE_QUERY_$0>(() => this.matchTS_TYPE_QUERY_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_QUERY };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_QUERY_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_QUERY_$0> {
+    return this.run<TS_TYPE_QUERY_$0>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_QUERY_$0> = null;
+        if (true && this.regexAccept(String.raw `(?:\.)`, "", $$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_QUERY_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_FUNCTION($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_FUNCTION> {
+    return this.run<TS_FUNCTION>($$dpth, () => {
+        var $$res: Nullable<TS_FUNCTION> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_PARAM_LIST($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:=>)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_FUNCTION };
+        }
+        return $$res;
+    });
+}
+public matchTS_CONSTRUCTOR($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_CONSTRUCTOR> {
+    return this.run<TS_CONSTRUCTOR>($$dpth, () => {
+        var $$res: Nullable<TS_CONSTRUCTOR> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:new)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_FUNCTION($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_CONSTRUCTOR };
+        }
+        return $$res;
+    });
+}
+public matchTS_GENERIC_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS> {
+    return this.run<TS_GENERIC_PARAMS>($$dpth, () => {
+        var $$res: Nullable<TS_GENERIC_PARAMS> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:<)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_GENERIC_PARAMS_$0($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:>)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_GENERIC_PARAMS };
+        }
+        return $$res;
+    });
+}
+public matchTS_GENERIC_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS_$0> {
+    return this.run<TS_GENERIC_PARAMS_$0>($$dpth, () => {
+        var $$res: Nullable<TS_GENERIC_PARAMS_$0> = null;
+        if (true && this.matchTS_GENERIC_PARAM($$dpth + 1, $$cr) !== null && this.loop<TS_GENERIC_PARAMS_$0_$0>(() => this.matchTS_GENERIC_PARAMS_$0_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.TS_GENERIC_PARAMS_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_GENERIC_PARAMS_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAMS_$0_$0> {
+    return this.run<TS_GENERIC_PARAMS_$0_$0>($$dpth, () => {
+        var $$res: Nullable<TS_GENERIC_PARAMS_$0_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_GENERIC_PARAM($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_GENERIC_PARAMS_$0_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_GENERIC_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAM> {
+    return this.run<TS_GENERIC_PARAM>($$dpth, () => {
+        var $$res: Nullable<TS_GENERIC_PARAM> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && (this.matchTS_GENERIC_PARAM_$0($$dpth + 1, $$cr) || true)) {
+            $$res = { kind: ASTKinds.TS_GENERIC_PARAM };
+        }
+        return $$res;
+    });
+}
+public matchTS_GENERIC_PARAM_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_PARAM_$0> {
+    return this.run<TS_GENERIC_PARAM_$0>($$dpth, () => {
+        var $$res: Nullable<TS_GENERIC_PARAM_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:extends)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_GENERIC_PARAM_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_GENERIC_ARGS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS> {
+    return this.run<TS_GENERIC_ARGS>($$dpth, () => {
+        var $$res: Nullable<TS_GENERIC_ARGS> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:<)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_GENERIC_ARGS_$0($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:>)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_GENERIC_ARGS };
+        }
+        return $$res;
+    });
+}
+public matchTS_GENERIC_ARGS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS_$0> {
+    return this.run<TS_GENERIC_ARGS_$0>($$dpth, () => {
+        var $$res: Nullable<TS_GENERIC_ARGS_$0> = null;
+        if (true && this.matchTS_TYPE($$dpth + 1, $$cr) !== null && this.loop<TS_GENERIC_ARGS_$0_$0>(() => this.matchTS_GENERIC_ARGS_$0_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.TS_GENERIC_ARGS_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_GENERIC_ARGS_$0_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_GENERIC_ARGS_$0_$0> {
+    return this.run<TS_GENERIC_ARGS_$0_$0>($$dpth, () => {
+        var $$res: Nullable<TS_GENERIC_ARGS_$0_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_GENERIC_ARGS_$0_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PARAM_LIST($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST> {
+    return this.choice<TS_PARAM_LIST>([() => this.matchTS_PARAM_LIST_1($$dpth + 1, $$cr), () => this.matchTS_PARAM_LIST_2($$dpth + 1, $$cr), () => this.matchTS_PARAM_LIST_3($$dpth + 1, $$cr)]);
+}
+public matchTS_PARAM_LIST_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_1> {
+    return this.run<TS_PARAM_LIST_1>($$dpth, () => {
+        var $$res: Nullable<TS_PARAM_LIST_1> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_REQUIRED_PARAMS($$dpth + 1, $$cr) !== null && (this.matchTS_PARAM_LIST_$0($$dpth + 1, $$cr) || true) && (this.matchTS_PARAM_LIST_$1($$dpth + 1, $$cr) || true)) {
+            $$res = { kind: ASTKinds.TS_PARAM_LIST_1 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PARAM_LIST_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_2> {
+    return this.run<TS_PARAM_LIST_2>($$dpth, () => {
+        var $$res: Nullable<TS_PARAM_LIST_2> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_OPTIONAL_PARAMS($$dpth + 1, $$cr) !== null && (this.matchTS_PARAM_LIST_$2($$dpth + 1, $$cr) || true)) {
+            $$res = { kind: ASTKinds.TS_PARAM_LIST_2 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PARAM_LIST_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_3> {
+    return this.run<TS_PARAM_LIST_3>($$dpth, () => {
+        var $$res: Nullable<TS_PARAM_LIST_3> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PARAM_LIST_3 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PARAM_LIST_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$0> {
+    return this.run<TS_PARAM_LIST_$0>($$dpth, () => {
+        var $$res: Nullable<TS_PARAM_LIST_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_OPTIONAL_PARAMS($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PARAM_LIST_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PARAM_LIST_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$1> {
+    return this.run<TS_PARAM_LIST_$1>($$dpth, () => {
+        var $$res: Nullable<TS_PARAM_LIST_$1> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PARAM_LIST_$1 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PARAM_LIST_$2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PARAM_LIST_$2> {
+    return this.run<TS_PARAM_LIST_$2>($$dpth, () => {
+        var $$res: Nullable<TS_PARAM_LIST_$2> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_REST_PARAM($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_PARAM_LIST_$2 };
+        }
+        return $$res;
+    });
+}
+public matchTS_REQUIRED_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAMS> {
+    return this.run<TS_REQUIRED_PARAMS>($$dpth, () => {
+        var $$res: Nullable<TS_REQUIRED_PARAMS> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_REQUIRED_PARAM($$dpth + 1, $$cr) !== null && this.loop<TS_REQUIRED_PARAMS_$0>(() => this.matchTS_REQUIRED_PARAMS_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.TS_REQUIRED_PARAMS };
+        }
+        return $$res;
+    });
+}
+public matchTS_REQUIRED_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAMS_$0> {
+    return this.run<TS_REQUIRED_PARAMS_$0>($$dpth, () => {
+        var $$res: Nullable<TS_REQUIRED_PARAMS_$0> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_REQUIRED_PARAM($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_REQUIRED_PARAMS_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_REQUIRED_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REQUIRED_PARAM> {
+    return this.run<TS_REQUIRED_PARAM>($$dpth, () => {
+        var $$res: Nullable<TS_REQUIRED_PARAM> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_REQUIRED_PARAM };
+        }
+        return $$res;
+    });
+}
+public matchTS_OPTIONAL_PARAMS($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAMS> {
+    return this.run<TS_OPTIONAL_PARAMS>($$dpth, () => {
+        var $$res: Nullable<TS_OPTIONAL_PARAMS> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_OPTIONAL_PARAM($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.loop<TS_OPTIONAL_PARAMS_$0>(() => this.matchTS_OPTIONAL_PARAMS_$0($$dpth + 1, $$cr), 0, -1) !== null) {
+            $$res = { kind: ASTKinds.TS_OPTIONAL_PARAMS };
+        }
+        return $$res;
+    });
+}
+public matchTS_OPTIONAL_PARAMS_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAMS_$0> {
+    return this.run<TS_OPTIONAL_PARAMS_$0>($$dpth, () => {
+        var $$res: Nullable<TS_OPTIONAL_PARAMS_$0> = null;
+        if (true && this.regexAccept(String.raw `(?:,)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_OPTIONAL_PARAM($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_OPTIONAL_PARAMS_$0 };
+        }
+        return $$res;
+    });
+}
+public matchTS_OPTIONAL_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_OPTIONAL_PARAM> {
+    return this.run<TS_OPTIONAL_PARAM>($$dpth, () => {
+        var $$res: Nullable<TS_OPTIONAL_PARAM> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\?)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_OPTIONAL_PARAM };
+        }
+        return $$res;
+    });
+}
+public matchTS_REST_PARAM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_REST_PARAM> {
+    return this.run<TS_REST_PARAM>($$dpth, () => {
+        var $$res: Nullable<TS_REST_PARAM> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\.\.\.)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_REST_PARAM };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_MEMBER($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER> {
+    return this.choice<TS_TYPE_MEMBER>([() => this.matchTS_TYPE_MEMBER_1($$dpth + 1, $$cr), () => this.matchTS_TYPE_MEMBER_2($$dpth + 1, $$cr), () => this.matchTS_TYPE_MEMBER_3($$dpth + 1, $$cr), () => this.matchTS_TYPE_MEMBER_4($$dpth + 1, $$cr), () => this.matchTS_TYPE_MEMBER_5($$dpth + 1, $$cr)]);
+}
+public matchTS_TYPE_MEMBER_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_1> {
+    return this.run<TS_TYPE_MEMBER_1>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_MEMBER_1> = null;
+        if (true && this.matchTS_PROPERTY_NAME($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\??)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_MEMBER_1 };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_MEMBER_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_2> {
+    return this.run<TS_TYPE_MEMBER_2>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_MEMBER_2> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_PARAM_LIST($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_MEMBER_2 };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_MEMBER_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_3> {
+    return this.run<TS_TYPE_MEMBER_3>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_MEMBER_3> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:new)`, "", $$dpth + 1, $$cr) !== null && this.noConsume<_>(() => this.match_($$dpth + 1, $$cr)) !== null && (this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_PARAM_LIST($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_MEMBER_3 };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_MEMBER_4($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_4> {
+    return this.run<TS_TYPE_MEMBER_4>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_MEMBER_4> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\[)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\])`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_MEMBER_4 };
+        }
+        return $$res;
+    });
+}
+public matchTS_TYPE_MEMBER_5($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_TYPE_MEMBER_5> {
+    return this.run<TS_TYPE_MEMBER_5>($$dpth, () => {
+        var $$res: Nullable<TS_TYPE_MEMBER_5> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.matchNAME($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\??)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_GENERIC_PARAMS($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\()`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && (this.matchTS_PARAM_LIST($$dpth + 1, $$cr) || true) && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\))`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?::)`, "", $$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.matchTS_TYPE($$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_TYPE_MEMBER_5 };
+        }
+        return $$res;
+    });
+}
+public matchTS_PROPERTY_NAME($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME> {
+    return this.choice<TS_PROPERTY_NAME>([() => this.matchTS_PROPERTY_NAME_1($$dpth + 1, $$cr), () => this.matchTS_PROPERTY_NAME_2($$dpth + 1, $$cr), () => this.matchTS_PROPERTY_NAME_3($$dpth + 1, $$cr)]);
+}
+public matchTS_PROPERTY_NAME_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_1> {
+    return this.matchNAME($$dpth + 1, $$cr);
+}
+public matchTS_PROPERTY_NAME_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_2> {
+    return this.matchTS_STRING($$dpth + 1, $$cr);
+}
+public matchTS_PROPERTY_NAME_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_PROPERTY_NAME_3> {
+    return this.matchTS_NUM($$dpth + 1, $$cr);
+}
+public matchTS_STRING($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING> {
+    return this.choice<TS_STRING>([() => this.matchTS_STRING_1($$dpth + 1, $$cr), () => this.matchTS_STRING_2($$dpth + 1, $$cr), () => this.matchTS_STRING_3($$dpth + 1, $$cr)]);
+}
+public matchTS_STRING_1($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_1> {
+    return this.run<TS_STRING_1>($$dpth, () => {
+        var $scope$val: Nullable<string>;
+        var $$res: Nullable<TS_STRING_1> = null;
+        if (true && this.regexAccept(String.raw `(?:")`, "", $$dpth + 1, $$cr) !== null && ($scope$val = this.regexAccept(String.raw `(?:([^"\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null && this.regexAccept(String.raw `(?:")`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_STRING_1, val: $scope$val };
+        }
+        return $$res;
+    });
+}
+public matchTS_STRING_2($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_2> {
+    return this.run<TS_STRING_2>($$dpth, () => {
+        var $scope$val: Nullable<string>;
+        var $$res: Nullable<TS_STRING_2> = null;
+        if (true && this.regexAccept(String.raw `(?:\')`, "", $$dpth + 1, $$cr) !== null && ($scope$val = this.regexAccept(String.raw `(?:([^\'\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null && this.regexAccept(String.raw `(?:\')`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_STRING_2, val: $scope$val };
+        }
+        return $$res;
+    });
+}
+public matchTS_STRING_3($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_STRING_3> {
+    return this.run<TS_STRING_3>($$dpth, () => {
+        var $scope$val: Nullable<string>;
+        var $$res: Nullable<TS_STRING_3> = null;
+        if (true && this.regexAccept(String.raw `(?:\`)`, "", $$dpth + 1, $$cr) !== null && ($scope$val = this.regexAccept(String.raw `(?:([^\`\\]|(\\.))*)`, "", $$dpth + 1, $$cr)) !== null && this.regexAccept(String.raw `(?:\`)`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.TS_STRING_3, val: $scope$val };
+        }
+        return $$res;
+    });
+}
+public matchTS_NUM($$dpth: number, $$cr?: ErrorTracker): Nullable<TS_NUM> {
+    return this.regexAccept(String.raw `(?:-?[0-9]+(?:\.[0-9]+)?)`, "", $$dpth + 1, $$cr);
+}
+public matchCODE_SECTION($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_SECTION> {
+    return this.run<CODE_SECTION>($$dpth, () => {
+        var $scope$start: Nullable<PosInfo>;
+        var $scope$end: Nullable<PosInfo>;
+        var $$res: Nullable<CODE_SECTION> = null;
+        if (true && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\{)`, "", $$dpth + 1, $$cr) !== null && ($scope$start = this.mark()) !== null && (this.matchCODE_REC($$dpth + 1, $$cr) || true) && ($scope$end = this.mark()) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\})`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.CODE_SECTION, start: $scope$start, end: $scope$end };
+        }
+        return $$res;
+    });
+}
+public matchCODE_REC($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC> {
+    return this.loop<CODE_REC_$0>(() => this.matchCODE_REC_$0($$dpth + 1, $$cr), 0, -1);
+}
+public matchCODE_REC_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0> {
+    return this.choice<CODE_REC_$0>([() => this.matchCODE_REC_$0_1($$dpth + 1, $$cr), () => this.matchCODE_REC_$0_2($$dpth + 1, $$cr), () => this.matchCODE_REC_$0_3($$dpth + 1, $$cr)]);
+}
+public matchCODE_REC_$0_1($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_1> {
+    return this.regexAccept(String.raw `(?:[^{}\'"\`]+)`, "", $$dpth + 1, $$cr);
+}
+public matchCODE_REC_$0_2($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_2> {
+    return this.matchTS_STRING($$dpth + 1, $$cr);
+}
+public matchCODE_REC_$0_3($$dpth: number, $$cr?: ErrorTracker): Nullable<CODE_REC_$0_3> {
+    return this.run<CODE_REC_$0_3>($$dpth, () => {
+        var $$res: Nullable<CODE_REC_$0_3> = null;
+        if (true && this.regexAccept(String.raw `(?:\{)`, "", $$dpth + 1, $$cr) !== null && this.matchCODE_REC($$dpth + 1, $$cr) !== null && this.match_($$dpth + 1, $$cr) !== null && this.regexAccept(String.raw `(?:\})`, "", $$dpth + 1, $$cr) !== null) {
+            $$res = { kind: ASTKinds.CODE_REC_$0_3 };
+        }
+        return $$res;
+    });
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchGRAM(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchGRAM(0);
+    if (res) {
+        return { ast: res, errs: [] };
+    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchGRAM(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }

@@ -159,8 +159,16 @@ export function createParameter(
     name: string,
     type: ts.TypeNode,
     modifiers?: ts.Modifier[],
+    optional?: boolean,
 ): ts.ParameterDeclaration {
-    return ts.factory.createParameterDeclaration(modifiers, undefined, name, undefined, type, undefined);
+    return ts.factory.createParameterDeclaration(
+        modifiers,
+        undefined,
+        name,
+        optional ? ts.factory.createToken(ts.SyntaxKind.QuestionToken) : undefined,
+        type,
+        undefined,
+    );
 }
 
 export function createBlock(

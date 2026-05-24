@@ -32,27 +32,29 @@ export class Parser {
 }
 
     public matchtest($$dpth: number, $$cr?: ErrorTracker): Nullable<test> {
-        return this.regexAccept(String.raw `(?:\p{Alpha}+)`, "", $$dpth + 1, $$cr);
+    return this.regexAccept(String.raw `(?:\p{Alpha}+)`, "", $$dpth + 1, $$cr);
+}
+public test(): boolean {
+    const mrk = this.mark();
+    const res = this.matchtest(0);
+    const ans = res !== null;
+    this.reset(mrk);
+    return ans;
+}
+public parse(): ParseResult {
+    const mrk = this.mark();
+    const res = this.matchtest(0);
+    if (res) {
+        return { ast: res, errs: [] };
     }
-    public test(): boolean {
-        const mrk = this.mark();
-        const res = this.matchtest(0);
-        const ans = res !== null;
-        this.reset(mrk);
-        return ans;
-    }
-    public parse(): ParseResult {
-        const mrk = this.mark();
-        const res = this.matchtest(0);
-        if (res)
-            return {ast: res, errs: []};
-        this.reset(mrk);
-        const rec = new ErrorTracker();
-        this.clearMemos();
-        this.matchtest(0, rec);
-        const err = rec.getErr()
-        return {ast: res, errs: err !== null ? [err] : []}
-    }
+    this.reset(mrk);
+    const rec = new ErrorTracker();
+    this.clearMemos();
+    this.matchtest(0, rec);
+    const err = rec.getErr();
+    return { ast: res, errs: err !== null ? [err] : [] };
+}
+
     public mark(): PosInfo {
         return this.pos;
     }
